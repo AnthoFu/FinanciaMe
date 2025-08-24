@@ -157,12 +157,23 @@ export default function FinanciaMeScreen() {
         continue;
       }
 
-      const cost = expense.currency === 'BS' ? expense.amount : expense.amount * bcvRate;
-      if (wallet.balance >= cost) {
-        wallet.balance -= cost;
+      let expenseCostInWalletCurrency: number;
+      if (expense.currency === wallet.currency) {
+          expenseCostInWalletCurrency = expense.amount;
+      } else if (expense.currency === 'USD' && wallet.currency === 'BS') {
+          expenseCostInWalletCurrency = expense.amount * bcvRate;
+      } else if (expense.currency === 'BS' && wallet.currency === 'USD') {
+          expenseCostInWalletCurrency = expense.amount / bcvRate;
+      } else {
+          // Fallback, should not happen with only BS/USD
+          expenseCostInWalletCurrency = expense.amount;
+      }
+
+      if (wallet.balance >= expenseCostInWalletCurrency) {
+        wallet.balance -= expenseCostInWalletCurrency;
         tempTransactions.unshift({
           id: `${Date.now()}-${expense.id}`,
-          amount: cost,
+          amount: expenseCostInWalletCurrency, // Use the converted amount for the transaction record
           description: `Pago de gasto fijo: ${expense.name}`,
           type: 'expense',
           date: nowString,
