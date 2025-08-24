@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TextInput, Button, StyleSheet, TouchableWithoutFeedback, Keyboard, Switch } from 'react-native';
+import { Modal, View, Text, TextInput, Button, StyleSheet, TouchableWithoutFeedback, Keyboard, Switch, TouchableOpacity, ScrollView } from 'react-native';
+import { Wallet } from './WalletModal';
 
 export interface FixedExpense {
   id: string;
@@ -7,34 +8,48 @@ export interface FixedExpense {
   amount: number;
   currency: 'USD' | 'BS';
   dayOfMonth: number;
-  lastPaid?: string; // ISO date string
+  walletId: string | null;
+  lastPaid?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 interface FixedExpenseModalProps {
   isVisible: boolean;
   onClose: () => void;
   onSubmit: (expense: Omit<FixedExpense, 'id' | 'lastPaid'>) => void;
+  wallets: Wallet[];
   initialData?: FixedExpense | null;
 }
 
-export default function FixedExpenseModal({ isVisible, onClose, onSubmit, initialData }: FixedExpenseModalProps) {
+export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallets, initialData }: FixedExpenseModalProps) {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [dayOfMonth, setDayOfMonth] = useState('');
   const [isUSD, setIsUSD] = useState(true);
+  const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
-    if (initialData) {
-      setName(initialData.name);
-      setAmount(initialData.amount.toString());
-      setDayOfMonth(initialData.dayOfMonth.toString());
-      setIsUSD(initialData.currency === 'USD');
-    } else {
-      // Reset form when opening for a new expense
-      setName('');
-      setAmount('');
-      setDayOfMonth('');
-      setIsUSD(true);
+    if (isVisible) {
+      if (initialData) {
+        setName(initialData.name);
+        setAmount(initialData.amount.toString());
+        setDayOfMonth(initialData.dayOfMonth.toString());
+        setIsUSD(initialData.currency === 'USD');
+        setSelectedWalletId(initialData.walletId);
+        setStartDate(initialData.startDate || '');
+        setEndDate(initialData.endDate || '');
+      } else {
+        setName('');
+        setAmount('');
+        setDayOfMonth('');
+        setIsUSD(true);
+        setSelectedWalletId(wallets.length > 0 ? wallets[0].id : null);
+        setStartDate('');
+        setEndDate('');
+      }
     }
   }, [initialData, isVisible]);
 
@@ -42,8 +57,8 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, initia
     const numericAmount = parseFloat(amount);
     const numericDay = parseInt(dayOfMonth, 10);
 
-    if (!name || !numericAmount || !numericDay || numericDay < 1 || numericDay > 31) {
-      alert('Por favor, completa todos los campos con valores válidos.');
+    if (!name || !numericAmount || !numericDay || numericDay < 1 || numericDay > 31 || !selectedWalletId) {
+      alert('Por favor, completa los campos obligatorios (Nombre, Monto, Día, Billetera).');
       return;
     }
 
@@ -52,6 +67,9 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, initia
       amount: numericAmount,
       dayOfMonth: numericDay,
       currency: isUSD ? 'USD' : 'BS',
+      walletId: selectedWalletId,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
     });
     onClose();
   };
@@ -61,17 +79,33 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, initia
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{initialData ? 'Editar' : 'Añadir'} Gasto Fijo</Text>
-            <TextInput style={styles.input} placeholder="Nombre (ej. Alquiler)" value={name} onChangeText={setName} />
-            <TextInput style={styles.input} placeholder="Monto" keyboardType="numeric" value={amount} onChangeText={setAmount} />
-            <TextInput style={styles.input} placeholder="Día del Mes (1-31)" keyboardType="numeric" value={dayOfMonth} onChangeText={setDayOfMonth} />
-            
-            <View style={styles.switchContainer}>
-              <Text>Bs.</Text>
-              <Switch value={isUSD} onValueChange={setIsUSD} trackColor={{ false: '#767577', true: '#81b0ff' }} thumbColor={isUSD ? '#f5dd4b' : '#f4f3f4'} />
-              <Text>USD</Text>
-            </View>
+            <ScrollView style={{width: '100%'}} showsVerticalScrollIndicator={false}>
+              <Text style={styles.modalTitle}>{initialData ? 'Editar' : 'Añadir'} Gasto Fijo</Text>
+              <TextInput style={styles.input} placeholder="Nombre (ej. Alquiler)" value={name} onChangeText={setName} />
+              <TextInput style={styles.input} placeholder="Monto" keyboardType="numeric" value={amount} onChangeText={setAmount} />
+              <TextInput style={styles.input} placeholder="Día del Mes (1-31)" keyboardType="numeric" value={dayOfMonth} onChangeText={setDayOfMonth} />
+              
+              <View style={styles.switchContainer}>
+                <Text>Bs.</Text>
+                <Switch value={isUSD} onValueChange={setIsUSD} trackColor={{ false: '#767577', true: '#81b0ff' }} thumbColor={isUSD ? '#f5dd4b' : '#f4f3f4'} />
+                <Text>USD</Text>
+              </View>
 
+              <Text style={styles.pickerLabel}>Billetera de Pago</Text>
+              {wallets.map(wallet => (
+                <TouchableOpacity 
+                  key={wallet.id} 
+                  style={[styles.pickerItem, selectedWalletId === wallet.id && styles.pickerItemSelected]}
+                  onPress={() => setSelectedWalletId(wallet.id)}
+                >
+                  <Text style={styles.pickerItemText}>{wallet.name} ({wallet.currency})</Text>
+                </TouchableOpacity>
+              ))}
+
+              <Text style={styles.pickerLabel}>Periodo (Opcional)</Text>
+              <TextInput style={styles.input} placeholder="Fecha de Inicio (YYYY-MM-DD)" value={startDate} onChangeText={setStartDate} />
+              <TextInput style={styles.input} placeholder="Fecha de Fin (YYYY-MM-DD)" value={endDate} onChangeText={setEndDate} />
+            </ScrollView>
             <View style={styles.buttonContainer}>
               <Button title="Cancelar" onPress={onClose} color="#ff5c5c" />
               <Button title={initialData ? 'Guardar' : 'Añadir'} onPress={handleSubmit} />
@@ -85,9 +119,13 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, initia
 
 const styles = StyleSheet.create({
   modalContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' },
-  modalContent: { width: '85%', padding: 20, backgroundColor: 'white', borderRadius: 10, alignItems: 'center' },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
+  modalContent: { width: '85%', maxHeight: '80%', padding: 20, backgroundColor: 'white', borderRadius: 10, alignItems: 'center' },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   input: { width: '100%', backgroundColor: '#f0f4f7', padding: 10, borderRadius: 10, marginBottom: 15, borderWidth: 1, borderColor: '#ddd' },
   switchContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 20, gap: 10 },
-  buttonContainer: { flexDirection: 'row', justifyContent: 'space-around', width: '100%' },
+  pickerLabel: { fontSize: 16, fontWeight: 'bold', marginBottom: 10, alignSelf: 'flex-start', marginTop: 10 },
+  pickerItem: { width: '100%', padding: 15, backgroundColor: '#f0f4f7', borderRadius: 10, marginBottom: 5, borderWidth: 1, borderColor: '#ddd' },
+  pickerItemSelected: { borderColor: '#007bff', borderWidth: 2 },
+  pickerItemText: { textAlign: 'center' },
+  buttonContainer: { flexDirection: 'row', justifyContent: 'space-around', width: '100%', marginTop: 20, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#eee' },
 });

@@ -1,29 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, Button, Alert, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from 'expo-router';
 import FixedExpenseModal, { FixedExpense } from '../../components/FixedExpenseModal';
+import { Wallet } from '../../components/WalletModal';
 
 const FIXED_EXPENSES_KEY = 'fixedExpenses';
+const WALLETS_KEY = 'userWallets';
 
 export default function FixedExpensesScreen() {
   const [expenses, setExpenses] = useState<FixedExpense[]>([]);
+  const [wallets, setWallets] = useState<Wallet[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingExpense, setEditingExpense] = useState<FixedExpense | null>(null);
 
-  // Load expenses from storage
-  useEffect(() => {
-    const loadExpenses = async () => {
-      try {
-        const storedExpenses = await AsyncStorage.getItem(FIXED_EXPENSES_KEY);
-        if (storedExpenses) {
-          setExpenses(JSON.parse(storedExpenses));
+  // Load data when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const loadData = async () => {
+        try {
+          const storedExpenses = await AsyncStorage.getItem(FIXED_EXPENSES_KEY);
+          if (storedExpenses) setExpenses(JSON.parse(storedExpenses));
+
+          const storedWallets = await AsyncStorage.getItem(WALLETS_KEY);
+          if (storedWallets) setWallets(JSON.parse(storedWallets));
+        } catch (e) {
+          console.error("Failed to load data.", e);
         }
-      } catch (e) {
-        console.error("Failed to load fixed expenses.", e);
-      }
-    };
-    loadExpenses();
-  }, []);
+      };
+      loadData();
+    }, [])
+  );
 
   // Save expenses to storage
   useEffect(() => {
@@ -38,6 +45,10 @@ export default function FixedExpensesScreen() {
   }, [expenses]);
 
   const handleAddNew = () => {
+    if (wallets.length === 0) {
+      Alert.alert("No hay billeteras", "Debes crear al menos una billetera antes de añadir un gasto fijo.");
+      return;
+    }
     setEditingExpense(null);
     setModalVisible(true);
   };
@@ -62,7 +73,7 @@ export default function FixedExpensesScreen() {
     );
   };
 
-  const handleSubmit = (expenseData: Omit<FixedExpense, 'id'>) => {
+  const handleSubmit = (expenseData: Omit<FixedExpense, 'id' | 'lastPaid'>) => {
     if (editingExpense) {
       // Update existing expense
       setExpenses(prev => 
@@ -72,6 +83,7 @@ export default function FixedExpensesScreen() {
       // Add new expense
       const newExpense: FixedExpense = {
         id: Date.now().toString(),
+        lastPaid: undefined, // Ensure new expenses can be paid this month
         ...expenseData,
       };
       setExpenses(prev => [newExpense, ...prev]);
@@ -85,21 +97,25 @@ export default function FixedExpensesScreen() {
         data={expenses}
         keyExtractor={(item) => item.id}
         style={styles.list}
-        renderItem={({ item }) => (
-          <View style={styles.itemContainer}>
-            <View style={styles.itemDetails}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemSubText}>Día {item.dayOfMonth} de cada mes</Text>
-            </View>
-            <View style={styles.itemRightSection}>
-              <Text style={styles.itemAmount}>{item.currency === 'USD' ? '$' : 'Bs.'}{item.amount.toFixed(2)}</Text>
-              <View style={styles.itemActions}>
-                <TouchableOpacity onPress={() => handleEdit(item)}><Text style={styles.actionText}>Editar</Text></TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDelete(item.id)}><Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text></TouchableOpacity>
+        renderItem={({ item }) => {
+          const wallet = wallets.find(w => w.id === item.walletId);
+          return (
+            <View style={styles.itemContainer}>
+              <View style={styles.itemDetails}>
+                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemSubText}>Día {item.dayOfMonth} de cada mes</Text>
+                <Text style={styles.walletText}>Desde: {wallet ? wallet.name : 'Billetera no encontrada'}</Text>
+              </View>
+              <View style={styles.itemRightSection}>
+                <Text style={styles.itemAmount}>{item.currency === 'USD' ? '$' : 'Bs.'}{item.amount.toFixed(2)}</Text>
+                <View style={styles.itemActions}>
+                  <TouchableOpacity onPress={() => handleEdit(item)}><Text style={styles.actionText}>Editar</Text></TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleDelete(item.id)}><Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text></TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-        )}
+          )
+        }}
         ListEmptyComponent={<Text style={styles.emptyText}>No tienes gastos fijos definidos.</Text>}
       />
       <Button title="Añadir Gasto Fijo" onPress={handleAddNew} />
@@ -108,6 +124,7 @@ export default function FixedExpensesScreen() {
         onClose={() => setModalVisible(false)}
         onSubmit={handleSubmit}
         initialData={editingExpense}
+        wallets={wallets}
       />
     </View>
   );
@@ -120,7 +137,8 @@ const styles = StyleSheet.create({
   itemContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15, backgroundColor: 'white', borderRadius: 10, marginBottom: 10 },
   itemDetails: { flex: 1 },
   itemName: { fontSize: 18, fontWeight: 'bold' },
-  itemSubText: { fontSize: 14, color: '#666' },
+  itemSubText: { fontSize: 14, color: '#666', marginVertical: 2 },
+  walletText: { fontSize: 14, color: '#007bff', fontStyle: 'italic' },
   itemRightSection: { alignItems: 'flex-end' },
   itemAmount: { fontSize: 18, fontWeight: 'bold', color: '#1D3D47' },
   itemActions: { flexDirection: 'row', marginTop: 5, gap: 15 },

@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
 import TransactionModal from '../../components/TransactionModal';
 import { FixedExpense } from '../../components/FixedExpenseModal';
+import { Wallet } from '../../components/WalletModal';
 
 // --- Tipos ---
 interface Transaction {
@@ -12,85 +13,100 @@ interface Transaction {
   description: string;
   type: 'income' | 'expense';
   date: string;
+  walletId: string;
 }
 
 // --- Constantes ---
 const API_URL = 'https://ve.dolarapi.com/v1/dolares/oficial';
 const BCV_RATE_KEY = 'bcvRate';
-const BALANCE_KEY = 'userBalance';
 const TRANSACTIONS_KEY = 'userTransactions';
 const FIXED_EXPENSES_KEY = 'fixedExpenses';
+const WALLETS_KEY = 'userWallets';
 
 export default function FinanciaMeScreen() {
-  // --- Estados de la Aplicación ---
+  // --- Estados ---
   const [bcvRate, setBcvRate] = useState<number | null>(null);
-  const [balance, setBalance] = useState<number>(0);
-  const [balanceUSD, setBalanceUSD] = useState<number>(0);
+  const [wallets, setWallets] = useState<Wallet[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [totalBalanceBs, setTotalBalanceBs] = useState(0);
+  const [totalBalanceUsd, setTotalBalanceUsd] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Estados de la UI
   const [isModalVisible, setModalVisible] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
+  const [activeWalletId, setActiveWalletId] = useState<string | null>(null);
 
   // --- Efectos ---
-
-  // Carga inicial de datos
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const storedRate = await AsyncStorage.getItem(BCV_RATE_KEY);
-        if (storedRate) setBcvRate(JSON.parse(storedRate));
-
-        const storedBalance = await AsyncStorage.getItem(BALANCE_KEY);
-        if (storedBalance) setBalance(JSON.parse(storedBalance));
-
-        const storedTransactions = await AsyncStorage.getItem(TRANSACTIONS_KEY);
-        if (storedTransactions) setTransactions(JSON.parse(storedTransactions));
-
-      } catch (e) { console.error("DEBUG: Failed to load data from storage", e); }
-
-      try {
-        const response = await fetch(API_URL);
-        if (response.ok) {
-          const data = await response.json();
-          const newRate = data.promedio;
-          setBcvRate(newRate);
-          await AsyncStorage.setItem(BCV_RATE_KEY, JSON.stringify(newRate));
-        } else {
-          if (!bcvRate) throw new Error('La red no responde y no hay datos locales.');
-        }
-      } catch (e: any) {
-        console.error("DEBUG: Failed to fetch rate from API", e);
-        if (!bcvRate) setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, []);
-
-  // Guarda datos en segundo plano
-  useEffect(() => { if (!loading) AsyncStorage.setItem(BALANCE_KEY, JSON.stringify(balance)); }, [balance, loading]);
-  useEffect(() => { if (!loading) AsyncStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions)); }, [transactions, loading]);
-
-  // Recalcula el saldo en USD
-  useEffect(() => {
-    if (bcvRate && balance) setBalanceUSD(balance / bcvRate);
-    else setBalanceUSD(0);
-  }, [balance, bcvRate]);
-
-  // Revisa gastos fijos pendientes cuando la pantalla se enfoca
   useFocusEffect(
     useCallback(() => {
-      if (!loading) {
-        checkDueFixedExpenses();
-      }
-    }, [loading, bcvRate, balance]) // Dependencias clave para la lógica de pago
+      loadData();
+    }, [])
   );
 
-  // --- Lógica de Negocio ---
+  useEffect(() => {
+    if (!loading) {
+      recalculateTotals();
+      checkDueFixedExpenses();
+    }
+  }, [loading]); // Dependencia de loading para correr una vez post-carga
+
+  useEffect(() => {
+    if (!loading) {
+      saveData();
+    }
+  }, [wallets, transactions]);
+
+  // --- Lógica de Carga y Guardado ---
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [storedRate, storedWallets, storedTransactions] = await Promise.all([
+        AsyncStorage.getItem(BCV_RATE_KEY),
+        AsyncStorage.getItem(WALLETS_KEY),
+        AsyncStorage.getItem(TRANSACTIONS_KEY),
+      ]);
+      setBcvRate(storedRate ? JSON.parse(storedRate) : null);
+      setWallets(storedWallets ? JSON.parse(storedWallets) : []);
+      setTransactions(storedTransactions ? JSON.parse(storedTransactions) : []);
+    } catch (e) {
+      console.error("DEBUG: Failed to load data", e);
+      setError('Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveData = async () => {
+    try {
+      await Promise.all([
+        AsyncStorage.setItem(WALLETS_KEY, JSON.stringify(wallets)),
+        AsyncStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions)),
+      ]);
+    } catch (e) {
+      console.error("DEBUG: Failed to save data", e);
+    }
+  };
+
+  const recalculateTotals = () => {
+    if (!bcvRate) return;
+    let totalBs = 0;
+    wallets.forEach(wallet => {
+      totalBs += wallet.currency === 'BS' ? wallet.balance : wallet.balance * bcvRate;
+    });
+    setTotalBalanceBs(totalBs);
+    setTotalBalanceUsd(totalBs / bcvRate);
+  };
+
+  // --- Lógica de Gastos Fijos ---
+  const isWithinDateRange = (expense: FixedExpense, date: Date): boolean => {
+    const start = expense.startDate ? new Date(expense.startDate) : null;
+    const end = expense.endDate ? new Date(expense.endDate) : null;
+
+    if (start && date < start) return false;
+    if (end && date > end) return false;
+
+    return true;
+  };
 
   const checkDueFixedExpenses = async () => {
     const storedExpenses = await AsyncStorage.getItem(FIXED_EXPENSES_KEY);
@@ -102,98 +118,118 @@ export default function FinanciaMeScreen() {
     const currentYear = now.getFullYear();
 
     const dueExpenses = fixedExpenses.filter(exp => {
-      if (!exp.lastPaid) return true; // Siempre es debido si nunca se ha pagado
-      const lastPaidDate = new Date(exp.lastPaid);
-      return lastPaidDate.getFullYear() < currentYear || lastPaidDate.getMonth() < currentMonth;
+      const isDueByMonth = !exp.lastPaid || new Date(exp.lastPaid).getFullYear() < currentYear || new Date(exp.lastPaid).getMonth() < currentMonth;
+      const isDueByDay = now.getDate() >= exp.dayOfMonth;
+      
+      return isDueByMonth && isDueByDay && isWithinDateRange(exp, now);
     });
 
     if (dueExpenses.length > 0) {
-      promptToPayDueExpenses(dueExpenses, fixedExpenses);
+      promptToPayDueExpenses(dueExpenses);
     }
   };
 
-  const promptToPayDueExpenses = (dueExpenses: FixedExpense[], allExpenses: FixedExpense[]) => {
+  const promptToPayDueExpenses = (dueExpenses: FixedExpense[]) => {
     const expenseNames = dueExpenses.map(e => e.name).join(', ');
     Alert.alert(
       'Gastos Fijos Pendientes',
       `Tienes pagos pendientes para: ${expenseNames}. ¿Deseas pagarlos ahora?`,
       [
         { text: 'Más Tarde', style: 'cancel' },
-        { 
-          text: 'Pagar Ahora', 
-          onPress: () => handlePayDueExpenses(dueExpenses, allExpenses)
-        },
+        { text: 'Pagar Ahora', onPress: () => handlePayDueExpenses(dueExpenses) },
       ]
     );
   };
 
-  const handlePayDueExpenses = (dueExpenses: FixedExpense[], allExpenses: FixedExpense[]) => {
-    if (!bcvRate) {
-      Alert.alert("Error", "No se puede procesar el pago sin una tasa de cambio del BCV.");
-      return;
-    }
+  const handlePayDueExpenses = async (dueExpenses: FixedExpense[]) => {
+    if (!bcvRate) return;
 
-    let totalCostBs = 0;
-    const newTransactions: Transaction[] = [];
+    let tempWallets = [...wallets];
+    let tempTransactions = [...transactions];
     const nowString = new Date().toISOString();
+    const paidExpensesIds: string[] = [];
+    const failedExpenses: string[] = [];
 
-    dueExpenses.forEach(exp => {
-      const cost = exp.currency === 'BS' ? exp.amount : exp.amount * bcvRate;
-      totalCostBs += cost;
-      newTransactions.push({
-        id: `${Date.now()}-${exp.id}`,
-        amount: cost,
-        description: `Pago de gasto fijo: ${exp.name}`,
-        type: 'expense',
-        date: nowString,
-      });
-    });
+    for (const expense of dueExpenses) {
+      const wallet = tempWallets.find(w => w.id === expense.walletId);
+      if (!wallet) {
+        failedExpenses.push(`${expense.name} (Billetera no encontrada)`);
+        continue;
+      }
 
-    if (totalCostBs > balance) {
-      Alert.alert("Saldo Insuficiente", `Necesitas Bs. ${totalCostBs.toFixed(2)} para cubrir tus gastos fijos, pero solo tienes Bs. ${balance.toFixed(2)}.`);
-      return;
+      const cost = expense.currency === 'BS' ? expense.amount : expense.amount * bcvRate;
+      if (wallet.balance >= cost) {
+        wallet.balance -= cost;
+        tempTransactions.unshift({
+          id: `${Date.now()}-${expense.id}`,
+          amount: cost,
+          description: `Pago de gasto fijo: ${expense.name}`,
+          type: 'expense',
+          date: nowString,
+          walletId: wallet.id,
+        });
+        paidExpensesIds.push(expense.id);
+      } else {
+        failedExpenses.push(`${expense.name} (Fondos insuficientes en ${wallet.name})`);
+      }
     }
 
-    // Actualizar estado
-    setBalance(prev => prev - totalCostBs);
-    setTransactions(prev => [...newTransactions, ...prev]);
+    // Actualizar estado y persistir
+    setWallets(tempWallets);
+    setTransactions(tempTransactions);
 
-    // Actualizar la fecha de pago en la lista de gastos fijos
-    const updatedExpenses = allExpenses.map(exp => {
-      const wasPaid = dueExpenses.some(due => due.id === exp.id);
-      return wasPaid ? { ...exp, lastPaid: nowString } : exp;
-    });
-    AsyncStorage.setItem(FIXED_EXPENSES_KEY, JSON.stringify(updatedExpenses));
+    const allFixedExpenses: FixedExpense[] = JSON.parse(await AsyncStorage.getItem(FIXED_EXPENSES_KEY) || '[]');
+    const updatedFixedExpenses = allFixedExpenses.map(exp => 
+      paidExpensesIds.includes(exp.id) ? { ...exp, lastPaid: nowString } : exp
+    );
+    await AsyncStorage.setItem(FIXED_EXPENSES_KEY, JSON.stringify(updatedFixedExpenses));
 
-    Alert.alert("Éxito", "Los gastos fijos pendientes han sido pagados y registrados.");
+    let summaryMessage = paidExpensesIds.length > 0 ? `Pagos realizados con éxito para: ${dueExpenses.filter(e => paidExpensesIds.includes(e.id)).map(e => e.name).join(', ')}.` : '';
+    if (failedExpenses.length > 0) {
+      summaryMessage += `\n\nPagos fallidos: ${failedExpenses.join('; ')}.`;
+    }
+    Alert.alert("Resumen de Pagos", summaryMessage);
   };
 
-  const handleOpenModal = (type: 'income' | 'expense') => {
+  // --- Lógica de Transacciones Manuales ---
+  const handleOpenModal = (walletId: string, type: 'income' | 'expense') => {
+    setActiveWalletId(walletId);
     setTransactionType(type);
     setModalVisible(true);
   };
 
   const handleSubmitTransaction = (amount: number, description: string) => {
-    const newTransaction: Transaction = {
-      id: Date.now().toString(),
-      amount,
-      description,
-      type: transactionType,
-      date: new Date().toISOString(),
-    };
-    const newBalance = transactionType === 'income' ? balance + amount : balance - amount;
-    if (newBalance < 0) {
-      Alert.alert("Saldo Insuficiente", "No puedes registrar un gasto que te deje en negativo.");
-      return;
+    if (!activeWalletId) return;
+
+    let wasTransactionSuccessful = false;
+    const newWallets = wallets.map(wallet => {
+      if (wallet.id === activeWalletId) {
+        const newBalance = transactionType === 'income' ? wallet.balance + amount : wallet.balance - amount;
+        if (newBalance < 0) {
+          Alert.alert("Saldo Insuficiente", "La billetera no tiene fondos suficientes.");
+          return wallet;
+        }
+        wasTransactionSuccessful = true;
+        return { ...wallet, balance: newBalance };
+      }
+      return wallet;
+    });
+
+    if (wasTransactionSuccessful) {
+      const newTransaction: Transaction = {
+        id: Date.now().toString(),
+        amount, description, date: new Date().toISOString(),
+        type: transactionType,
+        walletId: activeWalletId,
+      };
+      setWallets(newWallets);
+      setTransactions(prev => [newTransaction, ...prev]);
+      setModalVisible(false);
+      setActiveWalletId(null);
     }
-    setBalance(newBalance);
-    setTransactions(prev => [newTransaction, ...prev]);
-    setModalVisible(false);
   };
 
   // --- Renderizado ---
-  // ... (El resto del código de renderizado se mantiene igual)
-
   const renderContent = () => {
     if (loading) return <ActivityIndicator size="large" color="#0000ff" />;
     if (error) return <Text style={styles.errorText}>Error: {error}</Text>;
@@ -205,37 +241,55 @@ export default function FinanciaMeScreen() {
         </View>
 
         <View style={styles.balanceContainer}>
-          <Text style={styles.balanceTitle}>Tu Saldo</Text>
-          <Text style={styles.balanceBs}>Bs. {balance.toFixed(2)}</Text>
-          <Text style={styles.balanceUsd}>≈ ${balanceUSD.toFixed(2)} USD</Text>
+          <Text style={styles.balanceTitle}>Saldo Total Consolidado</Text>
+          <Text style={styles.balanceBs}>Bs. {totalBalanceBs.toFixed(2)}</Text>
+          <Text style={styles.balanceUsd}>≈ ${totalBalanceUsd.toFixed(2)} USD</Text>
         </View>
 
-        <View style={styles.actionsContainer}>
-          <TouchableOpacity style={[styles.actionButton, styles.incomeButton]} onPress={() => handleOpenModal('income')}>
-            <Text style={styles.actionButtonText}>+ Ingreso</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, styles.expenseButton]} onPress={() => handleOpenModal('expense')}>
-            <Text style={styles.actionButtonText}>- Gasto</Text>
-          </TouchableOpacity>
-        </View>
-
-        <Text style={styles.historyTitle}>Historial de Movimientos</Text>
+        <Text style={styles.sectionTitle}>Billeteras</Text>
         <FlatList
-          data={transactions}
+          data={wallets}
           keyExtractor={(item) => item.id}
-          style={styles.historyList}
+          style={styles.list}
           renderItem={({ item }) => (
-            <View style={styles.historyItem}>
+            <View style={styles.walletItem}>
               <View>
-                <Text style={styles.historyItemDesc}>{item.description}</Text>
-                <Text style={styles.historyItemDate}>{new Date(item.date).toLocaleDateString()}</Text>
+                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemBalance}>{item.currency === 'USD' ? '$' : 'Bs.'}{item.balance.toFixed(2)}</Text>
               </View>
-              <Text style={item.type === 'income' ? styles.incomeText : styles.expenseText}>
-                {item.type === 'income' ? '+' : '-'} Bs. {item.amount.toFixed(2)}
-              </Text>
+              <View style={styles.walletActions}>
+                <TouchableOpacity style={[styles.walletButton, styles.incomeButton]} onPress={() => handleOpenModal(item.id, 'income')}> 
+                  <Text style={styles.walletButtonText}>+</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.walletButton, styles.expenseButton]} onPress={() => handleOpenModal(item.id, 'expense')}> 
+                  <Text style={styles.walletButtonText}>-</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
-          ListEmptyComponent={<Text style={styles.emptyHistory}>No hay movimientos registrados.</Text>}
+          ListEmptyComponent={<Text style={styles.emptyText}>No has creado ninguna billetera.</Text>}
+        />
+
+        <Text style={styles.sectionTitle}>Movimientos Recientes</Text>
+        <FlatList
+          data={transactions.slice(0, 5)} // Mostrar solo los últimos 5
+          keyExtractor={(item) => item.id}
+          style={styles.list}
+          renderItem={({ item }) => {
+            const wallet = wallets.find(w => w.id === item.walletId);
+            return (
+              <View style={styles.transactionItem}>
+                <View>
+                  <Text style={styles.itemName}>{item.description}</Text>
+                  <Text style={styles.itemSubText}>{wallet ? wallet.name : 'Billetera eliminada'}</Text>
+                </View>
+                <Text style={item.type === 'income' ? styles.incomeText : styles.expenseText}>
+                  {item.type === 'income' ? '+' : '-'} Bs. {item.amount.toFixed(2)}
+                </Text>
+              </View>
+            )
+          }}
+          ListEmptyComponent={<Text style={styles.emptyText}>No hay movimientos recientes.</Text>}
         />
       </>
     );
@@ -265,18 +319,20 @@ const styles = StyleSheet.create({
   balanceTitle: { fontSize: 20, color: '#1D3D47', fontWeight: 'bold' },
   balanceBs: { fontSize: 28, fontWeight: 'bold', color: '#007bff', marginTop: 5 },
   balanceUsd: { fontSize: 16, color: '#666', marginTop: 5 },
-  actionsContainer: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 20, width: '100%' },
-  actionButton: { flex: 1, paddingVertical: 15, borderRadius: 10, alignItems: 'center', marginHorizontal: 5 },
-  actionButtonText: { color: 'white', fontSize: 16, fontWeight: 'bold' },
+  sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#1D3D47', marginTop: 10, marginBottom: 10, alignSelf: 'flex-start' },
+  list: { flex: 1, width: '100%' },
+  walletItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', padding: 15, borderRadius: 10, marginBottom: 10 },
+  itemName: { fontSize: 16, fontWeight: '500' },
+  itemBalance: { fontSize: 16, fontWeight: 'bold' },
+  walletActions: { flexDirection: 'row', gap: 10 },
+  walletButton: { width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
+  walletButtonText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
   incomeButton: { backgroundColor: '#28a745' },
   expenseButton: { backgroundColor: '#dc3545' },
-  historyTitle: { fontSize: 20, fontWeight: 'bold', color: '#1D3D47', marginBottom: 10, alignSelf: 'flex-start' },
-  historyList: { width: '100%' },
-  historyItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', padding: 15, borderRadius: 10, marginBottom: 10 },
-  historyItemDesc: { fontSize: 16, fontWeight: '500' },
-  historyItemDate: { fontSize: 12, color: '#666' },
+  transactionItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', padding: 15, borderRadius: 10, marginBottom: 5 },
+  itemSubText: { fontSize: 12, color: '#666', fontStyle: 'italic' },
   incomeText: { color: '#28a745', fontWeight: 'bold' },
   expenseText: { color: '#dc3545', fontWeight: 'bold' },
-  emptyHistory: { textAlign: 'center', color: '#666', marginTop: 20 },
+  emptyText: { textAlign: 'center', color: '#666', marginTop: 20 },
   errorText: { color: 'red', fontSize: 16, textAlign: 'center' },
 });
