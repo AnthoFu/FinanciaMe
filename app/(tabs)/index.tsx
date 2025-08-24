@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, TouchableOpacity, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
-import TransactionModal from '../../components/TransactionModal';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FixedExpense } from '../../components/FixedExpenseModal';
+import TransactionModal from '../../components/TransactionModal';
 import { Wallet } from '../../components/WalletModal';
 
 // --- Tipos ---
@@ -174,7 +174,7 @@ export default function FinanciaMeScreen() {
         tempTransactions.unshift({
           id: `${Date.now()}-${expense.id}`,
           amount: expenseCostInWalletCurrency, // Use the converted amount for the transaction record
-          description: `Pago de gasto fijo: ${expense.name}`,
+                    description: `Gasto fijo: ${expense.name}`,
           type: 'expense',
           date: nowString,
           walletId: wallet.id,
@@ -290,12 +290,13 @@ export default function FinanciaMeScreen() {
             const wallet = wallets.find(w => w.id === item.walletId);
             return (
               <View style={styles.transactionItem}>
-                <View>
-                  <Text style={styles.itemName}>{item.description}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.itemName} numberOfLines={1} ellipsizeMode="tail">{item.description}</Text>
                   <Text style={styles.itemSubText}>{wallet ? wallet.name : 'Billetera eliminada'}</Text>
+                  <Text style={styles.itemDate}>{new Date(item.date).toLocaleDateString()}</Text>
                 </View>
-                <Text style={item.type === 'income' ? styles.incomeText : styles.expenseText}>
-                  {item.type === 'income' ? '+' : '-'} Bs. {item.amount.toFixed(2)}
+                <Text style={[item.type === 'income' ? styles.incomeText : styles.expenseText, { flexShrink: 0 }]}>
+                  {item.type === 'income' ? '+' : '-'} {wallet ? (wallet.currency === 'USD' ? '$' : 'Bs.') : ''} {item.amount.toFixed(2)}
                 </Text>
               </View>
             )
@@ -342,6 +343,7 @@ const styles = StyleSheet.create({
   expenseButton: { backgroundColor: '#dc3545' },
   transactionItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', padding: 15, borderRadius: 10, marginBottom: 5 },
   itemSubText: { fontSize: 12, color: '#666', fontStyle: 'italic' },
+  itemDate: { fontSize: 10, color: '#999', marginTop: 2 }, // Added style for date
   incomeText: { color: '#28a745', fontWeight: 'bold' },
   expenseText: { color: '#dc3545', fontWeight: 'bold' },
   emptyText: { textAlign: 'center', color: '#666', marginTop: 20 },
