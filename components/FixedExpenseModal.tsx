@@ -7,12 +7,13 @@ export interface FixedExpense {
   amount: number;
   currency: 'USD' | 'BS';
   dayOfMonth: number;
+  lastPaid?: string; // ISO date string
 }
 
 interface FixedExpenseModalProps {
   isVisible: boolean;
   onClose: () => void;
-  onSubmit: (expense: Omit<FixedExpense, 'id'>) => void;
+  onSubmit: (expense: Omit<FixedExpense, 'id' | 'lastPaid'>) => void;
   initialData?: FixedExpense | null;
 }
 

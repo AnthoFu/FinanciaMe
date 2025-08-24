@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, TouchableOpacity, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import TransactionModal from '../../components/TransactionModal'; // Ajusta la ruta si es necesario
+import { useFocusEffect } from 'expo-router';
+import TransactionModal from '../../components/TransactionModal';
+import { FixedExpense } from '../../components/FixedExpenseModal';
 
 // --- Tipos ---
 interface Transaction {
@@ -17,6 +19,7 @@ const API_URL = 'https://ve.dolarapi.com/v1/dolares/oficial';
 const BCV_RATE_KEY = 'bcvRate';
 const BALANCE_KEY = 'userBalance';
 const TRANSACTIONS_KEY = 'userTransactions';
+const FIXED_EXPENSES_KEY = 'fixedExpenses';
 
 export default function FinanciaMeScreen() {
   // --- Estados de la Aplicación ---
@@ -68,34 +71,9 @@ export default function FinanciaMeScreen() {
     loadData();
   }, []);
 
-  // Guarda el saldo cuando cambia
-  useEffect(() => {
-    const saveBalance = async () => {
-      try {
-        await AsyncStorage.setItem(BALANCE_KEY, JSON.stringify(balance));
-      } catch (e) {
-        console.error("DEBUG: Failed to save balance.", e);
-      }
-    };
-    // No guardar el estado inicial 0 si no es intencional
-    if (!loading) {
-      saveBalance();
-    }
-  }, [balance, loading]);
-
-  // Guarda las transacciones cuando cambian
-  useEffect(() => {
-    const saveTransactions = async () => {
-      try {
-        await AsyncStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions));
-      } catch (e) {
-        console.error("DEBUG: Failed to save transactions.", e);
-      }
-    };
-    if (!loading) {
-      saveTransactions();
-    }
-  }, [transactions, loading]);
+  // Guarda datos en segundo plano
+  useEffect(() => { if (!loading) AsyncStorage.setItem(BALANCE_KEY, JSON.stringify(balance)); }, [balance, loading]);
+  useEffect(() => { if (!loading) AsyncStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions)); }, [transactions, loading]);
 
   // Recalcula el saldo en USD
   useEffect(() => {
@@ -103,7 +81,92 @@ export default function FinanciaMeScreen() {
     else setBalanceUSD(0);
   }, [balance, bcvRate]);
 
+  // Revisa gastos fijos pendientes cuando la pantalla se enfoca
+  useFocusEffect(
+    useCallback(() => {
+      if (!loading) {
+        checkDueFixedExpenses();
+      }
+    }, [loading, bcvRate, balance]) // Dependencias clave para la lógica de pago
+  );
+
   // --- Lógica de Negocio ---
+
+  const checkDueFixedExpenses = async () => {
+    const storedExpenses = await AsyncStorage.getItem(FIXED_EXPENSES_KEY);
+    if (!storedExpenses) return;
+
+    const fixedExpenses: FixedExpense[] = JSON.parse(storedExpenses);
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const dueExpenses = fixedExpenses.filter(exp => {
+      if (!exp.lastPaid) return true; // Siempre es debido si nunca se ha pagado
+      const lastPaidDate = new Date(exp.lastPaid);
+      return lastPaidDate.getFullYear() < currentYear || lastPaidDate.getMonth() < currentMonth;
+    });
+
+    if (dueExpenses.length > 0) {
+      promptToPayDueExpenses(dueExpenses, fixedExpenses);
+    }
+  };
+
+  const promptToPayDueExpenses = (dueExpenses: FixedExpense[], allExpenses: FixedExpense[]) => {
+    const expenseNames = dueExpenses.map(e => e.name).join(', ');
+    Alert.alert(
+      'Gastos Fijos Pendientes',
+      `Tienes pagos pendientes para: ${expenseNames}. ¿Deseas pagarlos ahora?`,
+      [
+        { text: 'Más Tarde', style: 'cancel' },
+        { 
+          text: 'Pagar Ahora', 
+          onPress: () => handlePayDueExpenses(dueExpenses, allExpenses)
+        },
+      ]
+    );
+  };
+
+  const handlePayDueExpenses = (dueExpenses: FixedExpense[], allExpenses: FixedExpense[]) => {
+    if (!bcvRate) {
+      Alert.alert("Error", "No se puede procesar el pago sin una tasa de cambio del BCV.");
+      return;
+    }
+
+    let totalCostBs = 0;
+    const newTransactions: Transaction[] = [];
+    const nowString = new Date().toISOString();
+
+    dueExpenses.forEach(exp => {
+      const cost = exp.currency === 'BS' ? exp.amount : exp.amount * bcvRate;
+      totalCostBs += cost;
+      newTransactions.push({
+        id: `${Date.now()}-${exp.id}`,
+        amount: cost,
+        description: `Pago de gasto fijo: ${exp.name}`,
+        type: 'expense',
+        date: nowString,
+      });
+    });
+
+    if (totalCostBs > balance) {
+      Alert.alert("Saldo Insuficiente", `Necesitas Bs. ${totalCostBs.toFixed(2)} para cubrir tus gastos fijos, pero solo tienes Bs. ${balance.toFixed(2)}.`);
+      return;
+    }
+
+    // Actualizar estado
+    setBalance(prev => prev - totalCostBs);
+    setTransactions(prev => [...newTransactions, ...prev]);
+
+    // Actualizar la fecha de pago en la lista de gastos fijos
+    const updatedExpenses = allExpenses.map(exp => {
+      const wasPaid = dueExpenses.some(due => due.id === exp.id);
+      return wasPaid ? { ...exp, lastPaid: nowString } : exp;
+    });
+    AsyncStorage.setItem(FIXED_EXPENSES_KEY, JSON.stringify(updatedExpenses));
+
+    Alert.alert("Éxito", "Los gastos fijos pendientes han sido pagados y registrados.");
+  };
 
   const handleOpenModal = (type: 'income' | 'expense') => {
     setTransactionType(type);
@@ -118,20 +181,18 @@ export default function FinanciaMeScreen() {
       type: transactionType,
       date: new Date().toISOString(),
     };
-
     const newBalance = transactionType === 'income' ? balance + amount : balance - amount;
-    
     if (newBalance < 0) {
       Alert.alert("Saldo Insuficiente", "No puedes registrar un gasto que te deje en negativo.");
       return;
     }
-
     setBalance(newBalance);
     setTransactions(prev => [newTransaction, ...prev]);
     setModalVisible(false);
   };
 
   // --- Renderizado ---
+  // ... (El resto del código de renderizado se mantiene igual)
 
   const renderContent = () => {
     if (loading) return <ActivityIndicator size="large" color="#0000ff" />;
