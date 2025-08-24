@@ -52,7 +52,7 @@ graph TD
     J -- Costo OK --> K{Verificar Saldo};
     K -- Saldo OK --> L[Actualizar Billetera];
     L --> M[Registrar Transacción];
-    M --> N[Marcar Pagado];
+    L --> N[Marcar Pagado];
     K -- Saldo Insuf. --> O[Añadir Fallido];
     I -- No Encontrada --> O;
     H -- Todos Proc. --> P[Actualizar y Persistir];
@@ -71,31 +71,31 @@ graph TD
     U -- Saldo Insuf. --> Y[Mostrar Alerta];
     Y --> S;
 
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#bbf,stroke:#333,stroke-width:2px
-    style C fill:#bbf,stroke:#333,stroke-width:2px
-    style D fill:#bbf,stroke:#333,stroke-width:2px
-    style E fill:#bbf,stroke:#333,stroke-width:2px
-    style F fill:#bbf,stroke:#333,stroke-width:2px
-    style G fill:#bbf,stroke:#333,stroke-width:2px
-    style H fill:#bbf,stroke:#333,stroke-width:2px
-    style I fill:#bbf,stroke:#333,stroke-width:2px
-    style J fill:#bbf,stroke:#333,stroke-width:2px
-    style K fill:#bbf,stroke:#333,stroke-width:2px
-    style L fill:#bbf,stroke:#333,stroke-width:2px
-    style M fill:#bbf,stroke:#333,stroke-width:2px
-    style N fill:#bbf,stroke:#333,stroke-width:2px
-    style O fill:#bbf,stroke:#333,stroke-width:2px
-    style P fill:#bbf,stroke:#333,stroke-width:2px
-    style Q fill:#bbf,stroke:#333,stroke-width:2px
-    style R fill:#f9f,stroke:#333,stroke-width:2px
-    style S fill:#bbf,stroke:#333,stroke-width:2px
-    style T fill:#bbf,stroke:#333,stroke-width:2px
-    style U fill:#bbf,stroke:#333,stroke-width:2px
-    style V fill:#bbf,stroke:#333,stroke-width:2px
-    style W fill:#bbf,stroke:#333,stroke-width:2px
-    style X fill:#bbf,stroke:#333,stroke-width:2px
-    style Y fill:#bbf,stroke:#333,stroke-width:2px
+    style A fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style B fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style C fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style D fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style E fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style F fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style G fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style H fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style I fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style J fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style K fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style L fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style M fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style N fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style O fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style P fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style Q fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style R fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style S fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style T fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style U fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style V fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style W fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style X fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+    style Y fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
 ```
 
 ## Stack de Tecnología
