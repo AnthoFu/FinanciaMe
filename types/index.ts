@@ -13,6 +13,7 @@ export interface Transaction {
   type: 'income' | 'expense';
   date: string;
   walletId: string;
+  category?: string; // New optional category field
 }
 
 export interface FixedExpense {

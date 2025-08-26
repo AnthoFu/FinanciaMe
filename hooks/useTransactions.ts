@@ -45,5 +45,21 @@ export function useTransactions() {
     setTransactions(prev => [newTransaction, ...prev]);
   };
 
-  return { transactions, setTransactions, addTransaction, isLoading };
+  const refreshTransactions = async () => {
+    setIsLoading(true);
+    try {
+      const storedTransactions = await AsyncStorage.getItem(TRANSACTIONS_KEY);
+      if (storedTransactions) {
+        setTransactions(JSON.parse(storedTransactions));
+      } else {
+        setTransactions([]); // Ensure it's an empty array if nothing is stored
+      }
+    } catch (e) {
+      console.error("Failed to refresh transactions.", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { transactions, setTransactions, addTransaction, isLoading, refreshTransactions };
 }

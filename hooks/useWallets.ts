@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Wallet } from '../types';
 import { WALLETS_KEY } from '../constants/StorageKeys';
@@ -7,21 +7,22 @@ export function useWallets() {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadWallets = async () => {
-      setIsLoading(true);
-      try {
-        const storedWallets = await AsyncStorage.getItem(WALLETS_KEY);
-        if (storedWallets) {
-          setWallets(JSON.parse(storedWallets));
-        }
-      } catch (e) {
-        console.error("Failed to load wallets.", e);
-      } finally {
-        setIsLoading(false);
+  const loadWallets = async () => {
+    setIsLoading(true);
+    try {
+      const storedWallets = await AsyncStorage.getItem(WALLETS_KEY);
+      if (storedWallets) {
+        setWallets(JSON.parse(storedWallets));
       }
-    };
-    loadWallets();
+    } catch (e) {
+      console.error("Failed to load wallets.", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadWallets(); // Initial load
   }, []);
 
   useEffect(() => {
@@ -55,5 +56,9 @@ export function useWallets() {
     setWallets(prev => prev.filter(w => w.id !== walletId));
   };
 
-  return { wallets, setWallets, addWallet, updateWalletName, deleteWallet, isLoading };
+  const refreshWallets = useCallback(() => {
+    loadWallets();
+  }, []);
+
+  return { wallets, setWallets, addWallet, updateWalletName, deleteWallet, isLoading, refreshWallets };
 }

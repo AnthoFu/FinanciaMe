@@ -1,48 +1,61 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router'; // Import useRouter
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import TransactionModal from '../../components/TransactionModal';
-import { BCV_RATE_KEY, FIXED_EXPENSES_KEY, TRANSACTIONS_KEY, WALLETS_KEY } from '../../constants/StorageKeys';
+import { IconSymbol } from '../../components/ui/IconSymbol'; // Import IconSymbol
+import { BCV_RATE_KEY } from '../../constants/StorageKeys';
 import { FixedExpense, Transaction, Wallet } from '../../types';
+import { useWallets } from '../../hooks/useWallets';
+import { useTransactions } from '../../hooks/useTransactions';
+import { useFixedExpenses } from '../../hooks/useFixedExpenses';
 
 // --- Constantes ---
 const API_URL = 'https://ve.dolarapi.com/v1/dolares/oficial';
 
 export default function FinanciaMeScreen() {
-  // --- Estados ---
+  // --- Hooks de Datos ---
+  const { wallets, setWallets, isLoading: walletsLoading } = useWallets();
+  const { transactions, setTransactions, addTransaction, isLoading: transactionsLoading, refreshTransactions } = useTransactions();
+  const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
+
+  // --- Estados Locales ---
   const [bcvRate, setBcvRate] = useState<number | null>(null);
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [totalBalanceBs, setTotalBalanceBs] = useState(0);
   const [totalBalanceUsd, setTotalBalanceUsd] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Overall loading state
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
-  const [activeWalletId, setActiveWalletId] = useState<string | null>(null);
+  // activeWalletId is no longer needed as wallet is selected in modal
+  const [toast, setToast] = useState({ isVisible: false, message: '' }); // For Toast component
+
+  const showToast = (message: string) => {
+    setToast({ isVisible: true, message });
+  };
+
+  const router = useRouter(); // Get router instance
 
   // --- Efectos ---
   useFocusEffect(
     useCallback(() => {
-      loadData();
+      loadInitialData();
     }, [])
   );
 
   useEffect(() => {
-    if (!loading) {
+    // Update overall loading state based on individual hook loading states
+    setLoading(walletsLoading || transactionsLoading || fixedExpensesLoading || bcvRate === null);
+  }, [walletsLoading, transactionsLoading, fixedExpensesLoading, bcvRate]);
+
+  useEffect(() => {
+    if (!loading && bcvRate) {
       recalculateTotals();
       checkDueFixedExpenses();
     }
-  }, [loading]); // Dependencia de loading para correr una vez post-carga
+  }, [loading, bcvRate, wallets, transactions, expenses]); // Recalculate when data or rate changes
 
-  useEffect(() => {
-    if (!loading) {
-      saveData();
-    }
-  }, [wallets, transactions]);
-
-  // --- Lógica de Carga y Guardado ---
+  // --- Lógica de Carga ---
   const fetchBcvRate = async () => {
     try {
       const response = await fetch(API_URL);
@@ -58,44 +71,21 @@ export default function FinanciaMeScreen() {
     }
   };
 
-  const loadData = async () => {
+  const loadInitialData = async () => {
     setLoading(true);
     try {
-      // Iniciar fetch de BCV y carga de datos locales en paralelo
-      await Promise.all([
-        fetchBcvRate(),
-        (async () => {
-          const [storedWallets, storedTransactions] = await Promise.all([
-            AsyncStorage.getItem(WALLETS_KEY),
-            AsyncStorage.getItem(TRANSACTIONS_KEY),
-          ]);
-          setWallets(storedWallets ? JSON.parse(storedWallets) : []);
-          setTransactions(storedTransactions ? JSON.parse(storedTransactions) : []);
-        })(),
-      ]);
+      await fetchBcvRate(); // Fetch current rate
 
-      // Cargar tasa de BCV desde AsyncStorage como fallback si el fetch falla
+      // Load rate from AsyncStorage as fallback if fetch fails or for offline use
       const storedRate = await AsyncStorage.getItem(BCV_RATE_KEY);
       if (storedRate) {
         setBcvRate(JSON.parse(storedRate));
       }
-
     } catch (e) {
-      console.error("DEBUG: Failed to load data", e);
-      setError('Failed to load data');
+      console.error("DEBUG: Failed to load initial data", e);
+      setError('Failed to load initial data');
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveData = async () => {
-    try {
-      await Promise.all([
-        AsyncStorage.setItem(WALLETS_KEY, JSON.stringify(wallets)),
-        AsyncStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions)),
-      ]);
-    } catch (e) {
-      console.error("DEBUG: Failed to save data", e);
+      setLoading(false); // Explicitly set loading to false here
     }
   };
 
@@ -121,15 +111,13 @@ export default function FinanciaMeScreen() {
   };
 
   const checkDueFixedExpenses = async () => {
-    const storedExpenses = await AsyncStorage.getItem(FIXED_EXPENSES_KEY);
-    if (!storedExpenses) return;
+    if (fixedExpensesLoading || walletsLoading) return; // Ensure data is loaded
 
-    const fixedExpenses: FixedExpense[] = JSON.parse(storedExpenses);
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
-    const dueExpenses = fixedExpenses.filter(exp => {
+    const dueExpenses = expenses.filter(exp => {
       const isDueByMonth = !exp.lastPaid || new Date(exp.lastPaid).getFullYear() < currentYear || new Date(exp.lastPaid).getMonth() < currentMonth;
       const isDueByDay = now.getDate() >= exp.dayOfMonth;
       
@@ -158,6 +146,7 @@ export default function FinanciaMeScreen() {
 
     let tempWallets = [...wallets];
     let tempTransactions = [...transactions];
+    let tempFixedExpenses = [...expenses]; // Use temp for fixed expenses too
     const nowString = new Date().toISOString();
     const paidExpensesIds: string[] = [];
     const failedExpenses: string[] = [];
@@ -186,7 +175,7 @@ export default function FinanciaMeScreen() {
         tempTransactions.unshift({
           id: `${Date.now()}-${expense.id}`,
           amount: expenseCostInWalletCurrency, // Use the converted amount for the transaction record
-                    description: `Gasto fijo: ${expense.name}`,
+          description: `Gasto fijo: ${expense.name}`,
           type: 'expense',
           date: nowString,
           walletId: wallet.id,
@@ -197,15 +186,13 @@ export default function FinanciaMeScreen() {
       }
     }
 
-    // Actualizar estado y persistir
+    // Update states via their setters from hooks
     setWallets(tempWallets);
     setTransactions(tempTransactions);
-
-    const allFixedExpenses: FixedExpense[] = JSON.parse(await AsyncStorage.getItem(FIXED_EXPENSES_KEY) || '[]');
-    const updatedFixedExpenses = allFixedExpenses.map(exp => 
+    setExpenses(tempFixedExpenses.map(exp =>
       paidExpensesIds.includes(exp.id) ? { ...exp, lastPaid: nowString } : exp
-    );
-    await AsyncStorage.setItem(FIXED_EXPENSES_KEY, JSON.stringify(updatedFixedExpenses));
+    ));
+    refreshTransactions(); // Refresh transactions after paying fixed expenses
 
     let summaryMessage = paidExpensesIds.length > 0 ? `Pagos realizados con éxito para: ${dueExpenses.filter(e => paidExpensesIds.includes(e.id)).map(e => e.name).join(', ')}.` : '';
     if (failedExpenses.length > 0) {
@@ -215,18 +202,15 @@ export default function FinanciaMeScreen() {
   };
 
   // --- Lógica de Transacciones Manuales ---
-  const handleOpenModal = (walletId: string, type: 'income' | 'expense') => {
-    setActiveWalletId(walletId);
+  const handleOpenModal = (type: 'income' | 'expense') => { // No longer needs walletId
     setTransactionType(type);
     setModalVisible(true);
   };
 
-  const handleSubmitTransaction = (amount: number, description: string) => {
-    if (!activeWalletId) return;
-
+  const handleSubmitTransaction = (amount: number, description: string, walletId: string, category: string) => { // Receive walletId and category
     let wasTransactionSuccessful = false;
     const newWallets = wallets.map(wallet => {
-      if (wallet.id === activeWalletId) {
+      if (wallet.id === walletId) { // Use walletId from modal
         const newBalance = transactionType === 'income' ? wallet.balance + amount : wallet.balance - amount;
         if (newBalance < 0) {
           Alert.alert("Saldo Insuficiente", "La billetera no tiene fondos suficientes.");
@@ -239,16 +223,15 @@ export default function FinanciaMeScreen() {
     });
 
     if (wasTransactionSuccessful) {
-      const newTransaction: Transaction = {
-        id: Date.now().toString(),
+      addTransaction({ // Use addTransaction from hook
         amount, description, date: new Date().toISOString(),
         type: transactionType,
-        walletId: activeWalletId,
-      };
+        walletId: walletId, // Use walletId from modal
+        category: category, // Add category
+      });
       setWallets(newWallets);
-      setTransactions(prev => [newTransaction, ...prev]);
       setModalVisible(false);
-      setActiveWalletId(null);
+      refreshTransactions(); // Refresh transactions after adding a new one
     }
   };
 
@@ -281,10 +264,10 @@ export default function FinanciaMeScreen() {
                 <Text style={styles.itemBalance}>{item.currency === 'USD' ? '$' : 'Bs.'}{item.balance.toFixed(2)}</Text>
               </View>
               <View style={styles.walletActions}>
-                <TouchableOpacity style={[styles.walletButton, styles.incomeButton]} onPress={() => handleOpenModal(item.id, 'income')}> 
+                <TouchableOpacity style={[styles.walletButton, styles.incomeButton]} onPress={() => handleOpenModal('income')}> 
                   <Text style={styles.walletButtonText}>+</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.walletButton, styles.expenseButton]} onPress={() => handleOpenModal(item.id, 'expense')}> 
+                <TouchableOpacity style={[styles.walletButton, styles.expenseButton]} onPress={() => handleOpenModal('expense')}> 
                   <Text style={styles.walletButtonText}>-</Text>
                 </TouchableOpacity>
               </View>
@@ -321,13 +304,24 @@ export default function FinanciaMeScreen() {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
-      <Text style={styles.title}>FinanciaMe</Text>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>FinanciaMe</Text>
+        <TouchableOpacity
+          style={styles.settingsIcon}
+          onPress={() => router.push('/categories')}
+        >
+          <Text style={{ color: 'gray', fontSize: 24 }}>⚙️</Text>
+        </TouchableOpacity>
+      </View>
       {renderContent()}
-      <TransactionModal 
+      
+      <TransactionModal
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
         onSubmit={handleSubmitTransaction}
         type={transactionType}
+        wallets={wallets} // Pass the wallets list
+        showToast={showToast}
       />
     </KeyboardAvoidingView>
   );
@@ -336,7 +330,23 @@ export default function FinanciaMeScreen() {
 // --- Estilos ---
 const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 50, paddingHorizontal: 20, backgroundColor: '#f0f4f7' },
-  title: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#1D3D47' },
+  titleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 20, // Add horizontal padding to align with content
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#1D3D47',
+    // Remove textAlign: 'center' as it will be handled by flexbox
+    marginBottom: 0, // Remove marginBottom as it's handled by titleContainer
+  },
+  settingsIcon: {
+    padding: 5, // Add some padding around the icon for better touch area
+  },
   headerContainer: { alignItems: 'center', marginBottom: 15, padding: 10, borderRadius: 10, backgroundColor: 'white', width: '100%' },
   bcvTitle: { fontSize: 18, color: '#666' },
   balanceContainer: { alignItems: 'center', marginBottom: 20, padding: 15, borderRadius: 10, backgroundColor: '#ffffff', width: '100%', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
@@ -359,5 +369,6 @@ const styles = StyleSheet.create({
   incomeText: { color: '#28a745', fontWeight: 'bold' },
   expenseText: { color: '#dc3545', fontWeight: 'bold' },
   emptyText: { textAlign: 'center', color: '#666', marginTop: 20 },
+  
   errorText: { color: 'red', fontSize: 16, textAlign: 'center' },
-});
+  });
