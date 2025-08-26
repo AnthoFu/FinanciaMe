@@ -2,12 +2,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, Button, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import FixedExpenseModal, { FixedExpense } from '../../components/FixedExpenseModal';
+import FixedExpenseModal from '../../components/FixedExpenseModal';
 import Toast from '../../components/Toast';
-import { Wallet } from '../../components/WalletModal';
-
-const FIXED_EXPENSES_KEY = 'fixedExpenses';
-const WALLETS_KEY = 'userWallets';
+import { FIXED_EXPENSES_KEY, WALLETS_KEY } from '../../constants/StorageKeys';
+import { FixedExpense, Wallet } from '../../types';
 
 export default function FixedExpensesScreen() {
   const [expenses, setExpenses] = useState<FixedExpense[]>([]);

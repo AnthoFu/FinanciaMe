@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TextInput, Button, StyleSheet, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native';
-
-export interface Wallet {
-  id: string;
-  name: string;
-  balance: number;
-  currency: 'USD' | 'BS';
-}
+import { Wallet } from '../types';
 
 interface WalletModalProps {
   isVisible: boolean;

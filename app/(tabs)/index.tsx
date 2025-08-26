@@ -2,26 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { FixedExpense } from '../../components/FixedExpenseModal';
 import TransactionModal from '../../components/TransactionModal';
-import { Wallet } from '../../components/WalletModal';
-
-// --- Tipos ---
-interface Transaction {
-  id: string;
-  amount: number;
-  description: string;
-  type: 'income' | 'expense';
-  date: string;
-  walletId: string;
-}
+import { BCV_RATE_KEY, FIXED_EXPENSES_KEY, TRANSACTIONS_KEY, WALLETS_KEY } from '../../constants/StorageKeys';
+import { FixedExpense, Transaction, Wallet } from '../../types';
 
 // --- Constantes ---
 const API_URL = 'https://ve.dolarapi.com/v1/dolares/oficial';
-const BCV_RATE_KEY = 'bcvRate';
-const TRANSACTIONS_KEY = 'userTransactions';
-const FIXED_EXPENSES_KEY = 'fixedExpenses';
-const WALLETS_KEY = 'userWallets';
 
 export default function FinanciaMeScreen() {
   // --- Estados ---

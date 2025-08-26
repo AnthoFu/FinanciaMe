@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Button, Alert, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import WalletModal, { Wallet } from '../../components/WalletModal';
+import WalletModal from '../../components/WalletModal';
 import Toast from '../../components/Toast';
-
-const WALLETS_KEY = 'userWallets';
+import { WALLETS_KEY } from '../../constants/StorageKeys';
+import { Wallet } from '../../types';
 
 export default function WalletsScreen() {
   const [wallets, setWallets] = useState<Wallet[]>([]);

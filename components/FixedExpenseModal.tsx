@@ -1,18 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TextInput, Button, StyleSheet, TouchableWithoutFeedback, Keyboard, Switch, TouchableOpacity, ScrollView } from 'react-native';
-import { Wallet } from './WalletModal';
-
-export interface FixedExpense {
-  id: string;
-  name: string;
-  amount: number;
-  currency: 'USD' | 'BS';
-  dayOfMonth: number;
-  walletId: string | null;
-  lastPaid?: string;
-  startDate?: string;
-  endDate?: string;
-}
+import { FixedExpense, Wallet } from '../types';
 
 interface FixedExpenseModalProps {
   isVisible: boolean;
