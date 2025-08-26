@@ -26,7 +26,7 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [dayOfMonth, setDayOfMonth] = useState('');
-  const [isUSD, setIsUSD] = useState(true);
+  const [currency, setCurrency] = useState<'USD' | 'BS'>('USD');
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -37,7 +37,7 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
         setName(initialData.name);
         setAmount(initialData.amount.toString());
         setDayOfMonth(initialData.dayOfMonth.toString());
-        setIsUSD(initialData.currency === 'USD');
+        setCurrency(initialData.currency);
         setSelectedWalletId(initialData.walletId);
         setStartDate(initialData.startDate || '');
         setEndDate(initialData.endDate || '');
@@ -45,7 +45,7 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
         setName('');
         setAmount('');
         setDayOfMonth('');
-        setIsUSD(true);
+        setCurrency('USD');
         setSelectedWalletId(wallets.length > 0 ? wallets[0].id : null);
         setStartDate('');
         setEndDate('');
@@ -66,7 +66,7 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
       name,
       amount: numericAmount,
       dayOfMonth: numericDay,
-      currency: isUSD ? 'USD' : 'BS',
+      currency: currency,
       walletId: selectedWalletId,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
@@ -85,10 +85,19 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
               <TextInput style={styles.input} placeholder="Monto" keyboardType="numeric" value={amount} onChangeText={setAmount} />
               <TextInput style={styles.input} placeholder="Día del Mes (1-31)" keyboardType="numeric" value={dayOfMonth} onChangeText={setDayOfMonth} />
               
-              <View style={styles.switchContainer}>
-                <Text>Bs.</Text>
-                <Switch value={isUSD} onValueChange={setIsUSD} trackColor={{ false: '#767577', true: '#81b0ff' }} thumbColor={isUSD ? '#f5dd4b' : '#f4f3f4'} />
-                <Text>USD</Text>
+              <View style={styles.currencySelector}>
+                <TouchableOpacity 
+                  style={[styles.currencyOption, currency === 'BS' && styles.currencyOptionSelected]} 
+                  onPress={() => setCurrency('BS')}
+                >
+                  <Text style={[styles.currencyText, currency === 'BS' && styles.currencyTextSelected]}>Bs.</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.currencyOption, currency === 'USD' && styles.currencyOptionSelected]} 
+                  onPress={() => setCurrency('USD')}
+                >
+                  <Text style={[styles.currencyText, currency === 'USD' && styles.currencyTextSelected]}>USD</Text>
+                </TouchableOpacity>
               </View>
 
               <Text style={styles.pickerLabel}>Billetera de Pago</Text>
@@ -122,7 +131,11 @@ const styles = StyleSheet.create({
   modalContent: { width: '85%', maxHeight: '80%', padding: 20, backgroundColor: 'white', borderRadius: 10, alignItems: 'center' },
   modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   input: { width: '100%', backgroundColor: '#f0f4f7', padding: 10, borderRadius: 10, marginBottom: 15, borderWidth: 1, borderColor: '#ddd' },
-  switchContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 20, gap: 10 },
+  currencySelector: { flexDirection: 'row', width: '100%', borderWidth: 1, borderColor: '#007bff', borderRadius: 10, overflow: 'hidden', marginBottom: 15 },
+  currencyOption: { flex: 1, paddingVertical: 10, alignItems: 'center', backgroundColor: '#f0f4f7' },
+  currencyOptionSelected: { backgroundColor: '#007bff' },
+  currencyText: { fontSize: 16, color: '#007bff' },
+  currencyTextSelected: { color: 'white', fontWeight: 'bold' },
   pickerLabel: { fontSize: 16, fontWeight: 'bold', marginBottom: 10, alignSelf: 'flex-start', marginTop: 10 },
   pickerItem: { width: '100%', padding: 15, backgroundColor: '#f0f4f7', borderRadius: 10, marginBottom: 5, borderWidth: 1, borderColor: '#ddd' },
   pickerItemSelected: { borderColor: '#007bff', borderWidth: 2 },

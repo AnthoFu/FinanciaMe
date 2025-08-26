@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, Button, Alert, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Alert, Button, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FixedExpenseModal, { FixedExpense } from '../../components/FixedExpenseModal';
+import Toast from '../../components/Toast';
 import { Wallet } from '../../components/WalletModal';
 
 const FIXED_EXPENSES_KEY = 'fixedExpenses';
@@ -13,6 +14,7 @@ export default function FixedExpensesScreen() {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingExpense, setEditingExpense] = useState<FixedExpense | null>(null);
+  const [toast, setToast] = useState({ isVisible: false, message: '' });
 
   // Load data when screen is focused
   useFocusEffect(
@@ -44,6 +46,10 @@ export default function FixedExpensesScreen() {
     saveExpenses();
   }, [expenses]);
 
+  const showToast = (message: string) => {
+    setToast({ isVisible: true, message });
+  };
+
   const handleAddNew = () => {
     if (wallets.length === 0) {
       Alert.alert("No hay billeteras", "Debes crear al menos una billetera antes de añadir un gasto fijo.");
@@ -67,14 +73,18 @@ export default function FixedExpensesScreen() {
         { 
           text: 'Eliminar', 
           style: 'destructive', 
-          onPress: () => setExpenses(prev => prev.filter(exp => exp.id !== id))
+          onPress: () => {
+            setExpenses(prev => prev.filter(exp => exp.id !== id));
+            showToast("Gasto fijo eliminado con éxito");
+          }
         },
       ]
     );
   };
 
   const handleSubmit = (expenseData: Omit<FixedExpense, 'id' | 'lastPaid'>) => {
-    if (editingExpense) {
+    const isEditing = !!editingExpense;
+    if (isEditing) {
       // Update existing expense
       setExpenses(prev => 
         prev.map(exp => exp.id === editingExpense.id ? { ...exp, ...expenseData } : exp)
@@ -88,6 +98,7 @@ export default function FixedExpensesScreen() {
       };
       setExpenses(prev => [newExpense, ...prev]);
     }
+    showToast(isEditing ? "Gasto fijo actualizado" : "Gasto fijo creado con éxito");
   };
 
   return (
@@ -118,13 +129,20 @@ export default function FixedExpensesScreen() {
         }}
         ListEmptyComponent={<Text style={styles.emptyText}>No tienes gastos fijos definidos.</Text>}
       />
-      <Button title="Añadir Gasto Fijo" onPress={handleAddNew} />
+      <View style={styles.buttonWrapper}>
+        <Button title="Añadir Gasto Fijo" onPress={handleAddNew} />
+      </View>
       <FixedExpenseModal 
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
         onSubmit={handleSubmit}
         initialData={editingExpense}
         wallets={wallets}
+      />
+      <Toast 
+        message={toast.message}
+        isVisible={toast.isVisible}
+        onHide={() => setToast({ isVisible: false, message: '' })}
       />
     </View>
   );
@@ -145,4 +163,5 @@ const styles = StyleSheet.create({
   actionText: { fontSize: 14, color: '#007bff' },
   deleteText: { color: '#dc3545' },
   emptyText: { textAlign: 'center', marginTop: 50, color: '#666' },
+  buttonWrapper: { paddingVertical: 10 }, // Added for spacing
 });

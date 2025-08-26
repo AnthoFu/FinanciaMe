@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Button, Alert, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import WalletModal, { Wallet } from '../../components/WalletModal';
+import Toast from '../../components/Toast';
 
 const WALLETS_KEY = 'userWallets';
 
@@ -9,6 +10,7 @@ export default function WalletsScreen() {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
+  const [toast, setToast] = useState({ isVisible: false, message: '' });
 
   // Load wallets from storage
   useEffect(() => {
@@ -37,6 +39,10 @@ export default function WalletsScreen() {
     saveWallets();
   }, [wallets]);
 
+  const showToast = (message: string) => {
+    setToast({ isVisible: true, message });
+  };
+
   const handleAddNew = () => {
     setEditingWallet(null);
     setModalVisible(true);
@@ -56,18 +62,21 @@ export default function WalletsScreen() {
         { 
           text: 'Eliminar', 
           style: 'destructive', 
-          onPress: () => setWallets(prev => prev.filter(w => w.id !== id))
-          // TODO: Future improvement -> check if wallet has transactions and prevent deletion or re-assign them.
+          onPress: () => {
+            setWallets(prev => prev.filter(w => w.id !== id));
+            showToast("Billetera eliminada con éxito");
+          }
         },
       ]
     );
   };
 
   const handleSubmit = (walletData: Omit<Wallet, 'id'>) => {
-    if (editingWallet) {
+    const isEditing = !!editingWallet;
+    if (isEditing) {
       // Update existing wallet
       setWallets(prev => 
-        prev.map(w => w.id === editingWallet.id ? { ...w, name: walletData.name } : w)
+        prev.map(w => w.id === editingWallet.id ? { ...w, name: walletData.name, currency: walletData.currency } : w)
       );
     } else {
       // Add new wallet
@@ -77,6 +86,7 @@ export default function WalletsScreen() {
       };
       setWallets(prev => [...prev, newWallet]);
     }
+    showToast(isEditing ? "Billetera actualizada con éxito" : "Billetera creada con éxito");
   };
 
   return (
@@ -100,12 +110,19 @@ export default function WalletsScreen() {
         )}
         ListEmptyComponent={<Text style={styles.emptyText}>Aún no has añadido ninguna billetera.</Text>}
       />
-      <Button title="Añadir Billetera" onPress={handleAddNew} />
+      <View style={styles.buttonWrapper}>
+        <Button title="Añadir Billetera" onPress={handleAddNew} />
+      </View>
       <WalletModal 
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
         onSubmit={handleSubmit}
         initialData={editingWallet}
+      />
+      <Toast 
+        message={toast.message}
+        isVisible={toast.isVisible}
+        onHide={() => setToast({ isVisible: false, message: '' })}
       />
     </View>
   );
@@ -115,7 +132,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 50, paddingHorizontal: 20, backgroundColor: '#f0f4f7' },
   title: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#1D3D47' },
   list: { flex: 1, width: '100%' },
-  itemContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, backgroundColor: 'white', borderRadius: 10, marginBottom: 10 },
+  itemContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, backgroundColor: 'white', borderRadius: 10, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
   itemDetails: { flex: 1 },
   itemName: { fontSize: 18, fontWeight: 'bold' },
   itemBalance: { fontSize: 16, color: '#007bff', marginTop: 4 },
@@ -123,4 +140,5 @@ const styles = StyleSheet.create({
   actionText: { fontSize: 14, color: '#007bff' },
   deleteText: { color: '#dc3545' },
   emptyText: { textAlign: 'center', marginTop: 50, color: '#666' },
+  buttonWrapper: { paddingVertical: 10 },
 });
