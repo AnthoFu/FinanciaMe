@@ -25,8 +25,14 @@ La aplicación permite a los usuarios gestionar múltiples billeteras en diferen
 - **Visualización Consolidada y por Billetera:** El saldo total consolidado se muestra en Bolívares y su equivalente en Dólares. Además, se visualiza el saldo individual de cada billetera.
 - **Gestión de Transacciones:**
   - Interfaz simple con botones `+ Ingreso` y `- Gasto`.
-  - Una ventana modal permite registrar el monto, la descripción y la billetera asociada a cada movimiento.
+  - Una ventana modal permite registrar el monto, la descripción, la billetera asociada y la **categoría** a cada movimiento.
   - Las transacciones se registran con el símbolo de moneda correcto de la billetera y la fecha.
+- **Gestión de Categorías:**
+  - Permite a los usuarios añadir, editar y eliminar categorías personalizadas para clasificar sus transacciones.
+  - Las categorías por defecto se cargan inicialmente y se pueden modificar.
+- **Métricas de Gastos:**
+  - Visualiza el gasto total y el gasto desglosado por categoría en diferentes rangos de tiempo (últimos 7 días, 30 días, o todo el tiempo).
+  - Ayuda a los usuarios a entender sus patrones de gasto.
 - **Gestión de Gastos Fijos:**
   - Permite registrar y administrar gastos recurrentes (ej. alquiler, servicios).
   - Los gastos fijos pueden vincularse a una billetera específica.
