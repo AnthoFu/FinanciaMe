@@ -57,17 +57,43 @@ export default function FinanciaMeScreen() {
   }, [wallets, transactions]);
 
   // --- Lógica de Carga y Guardado ---
+  const fetchBcvRate = async () => {
+    try {
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      if (data && data.promedio) {
+        const rate = data.promedio;
+        setBcvRate(rate);
+        await AsyncStorage.setItem(BCV_RATE_KEY, JSON.stringify(rate));
+      }
+    } catch (e) {
+      console.error("DEBUG: Failed to fetch BCV rate", e);
+      // No se establece un error fatal para permitir el uso offline
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
     try {
-      const [storedRate, storedWallets, storedTransactions] = await Promise.all([
-        AsyncStorage.getItem(BCV_RATE_KEY),
-        AsyncStorage.getItem(WALLETS_KEY),
-        AsyncStorage.getItem(TRANSACTIONS_KEY),
+      // Iniciar fetch de BCV y carga de datos locales en paralelo
+      await Promise.all([
+        fetchBcvRate(),
+        (async () => {
+          const [storedWallets, storedTransactions] = await Promise.all([
+            AsyncStorage.getItem(WALLETS_KEY),
+            AsyncStorage.getItem(TRANSACTIONS_KEY),
+          ]);
+          setWallets(storedWallets ? JSON.parse(storedWallets) : []);
+          setTransactions(storedTransactions ? JSON.parse(storedTransactions) : []);
+        })(),
       ]);
-      setBcvRate(storedRate ? JSON.parse(storedRate) : null);
-      setWallets(storedWallets ? JSON.parse(storedWallets) : []);
-      setTransactions(storedTransactions ? JSON.parse(storedTransactions) : []);
+
+      // Cargar tasa de BCV desde AsyncStorage como fallback si el fetch falla
+      const storedRate = await AsyncStorage.getItem(BCV_RATE_KEY);
+      if (storedRate) {
+        setBcvRate(JSON.parse(storedRate));
+      }
+
     } catch (e) {
       console.error("DEBUG: Failed to load data", e);
       setError('Failed to load data');
