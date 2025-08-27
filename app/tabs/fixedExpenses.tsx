@@ -1,48 +1,17 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Alert, Button, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FixedExpenseModal from '../../components/FixedExpenseModal';
 import Toast from '../../components/Toast';
-import { FIXED_EXPENSES_KEY, WALLETS_KEY } from '../../constants/StorageKeys';
-import { FixedExpense, Wallet } from '../../types';
+import { FixedExpense } from '../../types';
+import { useFixedExpenses } from '../../context/FixedExpensesContext';
+import { useWallets } from '../../context/WalletsContext';
 
 export default function FixedExpensesScreen() {
-  const [expenses, setExpenses] = useState<FixedExpense[]>([]);
-  const [wallets, setWallets] = useState<Wallet[]>([]);
+  const { expenses, addFixedExpense, updateFixedExpense, deleteFixedExpense } = useFixedExpenses();
+  const { wallets } = useWallets();
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingExpense, setEditingExpense] = useState<FixedExpense | null>(null);
   const [toast, setToast] = useState({ isVisible: false, message: '' });
-
-  // Load data when screen is focused
-  useFocusEffect(
-    useCallback(() => {
-      const loadData = async () => {
-        try {
-          const storedExpenses = await AsyncStorage.getItem(FIXED_EXPENSES_KEY);
-          if (storedExpenses) setExpenses(JSON.parse(storedExpenses));
-
-          const storedWallets = await AsyncStorage.getItem(WALLETS_KEY);
-          if (storedWallets) setWallets(JSON.parse(storedWallets));
-        } catch (e) {
-          console.error("Failed to load data.", e);
-        }
-      };
-      loadData();
-    }, [])
-  );
-
-  // Save expenses to storage
-  useEffect(() => {
-    const saveExpenses = async () => {
-      try {
-        await AsyncStorage.setItem(FIXED_EXPENSES_KEY, JSON.stringify(expenses));
-      } catch (e) {
-        console.error("Failed to save fixed expenses.", e);
-      }
-    };
-    saveExpenses();
-  }, [expenses]);
 
   const showToast = (message: string) => {
     setToast({ isVisible: true, message });
@@ -72,7 +41,7 @@ export default function FixedExpensesScreen() {
           text: 'Eliminar', 
           style: 'destructive', 
           onPress: () => {
-            setExpenses(prev => prev.filter(exp => exp.id !== id));
+            deleteFixedExpense(id);
             showToast("Gasto fijo eliminado con éxito");
           }
         },
@@ -84,17 +53,10 @@ export default function FixedExpensesScreen() {
     const isEditing = !!editingExpense;
     if (isEditing) {
       // Update existing expense
-      setExpenses(prev => 
-        prev.map(exp => exp.id === editingExpense.id ? { ...exp, ...expenseData } : exp)
-      );
+      updateFixedExpense({ ...editingExpense, ...expenseData });
     } else {
       // Add new expense
-      const newExpense: FixedExpense = {
-        id: Date.now().toString(),
-        lastPaid: undefined, // Ensure new expenses can be paid this month
-        ...expenseData,
-      };
-      setExpenses(prev => [newExpense, ...prev]);
+      addFixedExpense(expenseData);
     }
     showToast(isEditing ? "Gasto fijo actualizado" : "Gasto fijo creado con éxito");
   };

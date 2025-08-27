@@ -1,43 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Button, Alert, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import WalletModal from '../../components/WalletModal';
 import Toast from '../../components/Toast';
-import { WALLETS_KEY } from '../../constants/StorageKeys';
 import { Wallet } from '../../types';
+import { useWallets } from '../../context/WalletsContext';
 
 export default function WalletsScreen() {
-  const [wallets, setWallets] = useState<Wallet[]>([]);
+  const { wallets, addWallet, updateWallet, deleteWallet } = useWallets();
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
   const [toast, setToast] = useState({ isVisible: false, message: '' });
-
-  // Load wallets from storage
-  useEffect(() => {
-    const loadWallets = async () => {
-      try {
-        const storedWallets = await AsyncStorage.getItem(WALLETS_KEY);
-        if (storedWallets) {
-          setWallets(JSON.parse(storedWallets));
-        }
-      } catch (e) {
-        console.error("Failed to load wallets.", e);
-      }
-    };
-    loadWallets();
-  }, []);
-
-  // Save wallets to storage
-  useEffect(() => {
-    const saveWallets = async () => {
-      try {
-        await AsyncStorage.setItem(WALLETS_KEY, JSON.stringify(wallets));
-      } catch (e) {
-        console.error("Failed to save wallets.", e);
-      }
-    };
-    saveWallets();
-  }, [wallets]);
 
   const showToast = (message: string) => {
     setToast({ isVisible: true, message });
@@ -63,7 +35,7 @@ export default function WalletsScreen() {
           text: 'Eliminar', 
           style: 'destructive', 
           onPress: () => {
-            setWallets(prev => prev.filter(w => w.id !== id));
+            deleteWallet(id);
             showToast("Billetera eliminada con éxito");
           }
         },
@@ -75,16 +47,10 @@ export default function WalletsScreen() {
     const isEditing = !!editingWallet;
     if (isEditing) {
       // Update existing wallet
-      setWallets(prev => 
-        prev.map(w => w.id === editingWallet.id ? { ...w, name: walletData.name, currency: walletData.currency } : w)
-      );
+      updateWallet({ ...editingWallet, ...walletData });
     } else {
       // Add new wallet
-      const newWallet: Wallet = {
-        id: Date.now().toString(),
-        ...walletData,
-      };
-      setWallets(prev => [...prev, newWallet]);
+      addWallet(walletData);
     }
     showToast(isEditing ? "Billetera actualizada con éxito" : "Billetera creada con éxito");
   };

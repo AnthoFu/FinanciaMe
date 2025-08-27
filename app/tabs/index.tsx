@@ -6,9 +6,9 @@ import TransactionModal from '../../components/TransactionModal';
 import { IconSymbol } from '../../components/ui/IconSymbol'; // Import IconSymbol
 import { BCV_RATE_KEY } from '../../constants/StorageKeys';
 import { FixedExpense, Transaction, Wallet } from '../../types';
-import { useWallets } from '../../hooks/useWallets';
-import { useTransactions } from '../../hooks/useTransactions';
-import { useFixedExpenses } from '../../hooks/useFixedExpenses';
+import { useWallets } from '../../context/WalletsContext';
+import { useTransactions } from '../../context/TransactionsContext';
+import { useFixedExpenses } from '../../context/FixedExpensesContext';
 
 // --- Constantes ---
 const API_URL = 'https://ve.dolarapi.com/v1/dolares/oficial';
@@ -192,7 +192,6 @@ export default function FinanciaMeScreen() {
     setExpenses(tempFixedExpenses.map(exp =>
       paidExpensesIds.includes(exp.id) ? { ...exp, lastPaid: nowString } : exp
     ));
-    refreshTransactions(); // Refresh transactions after paying fixed expenses
 
     let summaryMessage = paidExpensesIds.length > 0 ? `Pagos realizados con éxito para: ${dueExpenses.filter(e => paidExpensesIds.includes(e.id)).map(e => e.name).join(', ')}.` : '';
     if (failedExpenses.length > 0) {
@@ -231,7 +230,6 @@ export default function FinanciaMeScreen() {
       });
       setWallets(newWallets);
       setModalVisible(false);
-      refreshTransactions(); // Refresh transactions after adding a new one
     }
   };
 

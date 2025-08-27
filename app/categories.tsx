@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { useCategories } from '../hooks/useCategories';
+import { useCategories } from '../context/CategoriesContext';
 import { Stack } from 'expo-router';
 
 export default function CategoriesScreen() {

@@ -1,8 +1,8 @@
 import { Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useCategories } from '../../hooks/useCategories';
-import { useTransactions } from '../../hooks/useTransactions';
+import { useCategories } from '../../context/CategoriesContext';
+import { useTransactions } from '../../context/TransactionsContext';
 import { Transaction } from '../../types';
 
 type TimeRange = '7_days' | '30_days' | 'all_time';

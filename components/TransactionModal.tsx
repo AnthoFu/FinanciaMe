@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TextInput, Button, StyleSheet, TouchableWithoutFeedback, Keyboard, TouchableOpacity, ScrollView } from 'react-native';
 import { Wallet } from '../types'; // Import Wallet type
-import { useCategories } from '../hooks/useCategories'; // Import useCategories hook
+import { useCategories } from '../context/CategoriesContext'; // Import useCategories hook
 
 interface TransactionModalProps {
   isVisible: boolean;
