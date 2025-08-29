@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Modal, ScrollView, Alert } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, SectionList, TextInput, TouchableOpacity, StyleSheet, Modal, ScrollView, Alert } from 'react-native';
 import { useCategories } from '../context/CategoriesContext';
 import { IconSymbol } from '../components/ui/IconSymbol';
 import { CATEGORY_ICONS } from '../constants/Icons';
@@ -9,13 +9,14 @@ export default function CategoriesScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState(CATEGORY_ICONS[0]);
+  const [selectedType, setSelectedType] = useState<'income' | 'expense'>('expense');
 
   const handleAddCategory = () => {
     if (newCategoryName.trim() === '') {
       Alert.alert('Error', 'El nombre de la categoría no puede estar vacío.');
       return;
     }
-    addCategory(newCategoryName, selectedIcon);
+    addCategory(newCategoryName, selectedIcon, selectedType);
     setNewCategoryName('');
     setModalVisible(false);
   };
@@ -31,10 +32,23 @@ export default function CategoriesScreen() {
     );
   };
 
+  const sections = useMemo(() => {
+    const incomeCategories = categories.filter(c => c.type === 'income');
+    const expenseCategories = categories.filter(c => c.type === 'expense');
+    const data = [];
+    if (incomeCategories.length > 0) {
+      data.push({ title: 'Ingresos', data: incomeCategories });
+    }
+    if (expenseCategories.length > 0) {
+      data.push({ title: 'Gastos', data: expenseCategories });
+    }
+    return data;
+  }, [categories]);
+
   return (
     <View style={styles.container}>
-      <FlatList
-        data={categories}
+      <SectionList
+        sections={sections}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.categoryItem}>
@@ -46,6 +60,9 @@ export default function CategoriesScreen() {
               <IconSymbol name="trash.fill" size={20} color="#dc3545" />
             </TouchableOpacity>
           </View>
+        )}
+        renderSectionHeader={({ section: { title } }) => (
+          <Text style={styles.sectionHeader}>{title}</Text>
         )}
         ListHeaderComponent={
           <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
@@ -59,6 +76,20 @@ export default function CategoriesScreen() {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Nueva Categoría</Text>
+            <View style={styles.typeSelector}>
+              <TouchableOpacity
+                style={[styles.typeButton, selectedType === 'expense' && styles.typeButtonSelected]}
+                onPress={() => setSelectedType('expense')}
+              >
+                <Text style={[styles.typeButtonText, selectedType === 'expense' && styles.typeButtonTextSelected]}>Gasto</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.typeButton, selectedType === 'income' && styles.typeButtonSelected]}
+                onPress={() => setSelectedType('income')}
+              >
+                <Text style={[styles.typeButtonText, selectedType === 'income' && styles.typeButtonTextSelected]}>Ingreso</Text>
+              </TouchableOpacity>
+            </View>
             <TextInput
               style={styles.input}
               placeholder="Nombre de la categoría"
@@ -97,6 +128,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f0f4f7',
     padding: 20,
+  },
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1D3D47',
+    marginBottom: 10,
+    marginTop: 20,
   },
   // Category List
   categoryItem: {
@@ -151,6 +189,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#1D3D47',
+  },
+  typeSelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginBottom: 20,
+    backgroundColor: '#f0f4f7',
+    borderRadius: 10,
+  },
+  typeButton: {
+    flex: 1,
+    padding: 10,
+    alignItems: 'center',
+  },
+  typeButtonSelected: {
+    backgroundColor: '#007AFF',
+    borderRadius: 10,
+  },
+  typeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1D3D47',
+  },
+  typeButtonTextSelected: {
+    color: 'white',
   },
   input: {
     width: '100%',

@@ -22,8 +22,8 @@ export default function TransactionModal({ isVisible, onClose, onSubmit, type, w
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
-  const incomeCategories = useMemo(() => categories.filter(c => c.name === "Salario" || c.name === "Otros Ingresos"), [categories]);
-  const expenseCategories = useMemo(() => categories.filter(c => c.name !== "Salario" && c.name !== "Otros Ingresos"), [categories]);
+  const incomeCategories = useMemo(() => categories.filter(c => c.type === 'income'), [categories]);
+  const expenseCategories = useMemo(() => categories.filter(c => c.type === 'expense'), [categories]);
 
   useEffect(() => {
     if (isVisible) {

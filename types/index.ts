@@ -10,6 +10,7 @@ export interface Category {
   id: string;
   name: string;
   icon: string; // Nombre del icono de SF Symbols o similar
+  type: 'income' | 'expense';
 }
 
 export interface Transaction {
