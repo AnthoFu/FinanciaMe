@@ -10,7 +10,5 @@ export const TRANSACTION_CATEGORIES = [
   "Viajes",
   "Regalos",
   "Inversiones",
-  "Salario", // For income
-  "Otros Ingresos", // For income
   "Otros Gastos",
 ];

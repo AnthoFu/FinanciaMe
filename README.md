@@ -8,21 +8,24 @@
 
 - **Autor: [AnthoFu🦊](https://github.com/AnthoFu)**
 
-FinanciaMe es una aplicación móvil de finanzas personales, diseñada especialmente para jóvenes independientes en Venezuela. El objetivo principal de la app es facilitar la gestión de dinero en un entorno con múltiples monedas (Bolívares y Dólares), proporcionando claridad sobre el valor real del saldo del usuario en todo momento a través de un sistema de billeteras.
+FinanciaMe es una aplicación móvil de finanzas personales, diseñada especialmente para jóvenes independientes en Venezuela. El objetivo principal de la app es facilitar la gestión de dinero en un entorno con múltiples monedas (Bolívares, Dólares y USDT), proporcionando claridad sobre el valor real del saldo del usuario en todo momento a través de un sistema de billeteras.
 
 ## Idea Principal
 
-La aplicación permite a los usuarios gestionar múltiples billeteras en diferentes monedas (Bolívares y Dólares). Registra ingresos y gastos asociados a cada billetera, y consolida los saldos utilizando la tasa de cambio oficial del Banco Central de Venezuela (BCV) para ofrecer una visión clara del patrimonio total del usuario en ambas divisas, facilitando una mejor planificación y toma de decisiones financieras.
+La aplicación permite a los usuarios gestionar múltiples billeteras en diferentes monedas (Bolívares, Dólares y USDT). Registra ingresos y gastos asociados a cada billetera, y consolida los saldos utilizando tasas de cambio de referencia (BCV y Binance USDT) para ofrecer una visión clara del patrimonio total del usuario en diferentes divisas, facilitando una mejor planificación y toma de decisiones financieras.
 
 ## Funcionalidades Implementadas
 
-- **Tasa de Cambio Automática:** La aplicación obtiene la última tasa de cambio del BCV al iniciar y la actualiza si hay conexión a internet.
+- **Tasas de Cambio en Tiempo Real:** La aplicación obtiene las últimas tasas de cambio del BCV y la tasa paralela (Binance USDT) de DolarApi.com al iniciar, y las actualiza si hay conexión a internet. También calcula y muestra una tasa promedio entre ambas.
 - **Funcionamiento Offline:** Si no hay conexión, la app utiliza la última tasa guardada. El saldo y el historial de transacciones también se almacenan localmente, garantizando acceso ininterrumpido.
 - **Gestión de Billeteras:**
   - Creación, edición y eliminación de múltiples billeteras.
-  - Soporte para diferentes monedas (USD y Bolívares).
+  - Soporte para diferentes monedas (USD, Bolívares (VEF) y USDT).
   - Seguimiento individual del saldo de cada billetera.
-- **Visualización Consolidada y por Billetera:** El saldo total consolidado se muestra en Bolívares y su equivalente en Dólares. Además, se visualiza el saldo individual de cada billetera.
+- **Visualización Consolidada y por Moneda:**
+  - El saldo total consolidado se muestra con referencia al BCV y también con referencia a Binance USDT, ofreciendo una visión clara del patrimonio total en dólares según distintas cotizaciones.
+  - Se visualiza el saldo individual de cada billetera.
+  - **Saldos por Moneda:** Muestra el total acumulado de todas las billeteras para cada divisa individualmente (VEF, USD, USDT), sin conversiones.
 - **Gestión de Transacciones:**
   - Interfaz simple con botones `+ Ingreso` y `- Gasto`.
   - Una ventana modal permite registrar el monto, la descripción, la billetera asociada y la **categoría** a cada movimiento.
