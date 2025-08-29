@@ -9,7 +9,7 @@ export interface Wallet {
 export interface Category {
   id: string;
   name: string;
-  icon: string; // Nombre del icono de SF Symbols o similar
+  icon: string;
   type: 'income' | 'expense';
 }
 
@@ -20,7 +20,7 @@ export interface Transaction {
   type: 'income' | 'expense';
   date: string;
   walletId: string;
-  categoryId: string; // Cambiamos de 'category' a 'categoryId'
+  categoryId: string;
 }
 
 export interface FixedExpense {
@@ -33,5 +33,5 @@ export interface FixedExpense {
   lastPaid?: string;
   startDate?: string;
   endDate?: string;
-  categoryId: string; // Añadimos categoryId para consistencia
+  categoryId: string;
 }
