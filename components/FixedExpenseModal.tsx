@@ -14,7 +14,7 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [dayOfMonth, setDayOfMonth] = useState('');
-  const [currency, setCurrency] = useState<'USD' | 'BS'>('USD');
+  const [currency, setCurrency] = useState<'USD' | 'VEF' | 'USDT'>('USD');
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -75,16 +75,22 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
               
               <View style={styles.currencySelector}>
                 <TouchableOpacity 
-                  style={[styles.currencyOption, currency === 'BS' && styles.currencyOptionSelected]} 
-                  onPress={() => setCurrency('BS')}
+                  style={[styles.currencyOption, currency === 'VEF' && styles.currencyOptionSelected]} 
+                  onPress={() => setCurrency('VEF')}
                 >
-                  <Text style={[styles.currencyText, currency === 'BS' && styles.currencyTextSelected]}>Bs.</Text>
+                  <Text style={[styles.currencyText, currency === 'VEF' && styles.currencyTextSelected]}>VEF</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={[styles.currencyOption, currency === 'USD' && styles.currencyOptionSelected]} 
                   onPress={() => setCurrency('USD')}
                 >
                   <Text style={[styles.currencyText, currency === 'USD' && styles.currencyTextSelected]}>USD</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.currencyOption, currency === 'USDT' && styles.currencyOptionSelected]} 
+                  onPress={() => setCurrency('USDT')}
+                >
+                  <Text style={[styles.currencyText, currency === 'USDT' && styles.currencyTextSelected]}>USDT</Text>
                 </TouchableOpacity>
               </View>
 

@@ -12,7 +12,7 @@ interface WalletModalProps {
 export default function WalletModal({ isVisible, onClose, onSubmit, initialData }: WalletModalProps) {
   const [name, setName] = useState('');
   const [balance, setBalance] = useState('0');
-  const [currency, setCurrency] = useState<'USD' | 'BS'>('USD');
+  const [currency, setCurrency] = useState<'USD' | 'VEF' | 'USDT'>('USD');
 
   const isEditing = !!initialData;
 
@@ -55,11 +55,11 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
             
             <View style={styles.currencySelector}>
               <TouchableOpacity 
-                style={[styles.currencyOption, currency === 'BS' && styles.currencyOptionSelected]} 
-                onPress={() => !isEditing && setCurrency('BS')}
+                style={[styles.currencyOption, currency === 'VEF' && styles.currencyOptionSelected]} 
+                onPress={() => !isEditing && setCurrency('VEF')}
                 disabled={isEditing}
               >
-                <Text style={[styles.currencyText, currency === 'BS' && styles.currencyTextSelected]}>Bs.</Text>
+                <Text style={[styles.currencyText, currency === 'VEF' && styles.currencyTextSelected]}>VEF</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.currencyOption, currency === 'USD' && styles.currencyOptionSelected]} 
@@ -67,6 +67,13 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
                 disabled={isEditing}
               >
                 <Text style={[styles.currencyText, currency === 'USD' && styles.currencyTextSelected]}>USD</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.currencyOption, currency === 'USDT' && styles.currencyOptionSelected]} 
+                onPress={() => !isEditing && setCurrency('USDT')}
+                disabled={isEditing}
+              >
+                <Text style={[styles.currencyText, currency === 'USDT' && styles.currencyTextSelected]}>USDT</Text>
               </TouchableOpacity>
             </View>
 

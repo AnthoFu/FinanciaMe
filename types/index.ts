@@ -3,7 +3,7 @@ export interface Wallet {
   id: string;
   name: string;
   balance: number;
-  currency: 'USD' | 'BS';
+  currency: 'USD' | 'VEF' | 'USDT';
 }
 
 export interface Transaction {
@@ -20,7 +20,7 @@ export interface FixedExpense {
   id: string;
   name: string;
   amount: number;
-  currency: 'USD' | 'BS';
+  currency: 'USD' | 'VEF' | 'USDT';
   dayOfMonth: number;
   walletId: string | null;
   lastPaid?: string;

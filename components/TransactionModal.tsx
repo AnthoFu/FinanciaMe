@@ -58,7 +58,7 @@ export default function TransactionModal({ isVisible, onClose, onSubmit, type, w
   }
 
   const selectedWallet = wallets.find(w => w.id === selectedWalletId);
-  const placeholderText = `Monto (${selectedWallet ? (selectedWallet.currency === 'USD' ? '$' : 'Bs.') : 'Bs.'})`; // Dynamic placeholder based on selected wallet
+  const placeholderText = `Monto (${selectedWallet ? selectedWallet.currency : '...'})`; // Dynamic placeholder based on selected wallet
 
   return (
     <Modal
