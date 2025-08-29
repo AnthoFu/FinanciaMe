@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Modal, View, Text, TextInput, Button, TouchableWithoutFeedback, Keyboard, TouchableOpacity, ScrollView } from 'react-native';
 import { Wallet } from '../../types';
 import { useCategories } from '../../context/CategoriesContext';
@@ -22,8 +22,8 @@ export default function TransactionModal({ isVisible, onClose, onSubmit, type, w
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
-  const incomeCategories = categories.filter(c => c.name === "Salario" || c.name === "Otros Ingresos");
-  const expenseCategories = categories.filter(c => c.name !== "Salario" && c.name !== "Otros Ingresos");
+  const incomeCategories = useMemo(() => categories.filter(c => c.name === "Salario" || c.name === "Otros Ingresos"), [categories]);
+  const expenseCategories = useMemo(() => categories.filter(c => c.name !== "Salario" && c.name !== "Otros Ingresos"), [categories]);
 
   useEffect(() => {
     if (isVisible) {
