@@ -6,6 +6,13 @@ export interface Wallet {
   currency: 'USD' | 'VEF' | 'USDT';
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  type: 'income' | 'expense';
+}
+
 export interface Transaction {
   id: string;
   amount: number;
@@ -13,7 +20,7 @@ export interface Transaction {
   type: 'income' | 'expense';
   date: string;
   walletId: string;
-  category?: string; // New optional category field
+  categoryId: string;
 }
 
 export interface FixedExpense {
@@ -26,4 +33,5 @@ export interface FixedExpense {
   lastPaid?: string;
   startDate?: string;
   endDate?: string;
+  categoryId: string;
 }

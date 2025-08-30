@@ -4,46 +4,72 @@
     <img src="./assets/images/AnthoFu-Icon.png" alt="Logo AnthoFu" width="150" height="150" />
 </p>
 
+> Una aplicación móvil de finanzas personales diseñada para jóvenes independientes en Venezuela, para gestionar fácilmente el dinero en un entorno multimoneda.
+
 ---
 
 - **Autor: [AnthoFu🦊](https://github.com/AnthoFu)**
 
-FinanciaMe es una aplicación móvil de finanzas personales, diseñada especialmente para jóvenes independientes en Venezuela. El objetivo principal de la app es facilitar la gestión de dinero en un entorno con múltiples monedas (Bolívares, Dólares y USDT), proporcionando claridad sobre el valor real del saldo del usuario en todo momento a través de un sistema de billeteras.
+## 🚀 Funcionalidades
 
-## Idea Principal
+- **Gestión de Billeteras Multimoneda:** Gestiona múltiples billeteras en diferentes monedas (VEF, USD, USDT).
+- **Tasas de Cambio en Tiempo Real:** Obtén las últimas tasas de cambio del BCV y Binance USDT.
+- **Funcionamiento Offline:** Accede a tus datos incluso sin conexión a internet.
+- **Saldo Consolidado:** Obtén una visión clara de tu patrimonio total en diferentes monedas.
+- **Gestión de Transacciones:** Registra fácilmente ingresos y gastos con categorías.
+- **Categorías Personalizables:** Añade, edita y elimina categorías personalizadas para tus transacciones.
+- **Métricas de Gastos:** Visualiza tus gastos por categoría y rango de tiempo.
+- **Gestión de Gastos Fijos:** Gestiona gastos recurrentes y recibe notificaciones cuando venzan.
+- **Historial de Transacciones Recientes:** Consulta todas tus transacciones recientes en la pantalla principal.
+- **Persistencia de Datos:** Todos tus datos se guardan de forma segura en tu dispositivo.
 
-La aplicación permite a los usuarios gestionar múltiples billeteras en diferentes monedas (Bolívares, Dólares y USDT). Registra ingresos y gastos asociados a cada billetera, y consolida los saldos utilizando tasas de cambio de referencia (BCV y Binance USDT) para ofrecer una visión clara del patrimonio total del usuario en diferentes divisas, facilitando una mejor planificación y toma de decisiones financieras.
+## 📸 Capturas de Pantalla
 
-## Funcionalidades Implementadas
+*Próximamente...*
 
-- **Tasas de Cambio en Tiempo Real:** La aplicación obtiene las últimas tasas de cambio del BCV y la tasa paralela (Binance USDT) de DolarApi.com al iniciar, y las actualiza si hay conexión a internet. También calcula y muestra una tasa promedio entre ambas.
-- **Funcionamiento Offline:** Si no hay conexión, la app utiliza la última tasa guardada. El saldo y el historial de transacciones también se almacenan localmente, garantizando acceso ininterrumpido.
-- **Gestión de Billeteras:**
-  - Creación, edición y eliminación de múltiples billeteras.
-  - Soporte para diferentes monedas (USD, Bolívares (VEF) y USDT).
-  - Seguimiento individual del saldo de cada billetera.
-- **Visualización Consolidada y por Moneda:**
-  - El saldo total consolidado se muestra con referencia al BCV y también con referencia a Binance USDT, ofreciendo una visión clara del patrimonio total en dólares según distintas cotizaciones.
-  - Se visualiza el saldo individual de cada billetera.
-  - **Saldos por Moneda:** Muestra el total acumulado de todas las billeteras para cada divisa individualmente (VEF, USD, USDT), sin conversiones.
-- **Gestión de Transacciones:**
-  - Interfaz simple con botones `+ Ingreso` y `- Gasto`.
-  - Una ventana modal permite registrar el monto, la descripción, la billetera asociada y la **categoría** a cada movimiento.
-  - Las transacciones se registran con el símbolo de moneda correcto de la billetera y la fecha.
-- **Gestión de Categorías:**
-  - Permite a los usuarios añadir, editar y eliminar categorías personalizadas para clasificar sus transacciones.
-  - Las categorías por defecto se cargan inicialmente y se pueden modificar.
-- **Métricas de Gastos:**
-  - Visualiza el gasto total y el gasto desglosado por categoría en diferentes rangos de tiempo (últimos 7 días, 30 días, o todo el tiempo).
-  - Ayuda a los usuarios a entender sus patrones de gasto.
-- **Gestión de Gastos Fijos:**
-  - Permite registrar y administrar gastos recurrentes (ej. alquiler, servicios).
-  - Los gastos fijos pueden vincularse a una billetera específica.
-  - La aplicación notifica y permite el pago automático de gastos fijos pendientes.
-- **Historial de Movimientos Recientes:** Todas las transacciones se listan en la pantalla principal, mostrando descripción (con manejo de texto largo), fecha, monto y la billetera asociada, para un seguimiento claro.
-- **Persistencia de Datos:** Toda la información del usuario (billeteras, transacciones, gastos fijos, última tasa) se guarda de forma segura en el almacenamiento local del dispositivo.
+## 🛠️ Stack de Tecnología
 
-## Diagrama de Flujo del Sistema
+- **Framework:** [React Native](https://reactnative.dev/) con [Expo](https://expo.dev/)
+- **Lenguaje:** [TypeScript](https://www.typescriptlang.org/)
+- **Navegación:** [Expo Router](https://docs.expo.dev/router/introduction/)
+- **Almacenamiento Local:** [AsyncStorage](https://react-native-async-storage.github.io/async-storage/)
+
+## 🏁 Cómo Empezar
+
+### Prerrequisitos
+
+- [Node.js](https://nodejs.org/en/) (v18 o superior)
+- Aplicación [Expo Go](https://expo.dev/go) en tu teléfono (iOS o Android)
+
+### Instalación
+
+1.  Clona el repositorio:
+    ```bash
+    git clone https://github.com/AnthoFu/FinanciaMe.git
+    ```
+2.  Navega al directorio del proyecto:
+    ```bash
+    cd FinanciaMe
+    ```
+3.  Instala las dependencias:
+    ```bash
+    npm install
+    ```
+4.  Inicia el servidor de desarrollo:
+    ```bash
+    npm start
+    ```
+5.  Escanea el código QR con la aplicación Expo Go en tu teléfono.
+
+## 🤝 Contribuciones
+
+¡Las contribuciones son bienvenidas! No dudes en abrir un "issue" o enviar un "pull request".
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
+
+## 📊 Diagrama de Flujo del Sistema
 
 ```mermaid
 graph TD
@@ -106,29 +132,3 @@ graph TD
     style X fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
     style Y fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
 ```
-
-## Stack de Tecnología
-
-- **Framework:** React Native con Expo
-- **Lenguaje:** TypeScript
-- **Navegación:** Expo Router (navegación basada en archivos)
-- **Almacenamiento Local:** AsyncStorage
-
-## Cómo Empezar
-
-Sigue estos pasos para ejecutar el proyecto en tu entorno de desarrollo local.
-
-1.  **Instalar Dependencias:**
-    Navega a la carpeta `FinanciaMe` y ejecuta el siguiente comando para instalar todos los paquetes necesarios.
-    ```bash
-    npm install
-    ```
-
-2.  **Iniciar la Aplicación:**
-    Una vez instaladas las dependencias, ejecuta este comando para iniciar el servidor de desarrollo de Expo.
-    ```bash
-    npm start
-    ```
-
-3.  **Probar en tu Dispositivo:**
-    Escanea el código QR que aparece en la terminal con la aplicación **Expo Go** en tu teléfono (iOS o Android). También puedes ejecutarlo en un emulador de Android o simulador de iOS si los tienes configurados.
