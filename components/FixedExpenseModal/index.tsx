@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, View, Text, TextInput, Button, TouchableWithoutFeedback, Keyboard, TouchableOpacity, ScrollView } from 'react-native';
-import { FixedExpense, Wallet, Category } from '../../types';
+import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, TouchableOpacity, ScrollView } from 'react-native';
+import { FixedExpense, Wallet } from '../../types';
 import { useCategories } from '../../context/CategoriesContext';
 import { IconSymbol } from '../ui/IconSymbol';
 import { styles } from './styles';
+import { StyledInput } from '../ui/StyledInput';
 
 interface FixedExpenseModalProps {
   isVisible: boolean;
@@ -79,9 +80,9 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
           <View style={styles.modalContent}>
             <ScrollView style={{width: '100%'}} showsVerticalScrollIndicator={false}>
               <Text style={styles.modalTitle}>{initialData ? 'Editar' : 'Añadir'} Gasto Fijo</Text>
-              <TextInput style={styles.input} placeholder="Nombre (ej. Alquiler)" value={name} onChangeText={setName} />
-              <TextInput style={styles.input} placeholder="Monto" keyboardType="numeric" value={amount} onChangeText={setAmount} />
-              <TextInput style={styles.input} placeholder="Día del Mes (1-31)" keyboardType="numeric" value={dayOfMonth} onChangeText={setDayOfMonth} />
+              <StyledInput placeholder="Nombre (ej. Alquiler)" value={name} onChangeText={setName} />
+              <StyledInput placeholder="Monto" keyboardType="numeric" value={amount} onChangeText={setAmount} />
+              <StyledInput placeholder="Día del Mes (1-31)" keyboardType="numeric" value={dayOfMonth} onChangeText={setDayOfMonth} />
               
               <View style={styles.currencySelector}>
                 <TouchableOpacity 
@@ -132,8 +133,8 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
               </ScrollView>
 
               <Text style={styles.pickerLabel}>Periodo (Opcional)</Text>
-              <TextInput style={styles.input} placeholder="Fecha de Inicio (YYYY-MM-DD)" value={startDate} onChangeText={setStartDate} />
-              <TextInput style={styles.input} placeholder="Fecha de Fin (YYYY-MM-DD)" value={endDate} onChangeText={setEndDate} />
+              <StyledInput placeholder="Fecha de Inicio (YYYY-MM-DD)" value={startDate} onChangeText={setStartDate} />
+              <StyledInput placeholder="Fecha de Fin (YYYY-MM-DD)" value={endDate} onChangeText={setEndDate} />
             </ScrollView>
             <View style={styles.buttonContainer}>
               <Button title="Cancelar" onPress={onClose} color="#ff5c5c" />

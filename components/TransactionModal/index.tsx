@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, View, Text, TextInput, Button, TouchableWithoutFeedback, Keyboard, TouchableOpacity, ScrollView } from 'react-native';
+import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, TouchableOpacity, ScrollView } from 'react-native';
 import { Wallet } from '../../types';
 import { useCategories } from '../../context/CategoriesContext';
 import { IconSymbol } from '../ui/IconSymbol';
 import { styles } from './styles';
+import { StyledInput } from '../ui/StyledInput';
 
 interface TransactionModalProps {
   isVisible: boolean;
@@ -95,8 +96,8 @@ export default function TransactionModal({ isVisible, onClose, onSubmit, type, w
                 ))}
               </ScrollView>
 
-              <TextInput style={styles.input} placeholder={placeholderText} keyboardType="numeric" value={amount} onChangeText={setAmount} />
-              <TextInput style={styles.input} placeholder="Descripción" value={description} onChangeText={setDescription} />
+              <StyledInput placeholder={placeholderText} keyboardType="numeric" value={amount} onChangeText={setAmount} />
+              <StyledInput placeholder="Descripción" value={description} onChangeText={setDescription} />
             </ScrollView>
             <View style={styles.buttonContainer}>
               <Button title="Cancelar" onPress={handleClose} color="#ff5c5c" />

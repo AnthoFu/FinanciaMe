@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TextInput, Button, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native';
+import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native';
 import { Wallet } from '../../types';
-import { styles } from './styles'; // Import from the new styles file
+import { styles } from './styles';
+import { StyledInput } from '../ui/StyledInput'; // Import the new component
 
 interface WalletModalProps {
   isVisible: boolean;
@@ -51,8 +52,8 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{isEditing ? 'Editar' : 'Añadir'} Billetera</Text>
-            <TextInput style={styles.input} placeholder="Nombre de la billetera" value={name} onChangeText={setName} />
-            <TextInput style={styles.input} placeholder="Saldo inicial" keyboardType="numeric" value={balance} onChangeText={setBalance} disabled={isEditing} />
+            <StyledInput placeholder="Nombre de la billetera" value={name} onChangeText={setName} />
+            <StyledInput placeholder="Saldo inicial" keyboardType="numeric" value={balance} onChangeText={setBalance} editable={!isEditing} />
             
             <View style={styles.currencySelector}>
               <TouchableOpacity 
