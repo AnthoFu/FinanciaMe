@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, TouchableOpacity, ScrollView } from 'react-native';
-import { FixedExpense, Wallet } from '../../types';
+import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity } from 'react-native';
+import { FixedExpense, Wallet, Category } from '../../types';
 import { useCategories } from '../../context/CategoriesContext';
 import { IconSymbol } from '../ui/IconSymbol';
 import { styles } from './styles';
 import { StyledInput } from '../ui/StyledInput';
+import { HorizontalPicker } from '../ui/HorizontalPicker';
 
 interface FixedExpenseModalProps {
   isVisible: boolean;
@@ -105,32 +106,32 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.pickerLabel}>Categoría</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
-                {expenseCategories.map(category => (
-                  <TouchableOpacity
-                    key={category.id}
-                    style={[styles.categoryItem, selectedCategoryId === category.id && styles.categoryItemSelected]}
-                    onPress={() => setSelectedCategoryId(category.id)}
-                  >
-                    <IconSymbol name={category.icon} size={14} color={selectedCategoryId === category.id ? 'white' : '#007bff'} />
-                    <Text style={[styles.categoryItemText, selectedCategoryId === category.id && styles.categoryItemTextSelected, {marginLeft: 5}]}>{category.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              <HorizontalPicker<Category>
+                label="Categoría"
+                data={expenseCategories}
+                selectedValue={selectedCategoryId}
+                onSelect={setSelectedCategoryId}
+                keyExtractor={(item) => item.id}
+                renderItem={(item, isSelected) => (
+                  <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
+                    <IconSymbol name={item.icon as any} size={14} color={isSelected ? 'white' : '#007bff'} />
+                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected, {marginLeft: 5}]}>{item.name}</Text>
+                  </View>
+                )}
+              />
 
-              <Text style={styles.pickerLabel}>Billetera de Pago</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
-                {wallets.map(wallet => (
-                  <TouchableOpacity 
-                    key={wallet.id} 
-                    style={[styles.categoryItem, selectedWalletId === wallet.id && styles.categoryItemSelected]}
-                    onPress={() => setSelectedWalletId(wallet.id)}
-                  >
-                    <Text style={[styles.categoryItemText, selectedWalletId === wallet.id && styles.categoryItemTextSelected]}>{wallet.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              <HorizontalPicker<Wallet>
+                label="Billetera de Pago"
+                data={wallets}
+                selectedValue={selectedWalletId}
+                onSelect={setSelectedWalletId}
+                keyExtractor={(item) => item.id}
+                renderItem={(item, isSelected) => (
+                  <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
+                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected]}>{item.name}</Text>
+                  </View>
+                )}
+              />
 
               <Text style={styles.pickerLabel}>Periodo (Opcional)</Text>
               <StyledInput placeholder="Fecha de Inicio (YYYY-MM-DD)" value={startDate} onChangeText={setStartDate} />

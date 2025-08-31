@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, TouchableOpacity, ScrollView } from 'react-native';
-import { Wallet } from '../../types';
+import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
+import { Wallet, Category } from '../../types';
 import { useCategories } from '../../context/CategoriesContext';
 import { IconSymbol } from '../ui/IconSymbol';
 import { styles } from './styles';
 import { StyledInput } from '../ui/StyledInput';
+import { HorizontalPicker } from '../ui/HorizontalPicker';
 
 interface TransactionModalProps {
   isVisible: boolean;
@@ -30,10 +31,9 @@ export default function TransactionModal({ isVisible, onClose, onSubmit, type, w
     if (isVisible) {
       setSelectedWalletId(initialWalletId || (wallets.length > 0 ? wallets[0].id : null));
       
-      if (type === 'expense' && expenseCategories.length > 0) {
-        setSelectedCategoryId(expenseCategories[0].id);
-      } else if (type === 'income' && incomeCategories.length > 0) {
-        setSelectedCategoryId(incomeCategories[0].id);
+      const currentCats = type === 'expense' ? expenseCategories : incomeCategories;
+      if (currentCats.length > 0) {
+        setSelectedCategoryId(currentCats[0].id);
       }
     }
   }, [isVisible, initialWalletId, wallets, type, expenseCategories, incomeCategories]);
@@ -69,32 +69,32 @@ export default function TransactionModal({ isVisible, onClose, onSubmit, type, w
             <ScrollView style={{width: '100%'}} showsVerticalScrollIndicator={false}>
               <Text style={styles.modalTitle}>{type === 'income' ? 'Registrar Ingreso' : 'Registrar Gasto'}</Text>
               
-              <Text style={styles.pickerLabel}>Billetera</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
-                {wallets.map(wallet => (
-                  <TouchableOpacity
-                    key={wallet.id}
-                    style={[styles.categoryItem, selectedWalletId === wallet.id && styles.categoryItemSelected]}
-                    onPress={() => setSelectedWalletId(wallet.id)}
-                  >
-                    <Text style={[styles.categoryItemText, selectedWalletId === wallet.id && styles.categoryItemTextSelected]}>{wallet.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              <HorizontalPicker<Wallet>
+                label="Billetera"
+                data={wallets}
+                selectedValue={selectedWalletId}
+                onSelect={setSelectedWalletId}
+                keyExtractor={(item) => item.id}
+                renderItem={(item, isSelected) => (
+                  <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
+                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected]}>{item.name}</Text>
+                  </View>
+                )}
+              />
 
-              <Text style={styles.pickerLabel}>Categoría</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
-                {currentCategories.map(category => (
-                  <TouchableOpacity
-                    key={category.id}
-                    style={[styles.categoryItem, selectedCategoryId === category.id && styles.categoryItemSelected]}
-                    onPress={() => setSelectedCategoryId(category.id)}
-                  >
-                    <IconSymbol name={category.icon} size={14} color={selectedCategoryId === category.id ? 'white' : '#007bff'} />
-                    <Text style={[styles.categoryItemText, selectedCategoryId === category.id && styles.categoryItemTextSelected, {marginLeft: 5}]}>{category.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              <HorizontalPicker<Category>
+                label="Categoría"
+                data={currentCategories}
+                selectedValue={selectedCategoryId}
+                onSelect={setSelectedCategoryId}
+                keyExtractor={(item) => item.id}
+                renderItem={(item, isSelected) => (
+                  <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
+                    <IconSymbol name={item.icon as any} size={14} color={isSelected ? 'white' : '#007bff'} />
+                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected, {marginLeft: 5}]}>{item.name}</Text>
+                  </View>
+                )}
+              />
 
               <StyledInput placeholder={placeholderText} keyboardType="numeric" value={amount} onChangeText={setAmount} />
               <StyledInput placeholder="Descripción" value={description} onChangeText={setDescription} />
