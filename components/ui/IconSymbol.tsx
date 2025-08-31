@@ -45,6 +45,8 @@ const MAPPING = {
   'wallet.pass.fill': 'account-balance-wallet',
   'chart.bar.fill': 'bar-chart',
   'gearshape.fill': 'settings',
+  'arrow.down': 'arrow-downward',
+  'arrow.up': 'arrow-upward',
 } as IconMapping;
 
 /**

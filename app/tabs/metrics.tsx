@@ -3,6 +3,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useCategories } from '../../context/CategoriesContext';
 import { useTransactions } from '../../context/TransactionsContext';
+import { useWallets } from '../../context/WalletsContext';
+import { useExchangeRates } from '../../hooks/useExchangeRates';
 import { styles } from './metrics.styles';
 
 type TimeRange = '7_days' | '30_days' | 'all_time';
@@ -10,9 +12,27 @@ type TimeRange = '7_days' | '30_days' | 'all_time';
 export default function MetricsScreen() {
   const { transactions, isLoading: transactionsLoading } = useTransactions();
   const { categories, isLoading: categoriesLoading } = useCategories();
+  const { wallets, isLoading: walletsLoading } = useWallets();
+  const { bcvRate, usdtRate, loading: ratesLoading } = useExchangeRates();
+
   const [spendingByCategory, setSpendingByCategory] = useState<Record<string, number>>({});
   const [totalSpending, setTotalSpending] = useState(0);
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>('30_days');
+
+  const getAmountInUSD = useCallback((amount: number, currency: 'VEF' | 'USD' | 'USDT') => {
+    if (!bcvRate || !usdtRate) return 0;
+
+    switch (currency) {
+      case 'VEF':
+        return amount / bcvRate;
+      case 'USDT':
+        return (amount * usdtRate) / bcvRate;
+      case 'USD':
+        return amount;
+      default:
+        return 0;
+    }
+  }, [bcvRate, usdtRate]);
 
   const filterAndAggregateTransactions = useCallback(() => {
     const now = new Date();
@@ -35,22 +55,30 @@ export default function MetricsScreen() {
     let total = 0;
 
     filtered.forEach(t => {
-      const category = categories.find(c => c.id === t.categoryId)?.name || 'Sin Categoría';
-      categorySpending[category] = (categorySpending[category] || 0) + t.amount;
-      total += t.amount;
+      const wallet = wallets.find(w => w.id === t.walletId);
+      if (!wallet) return;
+
+      const amountInUSD = getAmountInUSD(t.amount, wallet.currency);
+      const categoryName = categories.find(c => c.id === t.categoryId)?.name || 'Sin Categoría';
+      
+      categorySpending[categoryName] = (categorySpending[categoryName] || 0) + amountInUSD;
+      total += amountInUSD;
     });
 
     setSpendingByCategory(categorySpending);
     setTotalSpending(total);
-  }, [transactions, categories, selectedTimeRange]);
+  }, [transactions, categories, wallets, selectedTimeRange, getAmountInUSD]);
 
   useEffect(() => {
-    if (!transactionsLoading && !categoriesLoading) {
+    const allLoaded = !transactionsLoading && !categoriesLoading && !walletsLoading && !ratesLoading;
+    if (allLoaded) {
       filterAndAggregateTransactions();
     }
-  }, [transactions, selectedTimeRange, transactionsLoading, categoriesLoading, filterAndAggregateTransactions]);
+  }, [transactions, selectedTimeRange, transactionsLoading, categoriesLoading, walletsLoading, ratesLoading, filterAndAggregateTransactions]);
 
-  if (transactionsLoading || categoriesLoading) {
+  const isLoading = transactionsLoading || categoriesLoading || walletsLoading || ratesLoading;
+
+  if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -88,7 +116,7 @@ export default function MetricsScreen() {
       <ScrollView style={styles.scrollView}>
         <View style={styles.summaryCard}>
           <Text style={styles.summaryTitle}>Gasto Total</Text>
-          <Text style={styles.summaryAmount}>Bs. {totalSpending.toFixed(2)}</Text>
+          <Text style={styles.summaryAmount}>$ {totalSpending.toFixed(2)}</Text>
         </View>
 
         <Text style={styles.sectionTitle}>Gasto por Categoría</Text>
@@ -98,7 +126,7 @@ export default function MetricsScreen() {
             .map(([category, amount]) => (
               <View key={category} style={styles.categoryItem}>
                 <Text style={styles.categoryName}>{category}</Text>
-                <Text style={styles.categoryAmount}>Bs. {amount.toFixed(2)}</Text>
+                <Text style={styles.categoryAmount}>$ {amount.toFixed(2)}</Text>
               </View>
             ))
         ) : (

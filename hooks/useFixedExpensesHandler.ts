@@ -66,7 +66,7 @@ export function useFixedExpensesHandler({
           type: 'expense',
           date: nowString,
           walletId: wallet.id,
-          categoryId: 'fixed-expense',
+          categoryId: expense.categoryId,
         });
         paidExpensesIds.push(expense.id);
       } else {

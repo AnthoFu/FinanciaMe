@@ -5,10 +5,13 @@ import Toast from '../../components/Toast';
 import { FixedExpense } from '../../types';
 import { useFixedExpenses } from '../../context/FixedExpensesContext';
 import { useWallets } from '../../context/WalletsContext';
+import { useCategories } from '../../context/CategoriesContext';
+import { IconSymbol } from '../../components/ui/IconSymbol';
 
 export default function FixedExpensesScreen() {
   const { expenses, addFixedExpense, updateFixedExpense, deleteFixedExpense } = useFixedExpenses();
   const { wallets } = useWallets();
+  const { categories } = useCategories();
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingExpense, setEditingExpense] = useState<FixedExpense | null>(null);
   const [toast, setToast] = useState({ isVisible: false, message: '' });
@@ -52,10 +55,8 @@ export default function FixedExpensesScreen() {
   const handleSubmit = (expenseData: Omit<FixedExpense, 'id' | 'lastPaid'>) => {
     const isEditing = !!editingExpense;
     if (isEditing) {
-      // Update existing expense
       updateFixedExpense({ ...editingExpense, ...expenseData });
     } else {
-      // Add new expense
       addFixedExpense(expenseData);
     }
     showToast(isEditing ? "Gasto fijo actualizado" : "Gasto fijo creado con éxito");
@@ -70,15 +71,22 @@ export default function FixedExpensesScreen() {
         style={styles.list}
         renderItem={({ item }) => {
           const wallet = wallets.find(w => w.id === item.walletId);
+          const category = categories.find(c => c.id === item.categoryId);
           return (
             <View style={styles.itemContainer}>
+              {category && (
+                <View style={styles.iconContainer}>
+                  <IconSymbol name={category.icon as any} size={24} color="#1D3D47" />
+                </View>
+              )}
               <View style={styles.itemDetails}>
                 <Text style={styles.itemName}>{item.name}</Text>
+                {category && <Text style={styles.categoryName}>{category.name}</Text>}
                 <Text style={styles.itemSubText}>Día {item.dayOfMonth} de cada mes</Text>
                 <Text style={styles.walletText}>Desde: {wallet ? wallet.name : 'Billetera no encontrada'}</Text>
               </View>
               <View style={styles.itemRightSection}>
-                <Text style={styles.itemAmount}>{item.currency === 'USD' ? '$' : 'Bs.'}{item.amount.toFixed(2)}</Text>
+                <Text style={styles.itemAmount}>{{'USD':'$','VEF':'Bs.','USDT':'USDT'}[item.currency]} {item.amount.toFixed(2)}</Text>
                 <View style={styles.itemActions}>
                   <TouchableOpacity onPress={() => handleEdit(item)}><Text style={styles.actionText}>Editar</Text></TouchableOpacity>
                   <TouchableOpacity onPress={() => handleDelete(item.id)}><Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text></TouchableOpacity>
@@ -112,9 +120,11 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 50, paddingHorizontal: 20, backgroundColor: '#f0f4f7' },
   title: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#1D3D47' },
   list: { flex: 1, width: '100%' },
-  itemContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15, backgroundColor: 'white', borderRadius: 10, marginBottom: 10 },
+  itemContainer: { flexDirection: 'row', alignItems: 'center', padding: 15, backgroundColor: 'white', borderRadius: 10, marginBottom: 10 },
+  iconContainer: { marginRight: 15 },
   itemDetails: { flex: 1 },
   itemName: { fontSize: 18, fontWeight: 'bold' },
+  categoryName: { fontSize: 14, color: '#666' },
   itemSubText: { fontSize: 14, color: '#666', marginVertical: 2 },
   walletText: { fontSize: 14, color: '#007bff', fontStyle: 'italic' },
   itemRightSection: { alignItems: 'flex-end' },
@@ -123,5 +133,5 @@ const styles = StyleSheet.create({
   actionText: { fontSize: 14, color: '#007bff' },
   deleteText: { color: '#dc3545' },
   emptyText: { textAlign: 'center', marginTop: 50, color: '#666' },
-  buttonWrapper: { paddingVertical: 10 }, // Added for spacing
+  buttonWrapper: { paddingVertical: 10 },
 });

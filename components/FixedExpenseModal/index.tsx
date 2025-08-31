@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TextInput, Button, TouchableWithoutFeedback, Keyboard, TouchableOpacity, ScrollView } from 'react-native';
-import { FixedExpense, Wallet } from '../../types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity } from 'react-native';
+import { FixedExpense, Wallet, Category } from '../../types';
+import { useCategories } from '../../context/CategoriesContext';
+import { IconSymbol } from '../ui/IconSymbol';
 import { styles } from './styles';
+import { StyledInput } from '../ui/StyledInput';
+import { HorizontalPicker } from '../ui/HorizontalPicker';
 
 interface FixedExpenseModalProps {
   isVisible: boolean;
@@ -12,13 +16,17 @@ interface FixedExpenseModalProps {
 }
 
 export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallets, initialData }: FixedExpenseModalProps) {
+  const { categories } = useCategories();
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [dayOfMonth, setDayOfMonth] = useState('');
   const [currency, setCurrency] = useState<'USD' | 'VEF' | 'USDT'>('USD');
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+
+  const expenseCategories = useMemo(() => categories.filter(c => c.type === 'expense'), [categories]);
 
   useEffect(() => {
     if (isVisible) {
@@ -28,6 +36,7 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
         setDayOfMonth(initialData.dayOfMonth.toString());
         setCurrency(initialData.currency);
         setSelectedWalletId(initialData.walletId);
+        setSelectedCategoryId(initialData.categoryId);
         setStartDate(initialData.startDate || '');
         setEndDate(initialData.endDate || '');
       } else {
@@ -36,18 +45,19 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
         setDayOfMonth('');
         setCurrency('USD');
         setSelectedWalletId(wallets.length > 0 ? wallets[0].id : null);
+        setSelectedCategoryId(expenseCategories.length > 0 ? expenseCategories[0].id : null);
         setStartDate('');
         setEndDate('');
       }
     }
-  }, [initialData, isVisible, wallets]);
+  }, [initialData, isVisible, wallets, expenseCategories]);
 
   const handleSubmit = () => {
     const numericAmount = parseFloat(amount);
     const numericDay = parseInt(dayOfMonth, 10);
 
-    if (!name || !numericAmount || !numericDay || numericDay < 1 || numericDay > 31 || !selectedWalletId) {
-      alert('Por favor, completa los campos obligatorios (Nombre, Monto, Día, Billetera).');
+    if (!name || !numericAmount || !numericDay || numericDay < 1 || numericDay > 31 || !selectedWalletId || !selectedCategoryId) {
+      alert('Por favor, completa todos los campos obligatorios (Nombre, Monto, Día, Billetera y Categoría).');
       return;
     }
 
@@ -57,6 +67,7 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
       dayOfMonth: numericDay,
       currency: currency,
       walletId: selectedWalletId,
+      categoryId: selectedCategoryId,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
     });
@@ -70,9 +81,9 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
           <View style={styles.modalContent}>
             <ScrollView style={{width: '100%'}} showsVerticalScrollIndicator={false}>
               <Text style={styles.modalTitle}>{initialData ? 'Editar' : 'Añadir'} Gasto Fijo</Text>
-              <TextInput style={styles.input} placeholder="Nombre (ej. Alquiler)" value={name} onChangeText={setName} />
-              <TextInput style={styles.input} placeholder="Monto" keyboardType="numeric" value={amount} onChangeText={setAmount} />
-              <TextInput style={styles.input} placeholder="Día del Mes (1-31)" keyboardType="numeric" value={dayOfMonth} onChangeText={setDayOfMonth} />
+              <StyledInput placeholder="Nombre (ej. Alquiler)" value={name} onChangeText={setName} />
+              <StyledInput placeholder="Monto" keyboardType="numeric" value={amount} onChangeText={setAmount} />
+              <StyledInput placeholder="Día del Mes (1-31)" keyboardType="numeric" value={dayOfMonth} onChangeText={setDayOfMonth} />
               
               <View style={styles.currencySelector}>
                 <TouchableOpacity 
@@ -95,20 +106,36 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.pickerLabel}>Billetera de Pago</Text>
-              {wallets.map(wallet => (
-                <TouchableOpacity 
-                  key={wallet.id} 
-                  style={[styles.pickerItem, selectedWalletId === wallet.id && styles.pickerItemSelected]}
-                  onPress={() => setSelectedWalletId(wallet.id)}
-                >
-                  <Text style={styles.pickerItemText}>{wallet.name} ({wallet.currency})</Text>
-                </TouchableOpacity>
-              ))}
+              <HorizontalPicker<Category>
+                label="Categoría"
+                data={expenseCategories}
+                selectedValue={selectedCategoryId}
+                onSelect={setSelectedCategoryId}
+                keyExtractor={(item) => item.id}
+                renderItem={(item, isSelected) => (
+                  <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
+                    <IconSymbol name={item.icon as any} size={14} color={isSelected ? 'white' : '#007bff'} />
+                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected, {marginLeft: 5}]}>{item.name}</Text>
+                  </View>
+                )}
+              />
+
+              <HorizontalPicker<Wallet>
+                label="Billetera de Pago"
+                data={wallets}
+                selectedValue={selectedWalletId}
+                onSelect={setSelectedWalletId}
+                keyExtractor={(item) => item.id}
+                renderItem={(item, isSelected) => (
+                  <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
+                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected]}>{item.name}</Text>
+                  </View>
+                )}
+              />
 
               <Text style={styles.pickerLabel}>Periodo (Opcional)</Text>
-              <TextInput style={styles.input} placeholder="Fecha de Inicio (YYYY-MM-DD)" value={startDate} onChangeText={setStartDate} />
-              <TextInput style={styles.input} placeholder="Fecha de Fin (YYYY-MM-DD)" value={endDate} onChangeText={setEndDate} />
+              <StyledInput placeholder="Fecha de Inicio (YYYY-MM-DD)" value={startDate} onChangeText={setStartDate} />
+              <StyledInput placeholder="Fecha de Fin (YYYY-MM-DD)" value={endDate} onChangeText={setEndDate} />
             </ScrollView>
             <View style={styles.buttonContainer}>
               <Button title="Cancelar" onPress={onClose} color="#ff5c5c" />

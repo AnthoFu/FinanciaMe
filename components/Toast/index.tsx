@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Text, StyleSheet } from 'react-native';
+import { Animated, Text } from 'react-native';
+import { styles } from './styles';
 
 interface ToastProps {
   message: string;
@@ -48,23 +49,3 @@ export default function Toast({ message, isVisible, duration = 2000, onHide }: T
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    bottom: 50,
-    left: '10%',
-    right: '10%',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    borderRadius: 25,
-    padding: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000, // Ensure it's on top
-  },
-  message: {
-    color: 'white',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-});
