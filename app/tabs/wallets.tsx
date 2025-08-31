@@ -15,6 +15,19 @@ export default function WalletsScreen() {
     setToast({ isVisible: true, message });
   };
 
+  const getCurrencySymbol = (currency: 'USD' | 'VEF' | 'USDT') => {
+    switch (currency) {
+      case 'USD':
+        return '$';
+      case 'VEF':
+        return 'Bs.';
+      case 'USDT':
+        return 'USDT';
+      default:
+        return currency;
+    }
+  };
+
   const handleAddNew = () => {
     setEditingWallet(null);
     setModalVisible(true);
@@ -66,7 +79,7 @@ export default function WalletsScreen() {
           <View style={styles.itemContainer}>
             <View style={styles.itemDetails}>
               <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemBalance}>{item.currency === 'USD' ? '$' : 'Bs.'}{item.balance.toFixed(2)}</Text>
+              <Text style={styles.itemBalance}>{getCurrencySymbol(item.currency)} {item.balance.toFixed(2)}</Text>
             </View>
             <View style={styles.itemActions}>
               <TouchableOpacity onPress={() => handleEdit(item)}><Text style={styles.actionText}>Editar</Text></TouchableOpacity>

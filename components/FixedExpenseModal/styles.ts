@@ -15,4 +15,9 @@ export const styles = StyleSheet.create({
   pickerItemSelected: { borderColor: '#007bff', borderWidth: 2 },
   pickerItemText: { textAlign: 'center' },
   buttonContainer: { flexDirection: 'row', justifyContent: 'space-around', width: '100%', marginTop: 20, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#eee' },
+  categoryScroll: { flexDirection: 'row', marginBottom: 15 },
+  categoryItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 20, borderWidth: 1, borderColor: '#007bff', marginRight: 8, backgroundColor: '#f0f4f7' },
+  categoryItemSelected: { backgroundColor: '#007bff' },
+  categoryItemText: { color: '#007bff', fontSize: 14 },
+  categoryItemTextSelected: { color: 'white', fontWeight: 'bold' },
 });

@@ -6,7 +6,7 @@ import { WALLETS_KEY } from '../constants/StorageKeys';
 // Define the shape of the context value
 interface WalletsContextType {
   wallets: Wallet[];
-  addWallet: (walletData: Omit<Wallet, 'id' | 'balance'>) => void;
+  addWallet: (walletData: Omit<Wallet, 'id'>) => void;
   updateWallet: (walletData: Wallet) => void;
   deleteWallet: (walletId: string) => void;
   isLoading: boolean;
@@ -26,7 +26,13 @@ export function WalletsProvider({ children }: { children: ReactNode }) {
     try {
       const storedWallets = await AsyncStorage.getItem(WALLETS_KEY);
       if (storedWallets) {
-        setWallets(JSON.parse(storedWallets));
+        const parsedWallets = JSON.parse(storedWallets);
+        // Ensure balance is always a number
+        const sanitizedWallets = parsedWallets.map((wallet: any) => ({
+          ...wallet,
+          balance: parseFloat(wallet.balance) || 0,
+        }));
+        setWallets(sanitizedWallets);
       }
     } catch (e) {
       console.error("Failed to load wallets.", e);
@@ -52,11 +58,10 @@ export function WalletsProvider({ children }: { children: ReactNode }) {
     }
   }, [wallets, isLoading]);
 
-  const addWallet = (walletData: Omit<Wallet, 'id' | 'balance'>) => {
+  const addWallet = (walletData: Omit<Wallet, 'id'>) => {
     const newWallet: Wallet = {
       id: Date.now().toString(),
-      balance: walletData.balance || 0,
-      ...walletData,
+      ...walletData, // contains name, balance, and currency
     };
     setWallets(prev => [...prev, newWallet]);
   };

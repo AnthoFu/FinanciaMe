@@ -27,6 +27,9 @@ export const useFinancialSummary = (
       if (wallet.currency === 'VEF') {
         return total + wallet.balance / bcvRate;
       }
+      if (wallet.currency === 'USDT') {
+        return total + (wallet.balance * usdtRate) / bcvRate;
+      }
       return total + wallet.balance;
     }, 0);
 
