@@ -22,7 +22,7 @@ import { useWallets } from '../../context/WalletsContext';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
 import { useFinancialSummary } from '../../hooks/useFinancialSummary';
 import { useFixedExpensesHandler } from '../../hooks/useFixedExpensesHandler';
-import { styles } from './styles';
+import { styles } from '../../styles/styles';
 
 export default function FinanciaMeScreen() {
   // --- Hooks de Datos ---

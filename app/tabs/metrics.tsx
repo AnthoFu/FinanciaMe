@@ -5,7 +5,7 @@ import { useCategories } from '../../context/CategoriesContext';
 import { useTransactions } from '../../context/TransactionsContext';
 import { useWallets } from '../../context/WalletsContext';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
-import { styles } from './metrics.styles';
+import { styles } from '../../styles/metrics.styles';
 
 type TimeRange = '7_days' | '30_days' | 'all_time';
 
