@@ -1,5 +1,5 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { Category } from '../types';
 
 const CATEGORIES_STORAGE_KEY = 'user_defined_categories_v2';
@@ -40,22 +40,27 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
         const storedCategories = await AsyncStorage.getItem(CATEGORIES_STORAGE_KEY);
         if (storedCategories) {
           const parsedCategories = JSON.parse(storedCategories);
+          let needsMigration = false;
           const migratedCategories = parsedCategories.map((cat: Category) => {
             if (!cat.type) {
-              if (cat.name === 'Salario' || cat.name === 'Otros Ingresos') {
-                return { ...cat, type: 'income' };
-              } else {
-                return { ...cat, type: 'expense' };
-              }
+              needsMigration = true;
+              return {
+                ...cat,
+                type: (cat.name === 'Salario' || cat.name === 'Otros Ingresos') ? 'income' : 'expense',
+              };
             }
             return cat;
           });
+
+          if (needsMigration) {
+            await AsyncStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(migratedCategories));
+          }
           setCategories(migratedCategories);
         } else {
           setCategories(DEFAULT_CATEGORIES);
         }
       } catch (error) {
-        console.error('Failed to load categories from storage', error);
+        console.error('[loadCategories] Fallo al intentar cargar las categorias del almacenamiento:', error);
         setCategories(DEFAULT_CATEGORIES);
       } finally {
         setIsLoading(false);
@@ -70,7 +75,7 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
         try {
           await AsyncStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
         } catch (error) {
-          console.error('Failed to save categories to storage', error);
+          console.error('[saveCategories] Fallo al intentar guardar las categorias al almacenamiento:', error);
         }
       };
       saveCategories();
@@ -115,7 +120,7 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
 export function useCategories() {
   const context = useContext(CategoriesContext);
   if (context === undefined) {
-    throw new Error('useCategories must be used within a CategoriesProvider');
+    throw new Error('[useCategories] Error: useCategories debe utilizarse con un CategoriesProvider');
   }
   return context;
 }
