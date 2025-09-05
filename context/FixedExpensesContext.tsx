@@ -26,7 +26,7 @@ export function FixedExpensesProvider({ children }: { children: ReactNode }) {
         setExpenses(JSON.parse(storedExpenses));
       }
     } catch (e) {
-      console.error("Failed to load fixed expenses.", e);
+      console.error('[loadFixedExpenses] Error al cargar los gastos fijos:', e);
     } finally {
       setIsLoading(false);
     }
@@ -42,7 +42,7 @@ export function FixedExpensesProvider({ children }: { children: ReactNode }) {
         try {
           await AsyncStorage.setItem(FIXED_EXPENSES_KEY, JSON.stringify(expenses));
         } catch (e) {
-          console.error("Failed to save fixed expenses.", e);
+          console.error('[saveFixedExpenses] Error al guardar los gastos fijos:', e);
         }
       };
       saveFixedExpenses();
@@ -55,17 +55,15 @@ export function FixedExpensesProvider({ children }: { children: ReactNode }) {
       lastPaid: undefined,
       ...expenseData,
     };
-    setExpenses(prev => [newExpense, ...prev]);
+    setExpenses((prev) => [newExpense, ...prev]);
   };
 
   const updateFixedExpense = (updatedExpense: FixedExpense) => {
-    setExpenses(prev =>
-      prev.map(exp => (exp.id === updatedExpense.id ? updatedExpense : exp))
-    );
+    setExpenses((prev) => prev.map((exp) => (exp.id === updatedExpense.id ? updatedExpense : exp)));
   };
 
   const deleteFixedExpense = (id: string) => {
-    setExpenses(prev => prev.filter(exp => exp.id !== id));
+    setExpenses((prev) => prev.filter((exp) => exp.id !== id));
   };
 
   const value = {
@@ -77,11 +75,7 @@ export function FixedExpensesProvider({ children }: { children: ReactNode }) {
     setExpenses,
   };
 
-  return (
-    <FixedExpensesContext.Provider value={value}>
-      {children}
-    </FixedExpensesContext.Provider>
-  );
+  return <FixedExpensesContext.Provider value={value}>{children}</FixedExpensesContext.Provider>;
 }
 
 export function useFixedExpenses() {

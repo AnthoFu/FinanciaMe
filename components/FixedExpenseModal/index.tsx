@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  Modal,
+  View,
+  Text,
+  Button,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 import { FixedExpense, Wallet, Category } from '../../types';
 import { useCategories } from '../../context/CategoriesContext';
 import { IconSymbol } from '../ui/IconSymbol';
@@ -15,7 +24,13 @@ interface FixedExpenseModalProps {
   initialData?: FixedExpense | null;
 }
 
-export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallets, initialData }: FixedExpenseModalProps) {
+export default function FixedExpenseModal({
+  isVisible,
+  onClose,
+  onSubmit,
+  wallets,
+  initialData,
+}: FixedExpenseModalProps) {
   const { categories } = useCategories();
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
@@ -26,7 +41,7 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  const expenseCategories = useMemo(() => categories.filter(c => c.type === 'expense'), [categories]);
+  const expenseCategories = useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
 
   useEffect(() => {
     if (isVisible) {
@@ -56,7 +71,15 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
     const numericAmount = parseFloat(amount);
     const numericDay = parseInt(dayOfMonth, 10);
 
-    if (!name || !numericAmount || !numericDay || numericDay < 1 || numericDay > 31 || !selectedWalletId || !selectedCategoryId) {
+    if (
+      !name ||
+      !numericAmount ||
+      !numericDay ||
+      numericDay < 1 ||
+      numericDay > 31 ||
+      !selectedWalletId ||
+      !selectedCategoryId
+    ) {
       alert('Por favor, completa todos los campos obligatorios (Nombre, Monto, Día, Billetera y Categoría).');
       return;
     }
@@ -79,27 +102,32 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <ScrollView style={{width: '100%'}} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
               <Text style={styles.modalTitle}>{initialData ? 'Editar' : 'Añadir'} Gasto Fijo</Text>
               <StyledInput placeholder="Nombre (ej. Alquiler)" value={name} onChangeText={setName} />
               <StyledInput placeholder="Monto" keyboardType="numeric" value={amount} onChangeText={setAmount} />
-              <StyledInput placeholder="Día del Mes (1-31)" keyboardType="numeric" value={dayOfMonth} onChangeText={setDayOfMonth} />
-              
+              <StyledInput
+                placeholder="Día del Mes (1-31)"
+                keyboardType="numeric"
+                value={dayOfMonth}
+                onChangeText={setDayOfMonth}
+              />
+
               <View style={styles.currencySelector}>
-                <TouchableOpacity 
-                  style={[styles.currencyOption, currency === 'VEF' && styles.currencyOptionSelected]} 
+                <TouchableOpacity
+                  style={[styles.currencyOption, currency === 'VEF' && styles.currencyOptionSelected]}
                   onPress={() => setCurrency('VEF')}
                 >
                   <Text style={[styles.currencyText, currency === 'VEF' && styles.currencyTextSelected]}>VEF</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.currencyOption, currency === 'USD' && styles.currencyOptionSelected]} 
+                <TouchableOpacity
+                  style={[styles.currencyOption, currency === 'USD' && styles.currencyOptionSelected]}
                   onPress={() => setCurrency('USD')}
                 >
                   <Text style={[styles.currencyText, currency === 'USD' && styles.currencyTextSelected]}>USD</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.currencyOption, currency === 'USDT' && styles.currencyOptionSelected]} 
+                <TouchableOpacity
+                  style={[styles.currencyOption, currency === 'USDT' && styles.currencyOptionSelected]}
                   onPress={() => setCurrency('USDT')}
                 >
                   <Text style={[styles.currencyText, currency === 'USDT' && styles.currencyTextSelected]}>USDT</Text>
@@ -115,7 +143,15 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
                 renderItem={(item, isSelected) => (
                   <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
                     <IconSymbol name={item.icon as any} size={14} color={isSelected ? 'white' : '#007bff'} />
-                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected, {marginLeft: 5}]}>{item.name}</Text>
+                    <Text
+                      style={[
+                        styles.categoryItemText,
+                        isSelected && styles.categoryItemTextSelected,
+                        { marginLeft: 5 },
+                      ]}
+                    >
+                      {item.name}
+                    </Text>
                   </View>
                 )}
               />
@@ -128,7 +164,9 @@ export default function FixedExpenseModal({ isVisible, onClose, onSubmit, wallet
                 keyExtractor={(item) => item.id}
                 renderItem={(item, isSelected) => (
                   <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
-                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected]}>{item.name}</Text>
+                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected]}>
+                      {item.name}
+                    </Text>
                   </View>
                 )}
               />

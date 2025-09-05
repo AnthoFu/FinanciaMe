@@ -11,13 +11,13 @@ interface HorizontalPickerProps<T> {
   renderItem: (item: T, isSelected: boolean) => React.ReactNode;
 }
 
-export function HorizontalPicker<T>({ 
-  label, 
-  data, 
-  selectedValue, 
-  keyExtractor, 
-  onSelect, 
-  renderItem 
+export function HorizontalPicker<T>({
+  label,
+  data,
+  selectedValue,
+  keyExtractor,
+  onSelect,
+  renderItem,
 }: HorizontalPickerProps<T>) {
   return (
     <View style={{ width: '100%' }}>

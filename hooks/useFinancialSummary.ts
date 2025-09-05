@@ -5,7 +5,7 @@ export const useFinancialSummary = (
   wallets: Wallet[],
   bcvRate: number | null,
   usdtRate: number | null,
-  ratesLoading: boolean
+  ratesLoading: boolean,
 ) => {
   const summary = useMemo(() => {
     if (ratesLoading || !bcvRate || !usdtRate) {
@@ -20,7 +20,7 @@ export const useFinancialSummary = (
         acc[wallet.currency] = (acc[wallet.currency] || 0) + wallet.balance;
         return acc;
       },
-      { VEF: 0, USD: 0, USDT: 0 } as Record<'VEF' | 'USD' | 'USDT', number>
+      { VEF: 0, USD: 0, USDT: 0 } as Record<'VEF' | 'USD' | 'USDT', number>,
     );
 
     const consolidatedBcv = wallets.reduce((total, wallet) => {

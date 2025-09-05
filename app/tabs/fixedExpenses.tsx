@@ -22,7 +22,7 @@ export default function FixedExpensesScreen() {
 
   const handleAddNew = () => {
     if (wallets.length === 0) {
-      Alert.alert("No hay billeteras", "Debes crear al menos una billetera antes de añadir un gasto fijo.");
+      Alert.alert('No hay billeteras', 'Debes crear al menos una billetera antes de añadir un gasto fijo.');
       return;
     }
     setEditingExpense(null);
@@ -35,21 +35,17 @@ export default function FixedExpensesScreen() {
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert(
-      'Eliminar Gasto Fijo',
-      '¿Estás seguro de que quieres eliminar este gasto fijo?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Eliminar', 
-          style: 'destructive', 
-          onPress: () => {
-            deleteFixedExpense(id);
-            showToast("Gasto fijo eliminado con éxito");
-          }
+    Alert.alert('Eliminar Gasto Fijo', '¿Estás seguro de que quieres eliminar este gasto fijo?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: () => {
+          deleteFixedExpense(id);
+          showToast('Gasto fijo eliminado con éxito');
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleSubmit = (expenseData: Omit<FixedExpense, 'id' | 'lastPaid'>) => {
@@ -59,7 +55,7 @@ export default function FixedExpensesScreen() {
     } else {
       addFixedExpense(expenseData);
     }
-    showToast(isEditing ? "Gasto fijo actualizado" : "Gasto fijo creado con éxito");
+    showToast(isEditing ? 'Gasto fijo actualizado' : 'Gasto fijo creado con éxito');
   };
 
   return (
@@ -70,8 +66,8 @@ export default function FixedExpensesScreen() {
         keyExtractor={(item) => item.id}
         style={styles.list}
         renderItem={({ item }) => {
-          const wallet = wallets.find(w => w.id === item.walletId);
-          const category = categories.find(c => c.id === item.categoryId);
+          const wallet = wallets.find((w) => w.id === item.walletId);
+          const category = categories.find((c) => c.id === item.categoryId);
           return (
             <View style={styles.itemContainer}>
               {category && (
@@ -86,28 +82,34 @@ export default function FixedExpensesScreen() {
                 <Text style={styles.walletText}>Desde: {wallet ? wallet.name : 'Billetera no encontrada'}</Text>
               </View>
               <View style={styles.itemRightSection}>
-                <Text style={styles.itemAmount}>{{'USD':'$','VEF':'Bs.','USDT':'USDT'}[item.currency]} {item.amount.toFixed(2)}</Text>
+                <Text style={styles.itemAmount}>
+                  {{ USD: '$', VEF: 'Bs.', USDT: 'USDT' }[item.currency]} {item.amount.toFixed(2)}
+                </Text>
                 <View style={styles.itemActions}>
-                  <TouchableOpacity onPress={() => handleEdit(item)}><Text style={styles.actionText}>Editar</Text></TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDelete(item.id)}><Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text></TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleEdit(item)}>
+                    <Text style={styles.actionText}>Editar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                    <Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
-          )
+          );
         }}
         ListEmptyComponent={<Text style={styles.emptyText}>No tienes gastos fijos definidos.</Text>}
       />
       <View style={styles.buttonWrapper}>
         <Button title="Añadir Gasto Fijo" onPress={handleAddNew} />
       </View>
-      <FixedExpenseModal 
+      <FixedExpenseModal
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
         onSubmit={handleSubmit}
         initialData={editingExpense}
         wallets={wallets}
       />
-      <Toast 
+      <Toast
         message={toast.message}
         isVisible={toast.isVisible}
         onHide={() => setToast({ isVisible: false, message: '' })}
@@ -120,7 +122,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 50, paddingHorizontal: 20, backgroundColor: '#f0f4f7' },
   title: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#1D3D47' },
   list: { flex: 1, width: '100%' },
-  itemContainer: { flexDirection: 'row', alignItems: 'center', padding: 15, backgroundColor: 'white', borderRadius: 10, marginBottom: 10 },
+  itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    marginBottom: 10,
+  },
   iconContainer: { marginRight: 15 },
   itemDetails: { flex: 1 },
   itemName: { fontSize: 18, fontWeight: 'bold' },

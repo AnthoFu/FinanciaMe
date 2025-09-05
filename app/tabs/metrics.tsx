@@ -5,7 +5,7 @@ import { useCategories } from '../../context/CategoriesContext';
 import { useTransactions } from '../../context/TransactionsContext';
 import { useWallets } from '../../context/WalletsContext';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
-import { styles } from './metrics.styles';
+import { styles } from '../../styles/metrics.styles';
 
 type TimeRange = '7_days' | '30_days' | 'all_time';
 
@@ -19,20 +19,23 @@ export default function MetricsScreen() {
   const [totalSpending, setTotalSpending] = useState(0);
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>('30_days');
 
-  const getAmountInUSD = useCallback((amount: number, currency: 'VEF' | 'USD' | 'USDT') => {
-    if (!bcvRate || !usdtRate) return 0;
+  const getAmountInUSD = useCallback(
+    (amount: number, currency: 'VEF' | 'USD' | 'USDT') => {
+      if (!bcvRate || !usdtRate) return 0;
 
-    switch (currency) {
-      case 'VEF':
-        return amount / bcvRate;
-      case 'USDT':
-        return (amount * usdtRate) / bcvRate;
-      case 'USD':
-        return amount;
-      default:
-        return 0;
-    }
-  }, [bcvRate, usdtRate]);
+      switch (currency) {
+        case 'VEF':
+          return amount / bcvRate;
+        case 'USDT':
+          return (amount * usdtRate) / bcvRate;
+        case 'USD':
+          return amount;
+        default:
+          return 0;
+      }
+    },
+    [bcvRate, usdtRate],
+  );
 
   const filterAndAggregateTransactions = useCallback(() => {
     const now = new Date();
@@ -42,11 +45,12 @@ export default function MetricsScreen() {
       startDate.setDate(now.getDate() - 7);
     } else if (selectedTimeRange === '30_days') {
       startDate.setDate(now.getDate() - 30);
-    } else { // 'all_time'
+    } else {
+      // 'all_time'
       startDate = new Date(0); // Epoch
     }
 
-    const filtered = transactions.filter(t => {
+    const filtered = transactions.filter((t) => {
       const transactionDate = new Date(t.date);
       return t.type === 'expense' && transactionDate >= startDate;
     });
@@ -54,13 +58,13 @@ export default function MetricsScreen() {
     const categorySpending: Record<string, number> = {};
     let total = 0;
 
-    filtered.forEach(t => {
-      const wallet = wallets.find(w => w.id === t.walletId);
+    filtered.forEach((t) => {
+      const wallet = wallets.find((w) => w.id === t.walletId);
       if (!wallet) return;
 
       const amountInUSD = getAmountInUSD(t.amount, wallet.currency);
-      const categoryName = categories.find(c => c.id === t.categoryId)?.name || 'Sin Categoría';
-      
+      const categoryName = categories.find((c) => c.id === t.categoryId)?.name || 'Sin Categoría';
+
       categorySpending[categoryName] = (categorySpending[categoryName] || 0) + amountInUSD;
       total += amountInUSD;
     });
@@ -74,7 +78,15 @@ export default function MetricsScreen() {
     if (allLoaded) {
       filterAndAggregateTransactions();
     }
-  }, [transactions, selectedTimeRange, transactionsLoading, categoriesLoading, walletsLoading, ratesLoading, filterAndAggregateTransactions]);
+  }, [
+    transactions,
+    selectedTimeRange,
+    transactionsLoading,
+    categoriesLoading,
+    walletsLoading,
+    ratesLoading,
+    filterAndAggregateTransactions,
+  ]);
 
   const isLoading = transactionsLoading || categoriesLoading || walletsLoading || ratesLoading;
 
@@ -97,19 +109,31 @@ export default function MetricsScreen() {
           style={[styles.timeRangeButton, selectedTimeRange === '7_days' && styles.timeRangeButtonSelected]}
           onPress={() => setSelectedTimeRange('7_days')}
         >
-          <Text style={selectedTimeRange === '7_days' ? styles.timeRangeButtonTextSelected : styles.timeRangeButtonText}>Últimos 7 Días</Text>
+          <Text
+            style={selectedTimeRange === '7_days' ? styles.timeRangeButtonTextSelected : styles.timeRangeButtonText}
+          >
+            Últimos 7 Días
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.timeRangeButton, selectedTimeRange === '30_days' && styles.timeRangeButtonSelected]}
           onPress={() => setSelectedTimeRange('30_days')}
         >
-          <Text style={selectedTimeRange === '30_days' ? styles.timeRangeButtonTextSelected : styles.timeRangeButtonText}>Últimos 30 Días</Text>
+          <Text
+            style={selectedTimeRange === '30_days' ? styles.timeRangeButtonTextSelected : styles.timeRangeButtonText}
+          >
+            Últimos 30 Días
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.timeRangeButton, selectedTimeRange === 'all_time' && styles.timeRangeButtonSelected]}
           onPress={() => setSelectedTimeRange('all_time')}
         >
-          <Text style={selectedTimeRange === 'all_time' ? styles.timeRangeButtonTextSelected : styles.timeRangeButtonText}>Todo el Tiempo</Text>
+          <Text
+            style={selectedTimeRange === 'all_time' ? styles.timeRangeButtonTextSelected : styles.timeRangeButtonText}
+          >
+            Todo el Tiempo
+          </Text>
         </TouchableOpacity>
       </View>
 

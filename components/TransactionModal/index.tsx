@@ -17,20 +17,28 @@ interface TransactionModalProps {
   initialWalletId?: string | null;
 }
 
-export default function TransactionModal({ isVisible, onClose, onSubmit, type, wallets, showToast, initialWalletId }: TransactionModalProps) {
+export default function TransactionModal({
+  isVisible,
+  onClose,
+  onSubmit,
+  type,
+  wallets,
+  showToast,
+  initialWalletId,
+}: TransactionModalProps) {
   const { categories } = useCategories();
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
-  const incomeCategories = useMemo(() => categories.filter(c => c.type === 'income'), [categories]);
-  const expenseCategories = useMemo(() => categories.filter(c => c.type === 'expense'), [categories]);
+  const incomeCategories = useMemo(() => categories.filter((c) => c.type === 'income'), [categories]);
+  const expenseCategories = useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
 
   useEffect(() => {
     if (isVisible) {
       setSelectedWalletId(initialWalletId || (wallets.length > 0 ? wallets[0].id : null));
-      
+
       const currentCats = type === 'expense' ? expenseCategories : incomeCategories;
       if (currentCats.length > 0) {
         setSelectedCategoryId(currentCats[0].id);
@@ -56,7 +64,7 @@ export default function TransactionModal({ isVisible, onClose, onSubmit, type, w
     onClose();
   };
 
-  const selectedWallet = wallets.find(w => w.id === selectedWalletId);
+  const selectedWallet = wallets.find((w) => w.id === selectedWalletId);
   const placeholderText = `Monto (${selectedWallet ? selectedWallet.currency : '...'})`;
 
   const currentCategories = type === 'expense' ? expenseCategories : incomeCategories;
@@ -66,9 +74,9 @@ export default function TransactionModal({ isVisible, onClose, onSubmit, type, w
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <ScrollView style={{width: '100%'}} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
               <Text style={styles.modalTitle}>{type === 'income' ? 'Registrar Ingreso' : 'Registrar Gasto'}</Text>
-              
+
               <HorizontalPicker<Wallet>
                 label="Billetera"
                 data={wallets}
@@ -77,7 +85,9 @@ export default function TransactionModal({ isVisible, onClose, onSubmit, type, w
                 keyExtractor={(item) => item.id}
                 renderItem={(item, isSelected) => (
                   <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
-                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected]}>{item.name}</Text>
+                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected]}>
+                      {item.name}
+                    </Text>
                   </View>
                 )}
               />
@@ -91,12 +101,25 @@ export default function TransactionModal({ isVisible, onClose, onSubmit, type, w
                 renderItem={(item, isSelected) => (
                   <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
                     <IconSymbol name={item.icon as any} size={14} color={isSelected ? 'white' : '#007bff'} />
-                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected, {marginLeft: 5}]}>{item.name}</Text>
+                    <Text
+                      style={[
+                        styles.categoryItemText,
+                        isSelected && styles.categoryItemTextSelected,
+                        { marginLeft: 5 },
+                      ]}
+                    >
+                      {item.name}
+                    </Text>
                   </View>
                 )}
               />
 
-              <StyledInput placeholder={placeholderText} keyboardType="numeric" value={amount} onChangeText={setAmount} />
+              <StyledInput
+                placeholder={placeholderText}
+                keyboardType="numeric"
+                value={amount}
+                onChangeText={setAmount}
+              />
               <StyledInput placeholder="Descripción" value={description} onChangeText={setDescription} />
             </ScrollView>
             <View style={styles.buttonContainer}>
