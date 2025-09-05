@@ -53,25 +53,31 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{isEditing ? 'Editar' : 'Añadir'} Billetera</Text>
             <StyledInput placeholder="Nombre de la billetera" value={name} onChangeText={setName} />
-            <StyledInput placeholder="Saldo inicial" keyboardType="numeric" value={balance} onChangeText={setBalance} editable={!isEditing} />
-            
+            <StyledInput
+              placeholder="Saldo inicial"
+              keyboardType="numeric"
+              value={balance}
+              onChangeText={setBalance}
+              editable={!isEditing}
+            />
+
             <View style={styles.currencySelector}>
-              <TouchableOpacity 
-                style={[styles.currencyOption, currency === 'VEF' && styles.currencyOptionSelected]} 
+              <TouchableOpacity
+                style={[styles.currencyOption, currency === 'VEF' && styles.currencyOptionSelected]}
                 onPress={() => !isEditing && setCurrency('VEF')}
                 disabled={isEditing}
               >
                 <Text style={[styles.currencyText, currency === 'VEF' && styles.currencyTextSelected]}>VEF</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.currencyOption, currency === 'USD' && styles.currencyOptionSelected]} 
+              <TouchableOpacity
+                style={[styles.currencyOption, currency === 'USD' && styles.currencyOptionSelected]}
                 onPress={() => !isEditing && setCurrency('USD')}
                 disabled={isEditing}
               >
                 <Text style={[styles.currencyText, currency === 'USD' && styles.currencyTextSelected]}>USD</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.currencyOption, currency === 'USDT' && styles.currencyOptionSelected]} 
+              <TouchableOpacity
+                style={[styles.currencyOption, currency === 'USDT' && styles.currencyOptionSelected]}
                 onPress={() => !isEditing && setCurrency('USDT')}
                 disabled={isEditing}
               >
@@ -79,7 +85,11 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
               </TouchableOpacity>
             </View>
 
-            {isEditing && <Text style={styles.noteText}>El saldo y la moneda no se pueden editar. Para ajustarlos, realiza ingresos o gastos.</Text>}
+            {isEditing && (
+              <Text style={styles.noteText}>
+                El saldo y la moneda no se pueden editar. Para ajustarlos, realiza ingresos o gastos.
+              </Text>
+            )}
 
             <View style={styles.buttonContainer}>
               <Button title="Cancelar" onPress={onClose} color="#ff5c5c" />

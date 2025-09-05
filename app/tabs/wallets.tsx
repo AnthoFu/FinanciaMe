@@ -44,15 +44,15 @@ export default function WalletsScreen() {
       '¿Estás seguro? Esta acción no se puede deshacer y borrará la billetera permanentemente.',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Eliminar', 
-          style: 'destructive', 
+        {
+          text: 'Eliminar',
+          style: 'destructive',
           onPress: () => {
             deleteWallet(id);
-            showToast("Billetera eliminada con éxito");
-          }
+            showToast('Billetera eliminada con éxito');
+          },
         },
-      ]
+      ],
     );
   };
 
@@ -65,7 +65,7 @@ export default function WalletsScreen() {
       // Add new wallet
       addWallet(walletData);
     }
-    showToast(isEditing ? "Billetera actualizada con éxito" : "Billetera creada con éxito");
+    showToast(isEditing ? 'Billetera actualizada con éxito' : 'Billetera creada con éxito');
   };
 
   return (
@@ -79,11 +79,17 @@ export default function WalletsScreen() {
           <View style={styles.itemContainer}>
             <View style={styles.itemDetails}>
               <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemBalance}>{getCurrencySymbol(item.currency)} {item.balance.toFixed(2)}</Text>
+              <Text style={styles.itemBalance}>
+                {getCurrencySymbol(item.currency)} {item.balance.toFixed(2)}
+              </Text>
             </View>
             <View style={styles.itemActions}>
-              <TouchableOpacity onPress={() => handleEdit(item)}><Text style={styles.actionText}>Editar</Text></TouchableOpacity>
-              <TouchableOpacity onPress={() => handleDelete(item.id)}><Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text></TouchableOpacity>
+              <TouchableOpacity onPress={() => handleEdit(item)}>
+                <Text style={styles.actionText}>Editar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                <Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text>
+              </TouchableOpacity>
             </View>
           </View>
         )}
@@ -92,13 +98,13 @@ export default function WalletsScreen() {
       <View style={styles.buttonWrapper}>
         <Button title="Añadir Billetera" onPress={handleAddNew} />
       </View>
-      <WalletModal 
+      <WalletModal
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
         onSubmit={handleSubmit}
         initialData={editingWallet}
       />
-      <Toast 
+      <Toast
         message={toast.message}
         isVisible={toast.isVisible}
         onHide={() => setToast({ isVisible: false, message: '' })}
@@ -111,7 +117,20 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 50, paddingHorizontal: 20, backgroundColor: '#f0f4f7' },
   title: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#1D3D47' },
   list: { flex: 1, width: '100%' },
-  itemContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, backgroundColor: 'white', borderRadius: 10, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
+  itemContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
   itemDetails: { flex: 1 },
   itemName: { fontSize: 18, fontWeight: 'bold' },
   itemBalance: { fontSize: 16, color: '#007bff', marginTop: 4 },

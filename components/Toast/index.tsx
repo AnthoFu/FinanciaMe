@@ -34,8 +34,8 @@ export default function Toast({ message, isVisible, duration = 2000, onHide }: T
 
       return () => clearTimeout(timer);
     } else {
-        // Reset animation if component is hidden externally
-        fadeAnim.setValue(0);
+      // Reset animation if component is hidden externally
+      fadeAnim.setValue(0);
     }
   }, [isVisible, duration, fadeAnim, onHide]);
 

@@ -1,5 +1,15 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, SectionList, TextInput, TouchableOpacity, StyleSheet, Modal, ScrollView, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  SectionList,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+  ScrollView,
+  Alert,
+} from 'react-native';
 import { useCategories } from '../context/CategoriesContext';
 import { IconSymbol } from '../components/ui/IconSymbol';
 import { CATEGORY_ICONS } from '../constants/Icons';
@@ -28,13 +38,13 @@ export default function CategoriesScreen() {
       [
         { text: 'Cancelar', style: 'cancel' },
         { text: 'Eliminar', style: 'destructive', onPress: () => removeCategory(categoryId) },
-      ]
+      ],
     );
   };
 
   const sections = useMemo(() => {
-    const incomeCategories = categories.filter(c => c.type === 'income');
-    const expenseCategories = categories.filter(c => c.type === 'expense');
+    const incomeCategories = categories.filter((c) => c.type === 'income');
+    const expenseCategories = categories.filter((c) => c.type === 'expense');
     const data = [];
     if (incomeCategories.length > 0) {
       data.push({ title: 'Ingresos', data: incomeCategories });
@@ -61,9 +71,7 @@ export default function CategoriesScreen() {
             </TouchableOpacity>
           </View>
         )}
-        renderSectionHeader={({ section: { title } }) => (
-          <Text style={styles.sectionHeader}>{title}</Text>
-        )}
+        renderSectionHeader={({ section: { title } }) => <Text style={styles.sectionHeader}>{title}</Text>}
         ListHeaderComponent={
           <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
             <IconSymbol name="plus.circle.fill" size={22} color="#007AFF" />
@@ -72,7 +80,12 @@ export default function CategoriesScreen() {
         }
       />
 
-      <Modal visible={isModalVisible} animationType="slide" transparent={true} onRequestClose={() => setModalVisible(false)}>
+      <Modal
+        visible={isModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Nueva Categoría</Text>
@@ -81,13 +94,17 @@ export default function CategoriesScreen() {
                 style={[styles.typeButton, selectedType === 'expense' && styles.typeButtonSelected]}
                 onPress={() => setSelectedType('expense')}
               >
-                <Text style={[styles.typeButtonText, selectedType === 'expense' && styles.typeButtonTextSelected]}>Gasto</Text>
+                <Text style={[styles.typeButtonText, selectedType === 'expense' && styles.typeButtonTextSelected]}>
+                  Gasto
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.typeButton, selectedType === 'income' && styles.typeButtonSelected]}
                 onPress={() => setSelectedType('income')}
               >
-                <Text style={[styles.typeButtonText, selectedType === 'income' && styles.typeButtonTextSelected]}>Ingreso</Text>
+                <Text style={[styles.typeButtonText, selectedType === 'income' && styles.typeButtonTextSelected]}>
+                  Ingreso
+                </Text>
               </TouchableOpacity>
             </View>
             <TextInput
@@ -109,7 +126,10 @@ export default function CategoriesScreen() {
               ))}
             </ScrollView>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setModalVisible(false)}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setModalVisible(false)}
+              >
                 <Text style={styles.modalButtonText}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleAddCategory}>

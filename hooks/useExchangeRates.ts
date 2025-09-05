@@ -16,7 +16,7 @@ export const useExchangeRates = () => {
         setLoading(true);
         const [bcvResponse, paraleloResponse] = await Promise.all([
           fetch('https://ve.dolarapi.com/v1/dolares/oficial'),
-          fetch('https://ve.dolarapi.com/v1/dolares/paralelo')
+          fetch('https://ve.dolarapi.com/v1/dolares/paralelo'),
         ]);
 
         if (!bcvResponse.ok || !paraleloResponse.ok) {
@@ -27,11 +27,12 @@ export const useExchangeRates = () => {
         const paraleloData = await paraleloResponse.json();
 
         if (typeof bcvData.promedio !== 'number' || typeof paraleloData.promedio !== 'number') {
-          throw new Error('La estructura de la respuesta de la API es inesperada: falta el campo "promedio" o no es un número');
+          throw new Error(
+            'La estructura de la respuesta de la API es inesperada: falta el campo "promedio" o no es un número',
+          );
         }
 
         setRates({ bcv: bcvData.promedio, usdt: paraleloData.promedio });
-
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -44,11 +45,11 @@ export const useExchangeRates = () => {
 
   const averageRate = rates ? (rates.bcv + rates.usdt) / 2 : 0;
 
-  return { 
+  return {
     bcvRate: rates?.bcv ?? 0,
     usdtRate: rates?.usdt ?? 0,
     averageRate,
     loading,
-    error 
+    error,
   };
 };

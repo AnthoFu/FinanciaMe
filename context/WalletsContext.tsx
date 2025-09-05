@@ -35,7 +35,7 @@ export function WalletsProvider({ children }: { children: ReactNode }) {
         setWallets(sanitizedWallets);
       }
     } catch (e) {
-      console.error("[loadWallets] Error al cargar las billeteras:", e);
+      console.error('[loadWallets] Error al cargar las billeteras:', e);
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +51,7 @@ export function WalletsProvider({ children }: { children: ReactNode }) {
         try {
           await AsyncStorage.setItem(WALLETS_KEY, JSON.stringify(wallets));
         } catch (e) {
-          console.error("[saveWallets] Error al guardar las billeteras:", e);
+          console.error('[saveWallets] Error al guardar las billeteras:', e);
         }
       };
       saveWallets();
@@ -63,17 +63,15 @@ export function WalletsProvider({ children }: { children: ReactNode }) {
       id: Date.now().toString(),
       ...walletData, // contains name, balance, and currency
     };
-    setWallets(prev => [...prev, newWallet]);
+    setWallets((prev) => [...prev, newWallet]);
   };
 
   const updateWallet = (walletData: Wallet) => {
-    setWallets(prev =>
-      prev.map(w => (w.id === walletData.id ? walletData : w))
-    );
+    setWallets((prev) => prev.map((w) => (w.id === walletData.id ? walletData : w)));
   };
 
   const deleteWallet = (walletId: string) => {
-    setWallets(prev => prev.filter(w => w.id !== walletId));
+    setWallets((prev) => prev.filter((w) => w.id !== walletId));
   };
 
   const value = {
@@ -85,11 +83,7 @@ export function WalletsProvider({ children }: { children: ReactNode }) {
     setWallets,
   };
 
-  return (
-    <WalletsContext.Provider value={value}>
-      {children}
-    </WalletsContext.Provider>
-  );
+  return <WalletsContext.Provider value={value}>{children}</WalletsContext.Provider>;
 }
 
 // Create a custom hook to use the context

@@ -25,7 +25,7 @@
 
 ## 📸 Capturas de Pantalla
 
-*Próximamente...*
+_Próximamente..._
 
 ## 🛠️ Stack de Tecnología
 
@@ -33,6 +33,20 @@
 - **Lenguaje:** [TypeScript](https://www.typescriptlang.org/)
 - **Navegación:** [Expo Router](https://docs.expo.dev/router/introduction/)
 - **Almacenamiento Local:** [AsyncStorage](https://react-native-async-storage.github.io/async-storage/)
+
+## ✨ Calidad de Código
+
+Este proyecto utiliza un conjunto de herramientas para garantizar un código limpio, consistente y libre de errores:
+
+- **ESLint:** Para el análisis estático del código y la detección de patrones problemáticos.
+- **Prettier:** Para el formateo automático y opinionado del código, asegurando un estilo uniforme.
+- **Husky & lint-staged:** Para ejecutar automáticamente el formateo y el análisis de código antes de cada `commit`, previniendo que se suba código que no cumpla con los estándares de calidad.
+
+### Scripts Útiles
+
+- **`npm run lint`**: Ejecuta ESLint para revisar todo el proyecto.
+- **`npm run lint:fix`**: Intenta corregir automáticamente los problemas encontrados por ESLint.
+- **`npm run format`**: Formatea todo el proyecto utilizando Prettier.
 
 ## 🏁 Cómo Empezar
 

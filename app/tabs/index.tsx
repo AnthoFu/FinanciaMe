@@ -1,6 +1,15 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { RecentTransactionsList } from '../../components/home/RecentTransactionsList';
 import { SummaryCard } from '../../components/home/SummaryCard';
 import { WalletsCarousel } from '../../components/home/WalletsCarousel';
@@ -68,11 +77,11 @@ export default function FinanciaMeScreen() {
 
   const handleSubmitTransaction = (amount: number, description: string, walletId: string, categoryId: string) => {
     let wasTransactionSuccessful = false;
-    const newWallets = wallets.map(wallet => {
+    const newWallets = wallets.map((wallet) => {
       if (wallet.id === walletId) {
         const newBalance = transactionType === 'income' ? wallet.balance + amount : wallet.balance - amount;
         if (newBalance < 0) {
-          Alert.alert("Saldo Insuficiente", "La billetera no tiene fondos suficientes.");
+          Alert.alert('Saldo Insuficiente', 'La billetera no tiene fondos suficientes.');
           return wallet;
         }
         wasTransactionSuccessful = true;
@@ -82,8 +91,12 @@ export default function FinanciaMeScreen() {
     });
     if (wasTransactionSuccessful) {
       addTransaction({
-        amount, description, date: new Date().toISOString(),
-        type: transactionType, walletId: walletId, categoryId: categoryId,
+        amount,
+        description,
+        date: new Date().toISOString(),
+        type: transactionType,
+        walletId: walletId,
+        categoryId: categoryId,
       });
       setWallets(newWallets);
       setModalVisible(false);
@@ -105,7 +118,7 @@ export default function FinanciaMeScreen() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>FinanciaMe</Text>
         <TouchableOpacity onPress={() => router.push('/categories')}>

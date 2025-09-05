@@ -35,10 +35,16 @@ export function WalletsCarousel({ wallets, onOpenModal }: WalletsCarouselProps) 
               {getCurrencySymbol(item.currency)} {item.balance.toFixed(2)}
             </Text>
             <View style={styles.walletCardActions}>
-              <TouchableOpacity style={[styles.walletButton, styles.expenseButton]} onPress={() => onOpenModal('expense', item.id)}>
+              <TouchableOpacity
+                style={[styles.walletButton, styles.expenseButton]}
+                onPress={() => onOpenModal('expense', item.id)}
+              >
                 <IconSymbol name="arrow.down" size={16} color="#FFF" />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.walletButton, styles.incomeButton]} onPress={() => onOpenModal('income', item.id)}>
+              <TouchableOpacity
+                style={[styles.walletButton, styles.incomeButton]}
+                onPress={() => onOpenModal('income', item.id)}
+              >
                 <IconSymbol name="arrow.up" size={16} color="#FFF" />
               </TouchableOpacity>
             </View>

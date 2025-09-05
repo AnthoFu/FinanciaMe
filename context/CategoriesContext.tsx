@@ -46,7 +46,7 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
               needsMigration = true;
               return {
                 ...cat,
-                type: (cat.name === 'Salario' || cat.name === 'Otros Ingresos') ? 'income' : 'expense',
+                type: cat.name === 'Salario' || cat.name === 'Otros Ingresos' ? 'income' : 'expense',
               };
             }
             return cat;
@@ -90,16 +90,16 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
       type,
     };
     if (name.trim() !== '') {
-      setCategories(prevCategories => [...prevCategories, newCategory]);
+      setCategories((prevCategories) => [...prevCategories, newCategory]);
     }
   };
 
   const removeCategory = (categoryId: string) => {
-    setCategories(prevCategories => prevCategories.filter(cat => cat.id !== categoryId));
+    setCategories((prevCategories) => prevCategories.filter((cat) => cat.id !== categoryId));
   };
 
   const getCategoryById = (categoryId: string) => {
-    return categories.find(cat => cat.id === categoryId);
+    return categories.find((cat) => cat.id === categoryId);
   };
 
   const value = {
@@ -110,11 +110,7 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
     isLoading,
   };
 
-  return (
-    <CategoriesContext.Provider value={value}>
-      {children}
-    </CategoriesContext.Provider>
-  );
+  return <CategoriesContext.Provider value={value}>{children}</CategoriesContext.Provider>;
 }
 
 export function useCategories() {

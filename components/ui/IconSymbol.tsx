@@ -25,7 +25,7 @@ const MAPPING = {
   'book.fill': 'book',
   'wrench.and.screwdriver.fill': 'build',
   'bag.fill': 'shopping-bag',
-  'airplane': 'flight',
+  airplane: 'flight',
   'gift.fill': 'card-giftcard',
   'chart.line.uptrend.xyaxis': 'show-chart',
   'dollarsign.circle.fill': 'monetization-on',
