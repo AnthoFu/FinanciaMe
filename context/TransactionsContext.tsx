@@ -24,7 +24,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
         setTransactions(JSON.parse(storedTransactions));
       }
     } catch (e) {
-      console.error("Failed to load transactions.", e);
+      console.error("[loadTransactions] Error al cargar las transacciones:", e);
     } finally {
       setIsLoading(false);
     }
@@ -40,7 +40,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
         try {
           await AsyncStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions));
         } catch (e) {
-          console.error("Failed to save transactions.", e);
+          console.error("[saveTransactions] Error al guardar las transacciones:", e);
         }
       };
       saveTransactions();

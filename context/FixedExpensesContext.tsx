@@ -26,7 +26,7 @@ export function FixedExpensesProvider({ children }: { children: ReactNode }) {
         setExpenses(JSON.parse(storedExpenses));
       }
     } catch (e) {
-      console.error("Failed to load fixed expenses.", e);
+      console.error("[loadFixedExpenses] Error al cargar los gastos fijos:", e);
     } finally {
       setIsLoading(false);
     }
@@ -42,7 +42,7 @@ export function FixedExpensesProvider({ children }: { children: ReactNode }) {
         try {
           await AsyncStorage.setItem(FIXED_EXPENSES_KEY, JSON.stringify(expenses));
         } catch (e) {
-          console.error("Failed to save fixed expenses.", e);
+          console.error("[saveFixedExpenses] Error al guardar los gastos fijos:", e);
         }
       };
       saveFixedExpenses();

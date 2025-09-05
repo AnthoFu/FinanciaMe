@@ -35,7 +35,7 @@ export function WalletsProvider({ children }: { children: ReactNode }) {
         setWallets(sanitizedWallets);
       }
     } catch (e) {
-      console.error("Failed to load wallets.", e);
+      console.error("[loadWallets] Error al cargar las billeteras:", e);
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +51,7 @@ export function WalletsProvider({ children }: { children: ReactNode }) {
         try {
           await AsyncStorage.setItem(WALLETS_KEY, JSON.stringify(wallets));
         } catch (e) {
-          console.error("Failed to save wallets.", e);
+          console.error("[saveWallets] Error al guardar las billeteras:", e);
         }
       };
       saveWallets();

@@ -20,14 +20,14 @@ export const useExchangeRates = () => {
         ]);
 
         if (!bcvResponse.ok || !paraleloResponse.ok) {
-          throw new Error('Failed to fetch exchange rates from ve.dolarapi.com');
+          throw new Error('No se pudieron obtener las tasas de cambio de ve.dolarapi.com');
         }
 
         const bcvData = await bcvResponse.json();
         const paraleloData = await paraleloResponse.json();
 
         if (typeof bcvData.promedio !== 'number' || typeof paraleloData.promedio !== 'number') {
-          throw new Error('API response structure unexpected: missing "promedio" field or not a number');
+          throw new Error('La estructura de la respuesta de la API es inesperada: falta el campo "promedio" o no es un número');
         }
 
         setRates({ bcv: bcvData.promedio, usdt: paraleloData.promedio });
