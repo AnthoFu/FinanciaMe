@@ -29,8 +29,8 @@ export default function FinanciaMeScreen() {
   const { wallets, setWallets, isLoading: walletsLoading } = useWallets();
   const { transactions, setTransactions, addTransaction, isLoading: transactionsLoading } = useTransactions();
   const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
-  const { bcvRate, usdtRate, loading: ratesLoading, error: ratesError } = useExchangeRates();
-  const balances = useFinancialSummary(wallets, bcvRate, usdtRate, ratesLoading);
+  const { bcvRate, usdtRate, averageRate, loading: ratesLoading, error: ratesError } = useExchangeRates();
+  const balances = useFinancialSummary(wallets, bcvRate, usdtRate, averageRate, ratesLoading);
 
   // --- Lógica de Gastos Fijos ---
   const { checkDueFixedExpenses } = useFixedExpensesHandler({
@@ -42,6 +42,7 @@ export default function FinanciaMeScreen() {
     setExpenses,
     bcvRate,
     usdtRate,
+    averageRate,
     fixedExpensesLoading,
     walletsLoading,
     ratesLoading,
@@ -110,7 +111,7 @@ export default function FinanciaMeScreen() {
 
     return (
       <ScrollView showsVerticalScrollIndicator={false}>
-        <SummaryCard balances={balances} bcvRate={bcvRate} usdtRate={usdtRate} />
+        <SummaryCard balances={balances} bcvRate={bcvRate} usdtRate={usdtRate} averageRate={averageRate} />
         <WalletsCarousel wallets={wallets} onOpenModal={handleOpenModal} />
         <RecentTransactionsList transactions={transactions} wallets={wallets} />
       </ScrollView>

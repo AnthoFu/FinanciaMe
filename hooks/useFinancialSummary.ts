@@ -5,12 +5,14 @@ export const useFinancialSummary = (
   wallets: Wallet[],
   bcvRate: number | null,
   usdtRate: number | null,
+  averageRate: number | null,
   ratesLoading: boolean,
 ) => {
   const summary = useMemo(() => {
-    if (ratesLoading || !bcvRate || !usdtRate) {
+    if (ratesLoading || !bcvRate || !usdtRate || !averageRate) {
       return {
         consolidatedBcv: 0,
+        consolidatedAverage: 0,
         byCurrency: { VEF: 0, USD: 0, USDT: 0 },
       };
     }
@@ -33,8 +35,18 @@ export const useFinancialSummary = (
       return total + wallet.balance;
     }, 0);
 
-    return { consolidatedBcv, byCurrency };
-  }, [wallets, bcvRate, usdtRate, ratesLoading]);
+    const consolidatedAverage = wallets.reduce((total, wallet) => {
+      if (wallet.currency === 'VEF') {
+        return total + wallet.balance / averageRate;
+      }
+      if (wallet.currency === 'USDT') {
+        return total + (wallet.balance * usdtRate) / averageRate;
+      }
+      return total + wallet.balance;
+    }, 0);
+
+    return { consolidatedBcv, consolidatedAverage, byCurrency };
+  }, [wallets, bcvRate, usdtRate, averageRate, ratesLoading]);
 
   return summary;
 };
