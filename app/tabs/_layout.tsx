@@ -35,6 +35,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="goals"
+        options={{
+          title: 'Metas',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="flag.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="fixedExpenses"
         options={{
           title: 'Gastos Fijos',

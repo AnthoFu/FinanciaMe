@@ -1,0 +1,145 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+
+import { SAVINGS_GOALS_KEY } from '../constants/StorageKeys';
+import { SavingsGoal, Transaction } from '../types';
+import { useCategories } from './CategoriesContext';
+import { useTransactions } from './TransactionsContext';
+import { useWallets } from './WalletsContext';
+
+interface SavingsGoalsContextType {
+  savingsGoals: SavingsGoal[];
+  addSavingsGoal: (goal: Omit<SavingsGoal, 'id' | 'creationDate'>) => void;
+  deleteSavingsGoal: (goalId: string) => void;
+  addContribution: (
+    goal: SavingsGoal,
+    walletId: string,
+    amount: number,
+    description?: string,
+  ) => Promise<{ success: boolean; message: string }>;
+  getContributionsForGoal: (goalId: string) => Transaction[];
+  isLoading: boolean;
+}
+
+const SavingsGoalsContext = createContext<SavingsGoalsContextType | undefined>(undefined);
+
+export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { transactions, addTransaction } = useTransactions();
+  const { categories, addCategory } = useCategories();
+  const { wallets } = useWallets();
+
+  // Load goals from storage
+  useEffect(() => {
+    const loadSavingsGoals = async () => {
+      setIsLoading(true);
+      try {
+        const storedGoals = await AsyncStorage.getItem(SAVINGS_GOALS_KEY);
+        if (storedGoals) {
+          setSavingsGoals(JSON.parse(storedGoals));
+        }
+      } catch (error) {
+        console.error('[loadSavingsGoals] Failed to load savings goals from storage:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadSavingsGoals();
+  }, []);
+
+  // Save goals to storage
+  useEffect(() => {
+    if (!isLoading) {
+      const saveSavingsGoals = async () => {
+        try {
+          await AsyncStorage.setItem(SAVINGS_GOALS_KEY, JSON.stringify(savingsGoals));
+        } catch (error) {
+          console.error('[saveSavingsGoals] Failed to save savings goals to storage:', error);
+        }
+      };
+      saveSavingsGoals();
+    }
+  }, [savingsGoals, isLoading]);
+
+  const addSavingsGoal = (goalData: Omit<SavingsGoal, 'id' | 'creationDate'>) => {
+    const newGoal: SavingsGoal = {
+      id: Date.now().toString(),
+      creationDate: new Date().toISOString(),
+      ...goalData,
+    };
+    setSavingsGoals((prevGoals) => [newGoal, ...prevGoals]);
+  };
+
+  const deleteSavingsGoal = (goalId: string) => {
+    // Note: This only deletes the goal, not the associated contribution transactions.
+    // This is to preserve the user's transaction history.
+    setSavingsGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
+  };
+
+  const getContributionsForGoal = (goalId: string) => {
+    return transactions.filter((t) => t.goalId === goalId);
+  };
+
+  const addContribution = async (
+    goal: SavingsGoal,
+    walletId: string,
+    amount: number,
+    description?: string,
+  ): Promise<{ success: boolean; message: string }> => {
+    const wallet = wallets.find((w) => w.id === walletId);
+    if (!wallet) {
+      return { success: false, message: 'Billetera no encontrada.' };
+    }
+    if (wallet.balance < amount) {
+      return { success: false, message: 'Saldo insuficiente en la billetera.' };
+    }
+
+    // Find or create a 'Savings' category
+    let savingsCategory = categories.find((c) => c.name === 'Ahorros' && c.type === 'expense');
+    if (!savingsCategory) {
+      addCategory('Ahorros', 'banknote.fill', 'expense');
+      // The new category might not be available immediately. We'll try to find it again,
+      // but fallback to a default if needed.
+      const newCategory = categories.find((c) => c.name === 'Ahorros');
+      savingsCategory = newCategory;
+    }
+
+    const categoryId = savingsCategory?.id || '11'; // Fallback to 'Otros Gastos'
+
+    try {
+      addTransaction({
+        amount,
+        description: `Ahorro para "${goal.name}"${description ? `: ${description}` : ''}`,
+        type: 'expense',
+        date: new Date().toISOString(),
+        walletId,
+        categoryId,
+        goalId: goal.id,
+      });
+      return { success: true, message: 'Ahorro añadido con éxito.' };
+    } catch (error: any) {
+      // The addTransaction in context doesn't throw, but we keep this for safety.
+      return { success: false, message: error.message || 'Ocurrió un error al añadir el ahorro.' };
+    }
+  };
+
+  const value = {
+    savingsGoals,
+    addSavingsGoal,
+    deleteSavingsGoal,
+    addContribution,
+    getContributionsForGoal,
+    isLoading,
+  };
+
+  return <SavingsGoalsContext.Provider value={value}>{children}</SavingsGoalsContext.Provider>;
+}
+
+export function useSavingsGoals() {
+  const context = useContext(SavingsGoalsContext);
+  if (context === undefined) {
+    throw new Error('[useSavingsGoals] Error: useSavingsGoals must be used within a SavingsGoalsProvider');
+  }
+  return context;
+}

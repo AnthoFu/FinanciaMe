@@ -44,6 +44,7 @@ const MAPPING = {
   'tshirt.fill': 'checkroom',
   'wallet.pass.fill': 'account-balance-wallet',
   'chart.bar.fill': 'bar-chart',
+  'flag.fill': 'flag',
   'gearshape.fill': 'settings',
   'arrow.down': 'arrow-downward',
   'arrow.up': 'arrow-upward',
