@@ -11,6 +11,7 @@ interface UseFixedExpensesHandlerProps {
   setExpenses: (expenses: FixedExpense[]) => void;
   bcvRate: number | null;
   usdtRate: number | null;
+  averageRate: number | null;
   fixedExpensesLoading: boolean;
   walletsLoading: boolean;
   ratesLoading: boolean;
@@ -25,6 +26,7 @@ export function useFixedExpensesHandler({
   setExpenses,
   bcvRate,
   usdtRate,
+  averageRate,
   fixedExpensesLoading,
   walletsLoading,
   ratesLoading,
@@ -39,7 +41,7 @@ export function useFixedExpensesHandler({
 
   const handlePayDueExpenses = useCallback(
     async (dueExpenses: FixedExpense[]) => {
-      if (!bcvRate || !usdtRate) return;
+      if (!bcvRate || !usdtRate || !averageRate) return;
       let tempWallets = JSON.parse(JSON.stringify(wallets));
       let tempTransactions = [...transactions];
       const nowString = new Date().toISOString();
@@ -93,7 +95,7 @@ export function useFixedExpensesHandler({
       if (failedExpenses.length > 0) summaryMessage += `\n\nPagos fallidos: ${failedExpenses.join('; ')}.`;
       if (summaryMessage) Alert.alert('Resumen de Pagos', summaryMessage);
     },
-    [bcvRate, usdtRate, wallets, transactions, expenses, setWallets, setTransactions, setExpenses],
+    [bcvRate, usdtRate, averageRate, wallets, transactions, expenses, setWallets, setTransactions, setExpenses],
   );
 
   const promptToPayDueExpenses = useCallback(

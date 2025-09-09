@@ -1,14 +1,20 @@
+import { useTheme } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { Alert, Button, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FixedExpenseModal from '../../components/FixedExpenseModal';
 import Toast from '../../components/Toast';
-import { FixedExpense } from '../../types';
+import { IconSymbol } from '../../components/ui/IconSymbol';
+import { useCategories } from '../../context/CategoriesContext';
 import { useFixedExpenses } from '../../context/FixedExpensesContext';
 import { useWallets } from '../../context/WalletsContext';
-import { useCategories } from '../../context/CategoriesContext';
-import { IconSymbol } from '../../components/ui/IconSymbol';
+import { getThemedStyles } from '../../styles/themedStyles';
+import { FixedExpense } from '../../types';
 
 export default function FixedExpensesScreen() {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
+  const globalStyles = getThemedStyles(colors);
+
   const { expenses, addFixedExpense, updateFixedExpense, deleteFixedExpense } = useFixedExpenses();
   const { wallets } = useWallets();
   const { categories } = useCategories();
@@ -59,8 +65,13 @@ export default function FixedExpensesScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Gastos Fijos</Text>
+    <View style={globalStyles.container}>
+      <View style={globalStyles.header}>
+        <Text style={globalStyles.title}>Gastos Fijos</Text>
+        <TouchableOpacity onPress={handleAddNew}>
+          <IconSymbol name="plus.circle.fill" size={32} color={colors.text} />
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={expenses}
         keyExtractor={(item) => item.id}
@@ -72,7 +83,7 @@ export default function FixedExpensesScreen() {
             <View style={styles.itemContainer}>
               {category && (
                 <View style={styles.iconContainer}>
-                  <IconSymbol name={category.icon as any} size={24} color="#1D3D47" />
+                  <IconSymbol name={category.icon as any} size={24} color={colors.text} />
                 </View>
               )}
               <View style={styles.itemDetails}>
@@ -99,9 +110,6 @@ export default function FixedExpensesScreen() {
         }}
         ListEmptyComponent={<Text style={styles.emptyText}>No tienes gastos fijos definidos.</Text>}
       />
-      <View style={styles.buttonWrapper}>
-        <Button title="Añadir Gasto Fijo" onPress={handleAddNew} />
-      </View>
       <FixedExpenseModal
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
@@ -118,29 +126,27 @@ export default function FixedExpensesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 50, paddingHorizontal: 20, backgroundColor: '#f0f4f7' },
-  title: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#1D3D47' },
-  list: { flex: 1, width: '100%' },
-  itemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  iconContainer: { marginRight: 15 },
-  itemDetails: { flex: 1 },
-  itemName: { fontSize: 18, fontWeight: 'bold' },
-  categoryName: { fontSize: 14, color: '#666' },
-  itemSubText: { fontSize: 14, color: '#666', marginVertical: 2 },
-  walletText: { fontSize: 14, color: '#007bff', fontStyle: 'italic' },
-  itemRightSection: { alignItems: 'flex-end' },
-  itemAmount: { fontSize: 18, fontWeight: 'bold', color: '#1D3D47' },
-  itemActions: { flexDirection: 'row', marginTop: 5, gap: 15 },
-  actionText: { fontSize: 14, color: '#007bff' },
-  deleteText: { color: '#dc3545' },
-  emptyText: { textAlign: 'center', marginTop: 50, color: '#666' },
-  buttonWrapper: { paddingVertical: 10 },
-});
+const getStyles = (colors: any) =>
+  StyleSheet.create({
+    list: { flex: 1, width: '100%' },
+    itemContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 15,
+      backgroundColor: colors.card,
+      borderRadius: 10,
+      marginBottom: 10,
+    },
+    iconContainer: { marginRight: 15 },
+    itemDetails: { flex: 1 },
+    itemName: { fontSize: 18, fontWeight: 'bold', color: colors.text },
+    categoryName: { fontSize: 14, color: colors.text, opacity: 0.7 },
+    itemSubText: { fontSize: 14, color: colors.text, opacity: 0.7, marginVertical: 2 },
+    walletText: { fontSize: 14, color: colors.primary, fontStyle: 'italic' },
+    itemRightSection: { alignItems: 'flex-end' },
+    itemAmount: { fontSize: 18, fontWeight: 'bold', color: colors.text },
+    itemActions: { flexDirection: 'row', marginTop: 5, gap: 15 },
+    actionText: { fontSize: 14, color: colors.primary },
+    deleteText: { color: colors.notification },
+    emptyText: { textAlign: 'center', marginTop: 50, color: colors.text, opacity: 0.6 },
+  });

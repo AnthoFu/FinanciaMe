@@ -1,3 +1,4 @@
+import { useTheme } from '@react-navigation/native';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Modal,
@@ -12,7 +13,7 @@ import {
 import { FixedExpense, Wallet, Category } from '../../types';
 import { useCategories } from '../../context/CategoriesContext';
 import { IconSymbol } from '../ui/IconSymbol';
-import { styles } from './styles';
+import { getStyles } from './styles';
 import { StyledInput } from '../ui/StyledInput';
 import { HorizontalPicker } from '../ui/HorizontalPicker';
 
@@ -31,6 +32,8 @@ export default function FixedExpenseModal({
   wallets,
   initialData,
 }: FixedExpenseModalProps) {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
   const { categories } = useCategories();
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
@@ -142,7 +145,7 @@ export default function FixedExpenseModal({
                 keyExtractor={(item) => item.id}
                 renderItem={(item, isSelected) => (
                   <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
-                    <IconSymbol name={item.icon as any} size={14} color={isSelected ? 'white' : '#007bff'} />
+                    <IconSymbol name={item.icon as any} size={14} color={isSelected ? colors.card : colors.primary} />
                     <Text
                       style={[
                         styles.categoryItemText,
@@ -176,8 +179,8 @@ export default function FixedExpenseModal({
               <StyledInput placeholder="Fecha de Fin (YYYY-MM-DD)" value={endDate} onChangeText={setEndDate} />
             </ScrollView>
             <View style={styles.buttonContainer}>
-              <Button title="Cancelar" onPress={onClose} color="#ff5c5c" />
-              <Button title={initialData ? 'Guardar' : 'Añadir'} onPress={handleSubmit} />
+              <Button title="Cancelar" onPress={onClose} color={colors.notification} />
+              <Button title={initialData ? 'Guardar' : 'Añadir'} onPress={handleSubmit} color={colors.primary} />
             </View>
           </View>
         </View>

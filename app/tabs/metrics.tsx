@@ -1,3 +1,4 @@
+import { useTheme } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -5,11 +6,16 @@ import { useCategories } from '../../context/CategoriesContext';
 import { useTransactions } from '../../context/TransactionsContext';
 import { useWallets } from '../../context/WalletsContext';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
-import { styles } from '../../styles/metrics.styles';
+import { getStyles } from '../../styles/metrics.styles';
+import { getThemedStyles } from '../../styles/themedStyles';
 
 type TimeRange = '7_days' | '30_days' | 'all_time';
 
 export default function MetricsScreen() {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
+  const globalStyles = getThemedStyles(colors);
+
   const { transactions, isLoading: transactionsLoading } = useTransactions();
   const { categories, isLoading: categoriesLoading } = useCategories();
   const { wallets, isLoading: walletsLoading } = useWallets();
@@ -93,8 +99,8 @@ export default function MetricsScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Cargando métricas...</Text>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ color: colors.text }}>Cargando métricas...</Text>
       </View>
     );
   }
@@ -102,7 +108,7 @@ export default function MetricsScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: 'Métricas de Gastos' }} />
-      <Text style={styles.title}>Métricas de Gastos</Text>
+      <Text style={globalStyles.title}>Métricas de Gastos</Text>
 
       <View style={styles.timeRangeContainer}>
         <TouchableOpacity

@@ -1,3 +1,4 @@
+import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -22,15 +23,18 @@ import { useWallets } from '../../context/WalletsContext';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
 import { useFinancialSummary } from '../../hooks/useFinancialSummary';
 import { useFixedExpensesHandler } from '../../hooks/useFixedExpensesHandler';
-import { styles } from '../../styles/styles';
+import { getThemedStyles } from '../../styles/themedStyles';
 
 export default function FinanciaMeScreen() {
+  const { colors } = useTheme();
+  const styles = getThemedStyles(colors);
+
   // --- Hooks de Datos ---
   const { wallets, setWallets, isLoading: walletsLoading } = useWallets();
   const { transactions, setTransactions, addTransaction, isLoading: transactionsLoading } = useTransactions();
   const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
-  const { bcvRate, usdtRate, loading: ratesLoading, error: ratesError } = useExchangeRates();
-  const balances = useFinancialSummary(wallets, bcvRate, usdtRate, ratesLoading);
+  const { bcvRate, usdtRate, averageRate, loading: ratesLoading, error: ratesError } = useExchangeRates();
+  const balances = useFinancialSummary(wallets, bcvRate, usdtRate, averageRate, ratesLoading);
 
   // --- Lógica de Gastos Fijos ---
   const { checkDueFixedExpenses } = useFixedExpensesHandler({
@@ -42,6 +46,7 @@ export default function FinanciaMeScreen() {
     setExpenses,
     bcvRate,
     usdtRate,
+    averageRate,
     fixedExpensesLoading,
     walletsLoading,
     ratesLoading,
@@ -105,12 +110,12 @@ export default function FinanciaMeScreen() {
 
   // --- Renderizado ---
   const renderContent = () => {
-    if (loading) return <ActivityIndicator size="large" color="#007AFF" style={{ flex: 1 }} />;
+    if (loading) return <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1 }} />;
     if (ratesError) return <Text style={styles.errorText}>Error cargando tasas: {ratesError}</Text>;
 
     return (
       <ScrollView showsVerticalScrollIndicator={false}>
-        <SummaryCard balances={balances} bcvRate={bcvRate} usdtRate={usdtRate} />
+        <SummaryCard balances={balances} bcvRate={bcvRate} usdtRate={usdtRate} averageRate={averageRate} />
         <WalletsCarousel wallets={wallets} onOpenModal={handleOpenModal} />
         <RecentTransactionsList transactions={transactions} wallets={wallets} />
       </ScrollView>
@@ -122,7 +127,7 @@ export default function FinanciaMeScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>FinanciaMe</Text>
         <TouchableOpacity onPress={() => router.push('/categories')}>
-          <IconSymbol name="gearshape.fill" size={24} color="#1D3D47" />
+          <IconSymbol name="gearshape.fill" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
       {renderContent()}

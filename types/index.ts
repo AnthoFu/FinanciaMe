@@ -1,8 +1,10 @@
+export type Currency = 'USD' | 'VEF' | 'USDT';
+
 export interface Wallet {
   id: string;
   name: string;
   balance: number;
-  currency: 'USD' | 'VEF' | 'USDT';
+  currency: Currency;
 }
 
 export interface Category {
@@ -20,13 +22,23 @@ export interface Transaction {
   date: string;
   walletId: string;
   categoryId: string;
+  goalId?: string;
+}
+
+export interface SavingsGoal {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currency: Currency;
+  creationDate: string;
+  targetDate?: string;
 }
 
 export interface FixedExpense {
   id: string;
   name: string;
   amount: number;
-  currency: 'USD' | 'VEF' | 'USDT';
+  currency: Currency;
   dayOfMonth: number;
   walletId: string | null;
   lastPaid?: string;

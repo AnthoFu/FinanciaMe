@@ -1,12 +1,13 @@
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { Wallet } from '../../../types';
 import { IconSymbol } from '../../ui/IconSymbol';
-import { styles } from './styles';
+import { getStyles } from './styles';
 
 // Helper to get currency symbol
 const getCurrencySymbol = (currency: 'USD' | 'VEF' | 'USDT') => {
-  const symbols = { USD: '$', VEF: 'Bs.', USDT: 'USDT' };
+  const symbols = { USD: '$ ', VEF: 'Bs. ', USDT: 'USDT ' };
   return symbols[currency] || '';
 };
 
@@ -16,6 +17,9 @@ interface WalletsCarouselProps {
 }
 
 export function WalletsCarousel({ wallets, onOpenModal }: WalletsCarouselProps) {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
+
   return (
     <View>
       <Text style={styles.sectionTitle}>Billeteras</Text>
@@ -32,20 +36,21 @@ export function WalletsCarousel({ wallets, onOpenModal }: WalletsCarouselProps) 
               <Text style={styles.walletCardCurrency}>{item.currency}</Text>
             </View>
             <Text style={styles.walletCardBalance}>
-              {getCurrencySymbol(item.currency)} {item.balance.toFixed(2)}
+              {getCurrencySymbol(item.currency)}
+              {item.balance.toFixed(2)}
             </Text>
             <View style={styles.walletCardActions}>
               <TouchableOpacity
                 style={[styles.walletButton, styles.expenseButton]}
                 onPress={() => onOpenModal('expense', item.id)}
               >
-                <IconSymbol name="arrow.down" size={16} color="#FFF" />
+                <IconSymbol name="arrow.down" size={16} color={colors.card} />
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.walletButton, styles.incomeButton]}
                 onPress={() => onOpenModal('income', item.id)}
               >
-                <IconSymbol name="arrow.up" size={16} color="#FFF" />
+                <IconSymbol name="arrow.up" size={16} color={colors.card} />
               </TouchableOpacity>
             </View>
           </View>

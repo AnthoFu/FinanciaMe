@@ -7,6 +7,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { CategoriesProvider } from '../context/CategoriesContext';
 import { FixedExpensesProvider } from '../context/FixedExpensesContext';
+import { SavingsGoalsProvider } from '../context/SavingsGoalsContext';
 import { TransactionsProvider } from '../context/TransactionsContext';
 import { WalletsProvider } from '../context/WalletsContext';
 
@@ -26,14 +27,16 @@ export default function RootLayout() {
       <FixedExpensesProvider>
         <TransactionsProvider>
           <WalletsProvider>
-            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-              <Stack>
-                <Stack.Screen name="tabs" options={{ headerShown: false }} />
-                <Stack.Screen name="categories" options={{ presentation: 'modal', title: 'Gestionar Categorías' }} />
-                <Stack.Screen name="+not-found" />
-              </Stack>
-              <StatusBar style="auto" />
-            </ThemeProvider>
+            <SavingsGoalsProvider>
+              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                <Stack>
+                  <Stack.Screen name="tabs" options={{ headerShown: false }} />
+                  <Stack.Screen name="categories" options={{ presentation: 'modal', title: 'Gestionar Categorías' }} />
+                  <Stack.Screen name="+not-found" />
+                </Stack>
+                <StatusBar style="auto" />
+              </ThemeProvider>
+            </SavingsGoalsProvider>
           </WalletsProvider>
         </TransactionsProvider>
       </FixedExpensesProvider>
