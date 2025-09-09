@@ -6,7 +6,7 @@ import { useSavingsGoals } from '../../context/SavingsGoalsContext';
 import { Currency } from '../../types';
 import { HorizontalPicker } from '../ui/HorizontalPicker';
 import { StyledInput } from '../ui/StyledInput';
-import { styles } from './styles';
+import { getStyles } from './styles';
 
 interface GoalModalProps {
   isVisible: boolean;
@@ -36,6 +36,7 @@ export function GoalModal({ isVisible, onClose }: GoalModalProps) {
   const [currency, setCurrency] = useState<Currency>('USD');
   const { addSavingsGoal } = useSavingsGoals();
   const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   const handleSave = () => {
     const amount = parseFloat(targetAmount);
@@ -92,8 +93,8 @@ export function GoalModal({ isVisible, onClose }: GoalModalProps) {
             </View>
 
             <View style={styles.buttonContainer}>
-              <Button title="Cancelar" onPress={handleClose} color="#ff3b30" />
-              <Button title="Guardar" onPress={handleSave} />
+              <Button title="Cancelar" onPress={handleClose} color={colors.notification} />
+              <Button title="Guardar" onPress={handleSave} color={colors.primary} />
             </View>
           </View>
         </View>

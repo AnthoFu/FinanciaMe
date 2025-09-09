@@ -7,7 +7,7 @@ import { useWallets } from '../../context/WalletsContext';
 import { SavingsGoal, Wallet } from '../../types';
 import { HorizontalPicker } from '../ui/HorizontalPicker';
 import { StyledInput } from '../ui/StyledInput';
-import { styles } from './styles';
+import { getStyles } from './styles';
 
 interface ContributionModalProps {
   isVisible: boolean;
@@ -38,6 +38,7 @@ export function ContributionModal({ isVisible, onClose, goal }: ContributionModa
   const { wallets } = useWallets();
   const { addContribution } = useSavingsGoals();
   const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   const [walletsForCurrency, setWalletsForCurrency] = useState<Wallet[]>([]);
 
@@ -110,7 +111,7 @@ export function ContributionModal({ isVisible, onClose, goal }: ContributionModa
             )}
 
             <View style={styles.buttonContainer}>
-              <Button title="Cancelar" onPress={handleClose} color="#ff3b30" />
+              <Button title="Cancelar" onPress={handleClose} color={colors.notification} />
               <Button title="Guardar" onPress={handleSave} disabled={!selectedWalletId} />
             </View>
           </View>

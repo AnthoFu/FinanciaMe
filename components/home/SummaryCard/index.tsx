@@ -1,6 +1,7 @@
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { View, Text } from 'react-native';
-import { styles } from './styles';
+import { getStyles } from './styles';
 
 interface SummaryCardProps {
   balances: {
@@ -14,6 +15,9 @@ interface SummaryCardProps {
 }
 
 export function SummaryCard({ balances, bcvRate, usdtRate, averageRate }: SummaryCardProps) {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
+
   return (
     <View style={styles.summaryCard}>
       <Text style={styles.summaryCardTitle}>SALDO TOTAL (REF. BCV)</Text>

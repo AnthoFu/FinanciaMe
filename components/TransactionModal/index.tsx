@@ -1,9 +1,10 @@
+import { useTheme } from '@react-navigation/native';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
 import { Wallet, Category } from '../../types';
 import { useCategories } from '../../context/CategoriesContext';
 import { IconSymbol } from '../ui/IconSymbol';
-import { styles } from './styles';
+import { getStyles } from './styles';
 import { StyledInput } from '../ui/StyledInput';
 import { HorizontalPicker } from '../ui/HorizontalPicker';
 
@@ -26,6 +27,8 @@ export default function TransactionModal({
   showToast,
   initialWalletId,
 }: TransactionModalProps) {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
   const { categories } = useCategories();
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
@@ -42,6 +45,8 @@ export default function TransactionModal({
       const currentCats = type === 'expense' ? expenseCategories : incomeCategories;
       if (currentCats.length > 0) {
         setSelectedCategoryId(currentCats[0].id);
+      } else {
+        setSelectedCategoryId(null);
       }
     }
   }, [isVisible, initialWalletId, wallets, type, expenseCategories, incomeCategories]);
@@ -59,8 +64,7 @@ export default function TransactionModal({
   const handleClose = () => {
     setAmount('');
     setDescription('');
-    setSelectedWalletId(null);
-    setSelectedCategoryId(null);
+    // Do not reset wallet/category to provide a better UX
     onClose();
   };
 
@@ -84,8 +88,8 @@ export default function TransactionModal({
                 onSelect={setSelectedWalletId}
                 keyExtractor={(item) => item.id}
                 renderItem={(item, isSelected) => (
-                  <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
-                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected]}>
+                  <View style={[styles.pickerItem, isSelected && styles.pickerItemSelected]}>
+                    <Text style={[styles.pickerItemText, isSelected && styles.pickerItemTextSelected]}>
                       {item.name}
                     </Text>
                   </View>
@@ -99,14 +103,10 @@ export default function TransactionModal({
                 onSelect={setSelectedCategoryId}
                 keyExtractor={(item) => item.id}
                 renderItem={(item, isSelected) => (
-                  <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
-                    <IconSymbol name={item.icon as any} size={14} color={isSelected ? 'white' : '#007bff'} />
+                  <View style={[styles.pickerItem, isSelected && styles.pickerItemSelected]}>
+                    <IconSymbol name={item.icon as any} size={14} color={isSelected ? colors.card : colors.primary} />
                     <Text
-                      style={[
-                        styles.categoryItemText,
-                        isSelected && styles.categoryItemTextSelected,
-                        { marginLeft: 5 },
-                      ]}
+                      style={[styles.pickerItemText, isSelected && styles.pickerItemTextSelected, { marginLeft: 5 }]}
                     >
                       {item.name}
                     </Text>
@@ -123,8 +123,8 @@ export default function TransactionModal({
               <StyledInput placeholder="Descripción" value={description} onChangeText={setDescription} />
             </ScrollView>
             <View style={styles.buttonContainer}>
-              <Button title="Cancelar" onPress={handleClose} color="#ff5c5c" />
-              <Button title="Aceptar" onPress={handleSubmit} />
+              <Button title="Cancelar" onPress={handleClose} color={colors.notification} />
+              <Button title="Aceptar" onPress={handleSubmit} color={colors.primary} />
             </View>
           </View>
         </View>

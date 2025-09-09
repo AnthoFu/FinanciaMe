@@ -1,6 +1,7 @@
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { styles } from './styles';
+import { getStyles } from './styles';
 
 interface HorizontalPickerProps<T> {
   label: string;
@@ -19,6 +20,9 @@ export function HorizontalPicker<T>({
   onSelect,
   renderItem,
 }: HorizontalPickerProps<T>) {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
+
   return (
     <View style={{ width: '100%' }}>
       <Text style={styles.pickerLabel}>{label}</Text>

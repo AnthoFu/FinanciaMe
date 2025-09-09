@@ -1,13 +1,14 @@
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { View, Text, FlatList } from 'react-native';
 import { Transaction, Wallet } from '../../../types';
 import { useCategories } from '../../../context/CategoriesContext';
 import { IconSymbol } from '../../ui/IconSymbol';
-import { styles } from './styles';
+import { getStyles } from './styles';
 
 // Helper to get currency symbol
 const getCurrencySymbol = (currency: 'USD' | 'VEF' | 'USDT') => {
-  const symbols = { USD: '$', VEF: 'Bs.', USDT: 'USDT' };
+  const symbols = { USD: '$ ', VEF: 'Bs. ', USDT: 'USDT ' };
   return symbols[currency] || '';
 };
 
@@ -17,6 +18,8 @@ interface RecentTransactionsListProps {
 }
 
 export function RecentTransactionsList({ transactions, wallets }: RecentTransactionsListProps) {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
   const { getCategoryById } = useCategories();
 
   return (
@@ -34,8 +37,10 @@ export function RecentTransactionsList({ transactions, wallets }: RecentTransact
 
           return (
             <View style={styles.transactionItem}>
-              <View style={[styles.transactionIcon, { backgroundColor: isIncome ? '#E5F9F0' : '#FEECEE' }]}>
-                <IconSymbol name={iconName} size={20} color={isIncome ? '#28a745' : '#dc3545'} />
+              <View
+                style={[styles.transactionIcon, isIncome ? styles.incomeIconBackground : styles.expenseIconBackground]}
+              >
+                <IconSymbol name={iconName as any} size={20} color={isIncome ? '#28a745' : colors.notification} />
               </View>
               <View style={styles.transactionDetails}>
                 <Text style={styles.transactionDescription} numberOfLines={1}>

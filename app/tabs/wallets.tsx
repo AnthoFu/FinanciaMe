@@ -1,11 +1,18 @@
+import { useTheme } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Button, Alert, TouchableOpacity } from 'react-native';
-import WalletModal from '../../components/WalletModal';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Toast from '../../components/Toast';
-import { Wallet } from '../../types';
+import { IconSymbol } from '../../components/ui/IconSymbol';
+import WalletModal from '../../components/WalletModal';
 import { useWallets } from '../../context/WalletsContext';
+import { getThemedStyles } from '../../styles/themedStyles';
+import { Wallet } from '../../types';
 
 export default function WalletsScreen() {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
+  const globalStyles = getThemedStyles(colors);
+
   const { wallets, addWallet, updateWallet, deleteWallet } = useWallets();
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
@@ -59,18 +66,21 @@ export default function WalletsScreen() {
   const handleSubmit = (walletData: Omit<Wallet, 'id'>) => {
     const isEditing = !!editingWallet;
     if (isEditing) {
-      // Update existing wallet
       updateWallet({ ...editingWallet, ...walletData });
     } else {
-      // Add new wallet
       addWallet(walletData);
     }
     showToast(isEditing ? 'Billetera actualizada con éxito' : 'Billetera creada con éxito');
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Mis Billeteras</Text>
+    <View style={globalStyles.container}>
+      <View style={globalStyles.header}>
+        <Text style={globalStyles.title}>Mis Billeteras</Text>
+        <TouchableOpacity onPress={handleAddNew}>
+          <IconSymbol name="plus.circle.fill" size={32} color={colors.text} />
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={wallets}
         keyExtractor={(item) => item.id}
@@ -95,9 +105,6 @@ export default function WalletsScreen() {
         )}
         ListEmptyComponent={<Text style={styles.emptyText}>Aún no has añadido ninguna billetera.</Text>}
       />
-      <View style={styles.buttonWrapper}>
-        <Button title="Añadir Billetera" onPress={handleAddNew} />
-      </View>
       <WalletModal
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
@@ -113,30 +120,28 @@ export default function WalletsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 50, paddingHorizontal: 20, backgroundColor: '#f0f4f7' },
-  title: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#1D3D47' },
-  list: { flex: 1, width: '100%' },
-  itemContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  itemDetails: { flex: 1 },
-  itemName: { fontSize: 18, fontWeight: 'bold' },
-  itemBalance: { fontSize: 16, color: '#007bff', marginTop: 4 },
-  itemActions: { flexDirection: 'column', alignItems: 'flex-end', gap: 15 },
-  actionText: { fontSize: 14, color: '#007bff' },
-  deleteText: { color: '#dc3545' },
-  emptyText: { textAlign: 'center', marginTop: 50, color: '#666' },
-  buttonWrapper: { paddingVertical: 10 },
-});
+const getStyles = (colors: any) =>
+  StyleSheet.create({
+    list: { flex: 1, width: '100%' },
+    itemContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: 20,
+      backgroundColor: colors.card,
+      borderRadius: 10,
+      marginBottom: 10,
+      shadowColor: colors.text,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 1,
+    },
+    itemDetails: { flex: 1 },
+    itemName: { fontSize: 18, fontWeight: 'bold', color: colors.text },
+    itemBalance: { fontSize: 16, color: colors.primary, marginTop: 4 },
+    itemActions: { flexDirection: 'column', alignItems: 'flex-end', gap: 15 },
+    actionText: { fontSize: 14, color: colors.primary },
+    deleteText: { color: colors.notification },
+    emptyText: { textAlign: 'center', marginTop: 50, color: colors.text, opacity: 0.6 },
+  });

@@ -1,8 +1,9 @@
+import { useTheme } from '@react-navigation/native';
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native';
 import { Wallet } from '../../types';
-import { styles } from './styles';
-import { StyledInput } from '../ui/StyledInput'; // Import the new component
+import { getStyles } from './styles';
+import { StyledInput } from '../ui/StyledInput';
 
 interface WalletModalProps {
   isVisible: boolean;
@@ -12,6 +13,9 @@ interface WalletModalProps {
 }
 
 export default function WalletModal({ isVisible, onClose, onSubmit, initialData }: WalletModalProps) {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
+
   const [name, setName] = useState('');
   const [balance, setBalance] = useState('0');
   const [currency, setCurrency] = useState<'USD' | 'VEF' | 'USDT'>('USD');
@@ -24,7 +28,6 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
       setBalance(initialData.balance.toString());
       setCurrency(initialData.currency);
     } else {
-      // Reset to default for new wallet
       setName('');
       setBalance('0');
       setCurrency('USD');
@@ -92,8 +95,8 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
             )}
 
             <View style={styles.buttonContainer}>
-              <Button title="Cancelar" onPress={onClose} color="#ff5c5c" />
-              <Button title={isEditing ? 'Guardar' : 'Añadir'} onPress={handleSubmit} />
+              <Button title="Cancelar" onPress={onClose} color={colors.notification} />
+              <Button title={isEditing ? 'Guardar' : 'Añadir'} onPress={handleSubmit} color={colors.primary} />
             </View>
           </View>
         </View>
