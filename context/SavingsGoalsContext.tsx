@@ -28,7 +28,7 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const { transactions, addTransaction } = useTransactions();
   const { categories, addCategory } = useCategories();
-  const { wallets } = useWallets();
+  const { wallets, setWallets } = useWallets();
 
   // Load goals from storage
   useEffect(() => {
@@ -95,18 +95,21 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
       return { success: false, message: 'Saldo insuficiente en la billetera.' };
     }
 
-    // Find or create a 'Savings' category
+    // 1. Update wallet balance
+    const updatedWallets = wallets.map((w) => (w.id === walletId ? { ...w, balance: w.balance - amount } : w));
+    setWallets(updatedWallets);
+
+    // 2. Find or create a 'Savings' category
     let savingsCategory = categories.find((c) => c.name === 'Ahorros' && c.type === 'expense');
     if (!savingsCategory) {
       addCategory('Ahorros', 'banknote.fill', 'expense');
-      // The new category might not be available immediately. We'll try to find it again,
-      // but fallback to a default if needed.
       const newCategory = categories.find((c) => c.name === 'Ahorros');
       savingsCategory = newCategory;
     }
 
     const categoryId = savingsCategory?.id || '11'; // Fallback to 'Otros Gastos'
 
+    // 3. Add the transaction record
     try {
       addTransaction({
         amount,
@@ -119,7 +122,8 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
       });
       return { success: true, message: 'Ahorro añadido con éxito.' };
     } catch (error: any) {
-      // The addTransaction in context doesn't throw, but we keep this for safety.
+      // Rollback wallet update if transaction fails
+      setWallets(wallets);
       return { success: false, message: error.message || 'Ocurrió un error al añadir el ahorro.' };
     }
   };

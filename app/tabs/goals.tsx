@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Button } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Button,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+} from 'react-native';
 
 import { ContributionModal } from '../../components/ContributionModal';
 import { GoalModal } from '../../components/GoalModal';
+import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useSavingsGoals } from '../../context/SavingsGoalsContext';
+import { styles as globalStyles } from '../../styles/styles';
 import { SavingsGoal } from '../../types';
 
 // A simple progress bar component
@@ -47,16 +58,17 @@ export default function GoalsScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Metas de Ahorro</Text>
-        <Button title="Agregar Meta" onPress={() => setIsGoalModalVisible(true)} />
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={globalStyles.container}>
+      <View style={globalStyles.header}>
+        <Text style={globalStyles.title}>Metas de Ahorro</Text>
+        <TouchableOpacity onPress={() => setIsGoalModalVisible(true)}>
+          <IconSymbol name="plus.circle.fill" size={32} color="#1D3D47" />
+        </TouchableOpacity>
       </View>
       <FlatList
         data={savingsGoals}
         renderItem={({ item }) => <GoalItem goal={item} onAddContribution={() => handleOpenContributionModal(item)} />}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
         ListEmptyComponent={<Text style={styles.emptyText}>Aún no tienes metas de ahorro. ¡Crea una!</Text>}
       />
       <GoalModal isVisible={isGoalModalVisible} onClose={() => setIsGoalModalVisible(false)} />
@@ -65,30 +77,11 @@ export default function GoalsScreen() {
         onClose={() => setIsContributionModalVisible(false)}
         goal={selectedGoal}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 50,
-    backgroundColor: '#f0f0f0',
-  },
-  header: {
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  listContainer: {
-    paddingHorizontal: 20,
-  },
   goalItemContainer: {
     backgroundColor: 'white',
     padding: 15,
