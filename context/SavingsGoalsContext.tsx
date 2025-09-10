@@ -18,6 +18,7 @@ interface SavingsGoalsContextType {
     description?: string,
   ) => Promise<{ success: boolean; message: string }>;
   getContributionsForGoal: (goalId: string) => Transaction[];
+  getGoalProgress: (goalId: string) => number;
   isLoading: boolean;
 }
 
@@ -40,7 +41,7 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
           setSavingsGoals(JSON.parse(storedGoals));
         }
       } catch (error) {
-        console.error('[loadSavingsGoals] Failed to load savings goals from storage:', error);
+        console.error('[loadSavingsGoals] Error al cargar las metas de ahorro desde el almacenamiento:', error);
       } finally {
         setIsLoading(false);
       }
@@ -55,7 +56,7 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
         try {
           await AsyncStorage.setItem(SAVINGS_GOALS_KEY, JSON.stringify(savingsGoals));
         } catch (error) {
-          console.error('[saveSavingsGoals] Failed to save savings goals to storage:', error);
+          console.error('[saveSavingsGoals] Error al guardar las metas de ahorro en el almacenamiento:', error);
         }
       };
       saveSavingsGoals();
@@ -79,6 +80,11 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
 
   const getContributionsForGoal = (goalId: string) => {
     return transactions.filter((t) => t.goalId === goalId);
+  };
+
+  const getGoalProgress = (goalId: string) => {
+    const contributions = getContributionsForGoal(goalId);
+    return contributions.reduce((total, contribution) => total + contribution.amount, 0);
   };
 
   const addContribution = async (
@@ -134,6 +140,7 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
     deleteSavingsGoal,
     addContribution,
     getContributionsForGoal,
+    getGoalProgress,
     isLoading,
   };
 

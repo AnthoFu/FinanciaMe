@@ -31,9 +31,8 @@ const ProgressBar = ({ progress, color }: { progress: number; color: string }) =
 const GoalItem = ({ goal, onAddContribution }: { goal: SavingsGoal; onAddContribution: () => void }) => {
   const { colors } = useTheme();
   const styles = getStyles(colors);
-  const { getContributionsForGoal } = useSavingsGoals();
-  const contributions = getContributionsForGoal(goal.id);
-  const currentAmount = contributions.reduce((sum, transaction) => sum + transaction.amount, 0);
+  const { getGoalProgress } = useSavingsGoals();
+  const currentAmount = getGoalProgress(goal.id);
   const progress = goal.targetAmount > 0 ? currentAmount / goal.targetAmount : 0;
 
   return (

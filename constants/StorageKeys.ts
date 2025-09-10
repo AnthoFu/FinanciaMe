@@ -3,3 +3,4 @@ export const TRANSACTIONS_KEY = 'userTransactions';
 export const FIXED_EXPENSES_KEY = 'fixedExpenses';
 export const WALLETS_KEY = 'userWallets';
 export const SAVINGS_GOALS_KEY = 'savingsGoals';
+export const BUDGETS_KEY = 'budgets';

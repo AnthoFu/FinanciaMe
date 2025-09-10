@@ -34,6 +34,16 @@ export interface SavingsGoal {
   targetDate?: string;
 }
 
+export interface Budget {
+  id: string;
+  name: string;
+  amount: number;
+  currency: Currency;
+  categoryId: string;
+  period: 'mensual' | 'anual';
+  creationDate: string;
+}
+
 export interface FixedExpense {
   id: string;
   name: string;
