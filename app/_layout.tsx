@@ -10,6 +10,7 @@ import { FixedExpensesProvider } from '../context/FixedExpensesContext';
 import { SavingsGoalsProvider } from '../context/SavingsGoalsContext';
 import { TransactionsProvider } from '../context/TransactionsContext';
 import { WalletsProvider } from '../context/WalletsContext';
+import { BudgetsProvider } from '../context/BudgetsContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -28,14 +29,19 @@ export default function RootLayout() {
         <TransactionsProvider>
           <WalletsProvider>
             <SavingsGoalsProvider>
-              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                <Stack>
-                  <Stack.Screen name="tabs" options={{ headerShown: false }} />
-                  <Stack.Screen name="categories" options={{ presentation: 'modal', title: 'Gestionar Categorías' }} />
-                  <Stack.Screen name="+not-found" />
-                </Stack>
-                <StatusBar style="auto" />
-              </ThemeProvider>
+              <BudgetsProvider>
+                <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                  <Stack>
+                    <Stack.Screen name="tabs" options={{ headerShown: false }} />
+                    <Stack.Screen
+                      name="categories"
+                      options={{ presentation: 'modal', title: 'Gestionar Categorías' }}
+                    />
+                    <Stack.Screen name="+not-found" />
+                  </Stack>
+                  <StatusBar style="auto" />
+                </ThemeProvider>
+              </BudgetsProvider>
             </SavingsGoalsProvider>
           </WalletsProvider>
         </TransactionsProvider>

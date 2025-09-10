@@ -12,16 +12,16 @@
 
 ## 🚀 Funcionalidades
 
-- **Gestión de Billeteras Multimoneda:** Gestiona múltiples billeteras en diferentes monedas (VEF, USD, USDT).
-- **Tasas de Cambio en Tiempo Real:** Obtén las últimas tasas de cambio del BCV y Binance USDT.
-- **Funcionamiento Offline:** Accede a tus datos incluso sin conexión a internet.
+- **Gestión de Billeteras Multimoneda:** Crea y gestiona múltiples billeteras en diferentes monedas (VEF, USD, USDT).
+- **Tasas de Cambio en Tiempo Real:** Obtén las últimas tasas de cambio del BCV y Binance USDT para mantener tus saldos actualizados.
+- **Gestión de Transacciones:** Registra fácilmente tus ingresos y gastos. Todo tu historial en un solo lugar.
+- **Categorías Personalizables:** Crea, edita y elimina tus propias categorías de ingresos y gastos para una clasificación detallada.
+- **Gestión de Presupuestos:** ¡No gastes de más! Define límites de gasto por categoría (mensual o anual) y visualiza tu progreso en tiempo real.
+- **Metas de Ahorro:** Define objetivos financieros (ej. "Nuevo Teléfono", "Viaje") y registra aportes desde tus billeteras para ver cómo te acercas a ellos.
+- **Gestión de Gastos Fijos:** Administra pagos recurrentes como alquiler o suscripciones y recibe notificaciones para que no se te olviden.
+- **Métricas de Gastos:** Analiza tus patrones de gasto con gráficos claros, filtrando por categoría y rango de tiempo.
 - **Saldo Consolidado:** Obtén una visión clara de tu patrimonio total en diferentes monedas.
-- **Gestión de Transacciones:** Registra fácilmente ingresos y gastos con categorías.
-- **Categorías Personalizables:** Añade, edita y elimina categorías personalizadas para tus transacciones.
-- **Métricas de Gastos:** Visualiza tus gastos por categoría y rango de tiempo.
-- **Gestión de Gastos Fijos:** Gestiona gastos recurrentes y recibe notificaciones cuando venzan.
-- **Historial de Transacciones Recientes:** Consulta todas tus transacciones recientes en la pantalla principal.
-- **Persistencia de Datos:** Todos tus datos se guardan de forma segura en tu dispositivo.
+- **Funcionamiento Offline y Persistencia Local:** Accede y gestiona todos tus datos sin necesidad de conexión a internet. Tu información se guarda de forma segura en tu dispositivo.
 
 ## 📸 Capturas de Pantalla
 
@@ -44,9 +44,9 @@ Este proyecto utiliza un conjunto de herramientas para garantizar un código lim
 
 ### Scripts Útiles
 
-- **`npm run lint`**: Ejecuta ESLint para revisar todo el proyecto.
-- **`npm run lint:fix`**: Intenta corregir automáticamente los problemas encontrados por ESLint.
-- **`npm run format`**: Formatea todo el proyecto utilizando Prettier.
+- `npm run lint`: Ejecuta ESLint para revisar todo el proyecto.
+- `npm run lint:fix`: Intenta corregir automáticamente los problemas encontrados por ESLint.
+- `npm run format`: Formatea todo el proyecto utilizando Prettier.
 
 ## 🏁 Cómo Empezar
 
@@ -83,7 +83,9 @@ Este proyecto utiliza un conjunto de herramientas para garantizar un código lim
 
 Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
 
-## 📊 Diagrama de Flujo del Sistema
+## 📊 Diagramas de Flujo
+
+### Flujo de Transacciones (Dinero)
 
 ```mermaid
 graph TD
@@ -145,4 +147,31 @@ graph TD
     style W fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
     style X fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
     style Y fill:#ffffff,stroke:#000,stroke-width:2px,color:#000
+```
+
+### Ciclo de Vida de un Presupuesto
+
+```mermaid
+graph TD
+    subgraph "Fase 1: Configuración"
+        A["Usuario crea un Presupuesto<br>(Ej: $100 para 'Comida' mensual)"]
+    end
+
+    subgraph "Fase 2: Uso Diario"
+        B["Usuario registra gastos normales<br>y los asigna a sus categorías"]
+    end
+
+    subgraph "Fase 3: Monitoreo"
+        C["Usuario abre la pantalla 'Presupuestos'"] --> D{Sistema calcula el progreso}
+        D --> E["Filtra gastos por categoría y fecha"]
+        E --> F["Suma los montos gastados"]
+        F --> G["Muestra el total gastado vs. el límite<br>(Ej: $45 de $100)"]
+    end
+
+    %% Enlaces para forzar el orden visual
+    A --> B --> C
+
+    %% Enlaces lógicos de datos
+    A --> D
+    B --> D
 ```
