@@ -4,21 +4,24 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
+import { OnboardingTutorial } from '@/components/OnboardingTutorial';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useOnboarding } from '@/hooks/useOnboarding';
+import { BudgetsProvider } from '../context/BudgetsContext';
 import { CategoriesProvider } from '../context/CategoriesContext';
 import { FixedExpensesProvider } from '../context/FixedExpensesContext';
 import { SavingsGoalsProvider } from '../context/SavingsGoalsContext';
 import { TransactionsProvider } from '../context/TransactionsContext';
 import { WalletsProvider } from '../context/WalletsContext';
-import { BudgetsProvider } from '../context/BudgetsContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const { isOnboardingCompleted, isLoading: onboardingLoading, completeOnboarding } = useOnboarding();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  if (!loaded) {
+  if (!loaded || onboardingLoading) {
     // Async font loading only occurs in development.
     return null;
   }
@@ -40,6 +43,13 @@ export default function RootLayout() {
                     <Stack.Screen name="+not-found" />
                   </Stack>
                   <StatusBar style="auto" />
+
+                  {/* Tutorial de bienvenida */}
+                  <OnboardingTutorial
+                    isVisible={!isOnboardingCompleted}
+                    onComplete={completeOnboarding}
+                    onSkip={completeOnboarding}
+                  />
                 </ThemeProvider>
               </BudgetsProvider>
             </SavingsGoalsProvider>

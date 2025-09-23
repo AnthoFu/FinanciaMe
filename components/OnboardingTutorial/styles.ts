@@ -1,0 +1,125 @@
+import { StyleSheet } from 'react-native';
+
+export const getOnboardingStyles = (colors: any) =>
+  StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    },
+    container: {
+      flex: 1,
+    },
+    spotlight: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    spotlightHole: {
+      width: 200,
+      height: 200,
+      borderRadius: 100,
+      backgroundColor: 'transparent',
+      borderWidth: 3,
+      borderColor: colors.tint,
+      shadowColor: colors.tint,
+      shadowOffset: {
+        width: 0,
+        height: 0,
+      },
+      shadowOpacity: 0.8,
+      shadowRadius: 20,
+      elevation: 10,
+    },
+    tutorialContent: {
+      flex: 1,
+      paddingHorizontal: 20,
+    },
+    stepContainer: {
+      backgroundColor: colors.background,
+      borderRadius: 16,
+      padding: 24,
+      marginHorizontal: 20,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
+    },
+    stepTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: colors.text,
+      textAlign: 'center',
+      marginBottom: 12,
+    },
+    stepDescription: {
+      fontSize: 16,
+      color: colors.text,
+      opacity: 0.7,
+      textAlign: 'center',
+      lineHeight: 24,
+      marginBottom: 24,
+    },
+    progressContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      marginBottom: 24,
+    },
+    progressDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: colors.border,
+      marginHorizontal: 4,
+    },
+    progressDotActive: {
+      backgroundColor: colors.tint,
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    skipButton: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+    },
+    skipButtonText: {
+      color: colors.text,
+      opacity: 0.6,
+      fontSize: 16,
+    },
+    navigationButtons: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    button: {
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      borderRadius: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    secondaryButton: {
+      backgroundColor: colors.border,
+      marginRight: 12,
+    },
+    primaryButton: {
+      backgroundColor: colors.tint,
+    },
+    primaryButtonText: {
+      color: '#FFFFFF',
+      fontSize: 16,
+      fontWeight: '600',
+      marginRight: 4,
+    },
+  });

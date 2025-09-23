@@ -2,12 +2,13 @@
   "expo": {
     "name": "FinanciaMe",
     "slug": "FinanciaMe",
-    "version": "1.8.2",
+    "version": "1.9.0",
     "orientation": "portrait",
     "icon": "./assets/images/AnthoFu-Icon.png",
     "scheme": "financiame",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "sdkVersion": "54.0.0",
     "ios": {
       "supportsTablet": true
     },
@@ -29,7 +30,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/AnthoFu-Icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"

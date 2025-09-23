@@ -1,6 +1,9 @@
 export const BCV_RATE_KEY = 'bcvRate';
+export const EXCHANGE_RATES_KEY = 'exchangeRates';
 export const TRANSACTIONS_KEY = 'userTransactions';
 export const FIXED_EXPENSES_KEY = 'fixedExpenses';
 export const WALLETS_KEY = 'userWallets';
 export const SAVINGS_GOALS_KEY = 'savingsGoals';
 export const BUDGETS_KEY = 'budgets';
+export const ONBOARDING_COMPLETED_KEY = 'onboardingCompleted';
+export const NOTIFICATION_SETTINGS_KEY = 'notificationSettings';

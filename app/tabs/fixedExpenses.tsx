@@ -2,11 +2,13 @@ import { useTheme } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FixedExpenseModal from '../../components/FixedExpenseModal';
+import { NotificationSettingsModal } from '../../components/NotificationSettingsModal';
 import Toast from '../../components/Toast';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useCategories } from '../../context/CategoriesContext';
 import { useFixedExpenses } from '../../context/FixedExpensesContext';
 import { useWallets } from '../../context/WalletsContext';
+import { useNotifications } from '../../hooks/useNotifications';
 import { getThemedStyles } from '../../styles/themedStyles';
 import { FixedExpense } from '../../types';
 
@@ -18,7 +20,9 @@ export default function FixedExpensesScreen() {
   const { expenses, addFixedExpense, updateFixedExpense, deleteFixedExpense } = useFixedExpenses();
   const { wallets } = useWallets();
   const { categories } = useCategories();
+  const { notificationSettings, saveNotificationSettings } = useNotifications();
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isNotificationSettingsVisible, setNotificationSettingsVisible] = useState(false);
   const [editingExpense, setEditingExpense] = useState<FixedExpense | null>(null);
   const [toast, setToast] = useState({ isVisible: false, message: '' });
 
@@ -54,23 +58,41 @@ export default function FixedExpensesScreen() {
     ]);
   };
 
-  const handleSubmit = (expenseData: Omit<FixedExpense, 'id' | 'lastPaid'>) => {
+  const handleSubmit = async (expenseData: Omit<FixedExpense, 'id' | 'lastPaid'>) => {
     const isEditing = !!editingExpense;
-    if (isEditing) {
-      updateFixedExpense({ ...editingExpense, ...expenseData });
-    } else {
-      addFixedExpense(expenseData);
+    try {
+      if (isEditing) {
+        await updateFixedExpense({ ...editingExpense, ...expenseData });
+      } else {
+        await addFixedExpense(expenseData);
+      }
+      showToast(isEditing ? 'Gasto fijo actualizado' : 'Gasto fijo creado con éxito');
+    } catch (error) {
+      showToast('Error al guardar el gasto fijo');
     }
-    showToast(isEditing ? 'Gasto fijo actualizado' : 'Gasto fijo creado con éxito');
+  };
+
+  const handleNotificationSettingsSave = async (settings: typeof notificationSettings) => {
+    try {
+      await saveNotificationSettings(settings);
+      showToast('Configuración de notificaciones guardada');
+    } catch (error) {
+      showToast('Error al guardar la configuración');
+    }
   };
 
   return (
     <View style={globalStyles.container}>
       <View style={globalStyles.header}>
         <Text style={globalStyles.title}>Gastos Fijos</Text>
-        <TouchableOpacity onPress={handleAddNew}>
-          <IconSymbol name="plus.circle.fill" size={32} color={colors.text} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity onPress={() => setNotificationSettingsVisible(true)} style={styles.notificationButton}>
+            <IconSymbol name="bell.fill" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleAddNew}>
+            <IconSymbol name="plus.circle.fill" size={32} color={colors.text} />
+          </TouchableOpacity>
+        </View>
       </View>
       <FlatList
         data={expenses}
@@ -117,6 +139,12 @@ export default function FixedExpensesScreen() {
         initialData={editingExpense}
         wallets={wallets}
       />
+      <NotificationSettingsModal
+        isVisible={isNotificationSettingsVisible}
+        onClose={() => setNotificationSettingsVisible(false)}
+        settings={notificationSettings}
+        onSave={handleNotificationSettingsSave}
+      />
       <Toast
         message={toast.message}
         isVisible={toast.isVisible}
@@ -129,6 +157,14 @@ export default function FixedExpensesScreen() {
 const getStyles = (colors: any) =>
   StyleSheet.create({
     list: { flex: 1, width: '100%' },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    notificationButton: {
+      padding: 4,
+    },
     itemContainer: {
       flexDirection: 'row',
       alignItems: 'center',

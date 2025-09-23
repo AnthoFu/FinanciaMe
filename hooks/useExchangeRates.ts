@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
+import { EXCHANGE_RATES_KEY } from '../constants/StorageKeys';
 
 interface ExchangeRates {
   bcv: number;
   usdt: number;
+  timestamp: number;
 }
 
 export const useExchangeRates = () => {
@@ -14,25 +17,62 @@ export const useExchangeRates = () => {
     const fetchRates = async () => {
       try {
         setLoading(true);
-        const [bcvResponse, paraleloResponse] = await Promise.all([
-          fetch('https://ve.dolarapi.com/v1/dolares/oficial'),
-          fetch('https://ve.dolarapi.com/v1/dolares/paralelo'),
-        ]);
+        setError(null);
 
-        if (!bcvResponse.ok || !paraleloResponse.ok) {
-          throw new Error('No se pudieron obtener las tasas de cambio de ve.dolarapi.com');
+        // Primero intentar cargar desde caché
+        const cachedRates = await AsyncStorage.getItem(EXCHANGE_RATES_KEY);
+        let cachedData: ExchangeRates | null = null;
+
+        if (cachedRates) {
+          cachedData = JSON.parse(cachedRates);
+          // Usar datos en caché si tienen menos de 1 hora de antigüedad
+          const oneHourAgo = Date.now() - 60 * 60 * 1000;
+          if (cachedData && cachedData.timestamp > oneHourAgo) {
+            setRates(cachedData);
+            setLoading(false);
+            return;
+          }
         }
 
-        const bcvData = await bcvResponse.json();
-        const paraleloData = await paraleloResponse.json();
+        // Intentar obtener datos frescos de la API
+        try {
+          const [bcvResponse, paraleloResponse] = await Promise.all([
+            fetch('https://ve.dolarapi.com/v1/dolares/oficial'),
+            fetch('https://ve.dolarapi.com/v1/dolares/paralelo'),
+          ]);
 
-        if (typeof bcvData.promedio !== 'number' || typeof paraleloData.promedio !== 'number') {
-          throw new Error(
-            'La estructura de la respuesta de la API es inesperada: falta el campo "promedio" o no es un número',
-          );
+          if (!bcvResponse.ok || !paraleloResponse.ok) {
+            throw new Error('No se pudieron obtener las tasas de cambio de ve.dolarapi.com');
+          }
+
+          const bcvData = await bcvResponse.json();
+          const paraleloData = await paraleloResponse.json();
+
+          if (typeof bcvData.promedio !== 'number' || typeof paraleloData.promedio !== 'number') {
+            throw new Error(
+              'La estructura de la respuesta de la API es inesperada: falta el campo "promedio" o no es un número',
+            );
+          }
+
+          const newRates: ExchangeRates = {
+            bcv: bcvData.promedio,
+            usdt: paraleloData.promedio,
+            timestamp: Date.now(),
+          };
+
+          setRates(newRates);
+
+          // Guardar en caché
+          await AsyncStorage.setItem(EXCHANGE_RATES_KEY, JSON.stringify(newRates));
+        } catch (apiError) {
+          // Si falla la API pero tenemos datos en caché, usarlos
+          if (cachedData) {
+            setRates(cachedData);
+            setError('Usando tasas de cambio en caché (sin conexión a internet)');
+          } else {
+            throw apiError;
+          }
         }
-
-        setRates({ bcv: bcvData.promedio, usdt: paraleloData.promedio });
       } catch (e: any) {
         setError(e.message);
       } finally {
