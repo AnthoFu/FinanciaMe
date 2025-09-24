@@ -1,4 +1,5 @@
 import { useTheme } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Animated, Dimensions, Modal, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { IconSymbol } from '../ui/IconSymbol';
@@ -26,6 +27,7 @@ const { width, height } = Dimensions.get('window');
 
 export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisible, onComplete, onSkip }) => {
   const { colors } = useTheme();
+  const router = useRouter();
   const styles = getOnboardingStyles(colors);
   const [currentStep, setCurrentStep] = useState(0);
   const [fadeAnim] = useState(new Animated.Value(0));
@@ -41,43 +43,49 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
       id: 'wallets',
       title: '1. Crea tu Primera Billetera',
       description:
-        'Primero necesitas crear una billetera para empezar. Ve a la pestaña "Billeteras" y toca el botón + para crear una.',
+        'Primero necesitas crear una billetera para empezar. Esto te permitirá organizar tu dinero y hacer seguimiento de tus gastos.',
       position: 'bottom',
+      navigateTo: '/tabs/wallets',
     },
     {
       id: 'transactions',
       title: '2. Registra Transacciones',
       description:
-        'Añade ingresos y gastos fácilmente. Ve a "Home" y toca el botón + en cualquier billetera para registrar transacciones.',
+        'Ahora vamos a aprender a registrar ingresos y gastos. Esto te ayudará a saber exactamente en qué gastas tu dinero.',
       position: 'bottom',
+      navigateTo: '/tabs',
     },
     {
       id: 'budgets',
       title: '3. Controla tus Presupuestos',
       description:
-        'Establece límites de gasto por categoría. Ve a "Presupuestos" para configurar tus límites mensuales.',
+        'Los presupuestos te ayudan a no gastar más de lo que planeas. Puedes establecer límites por categoría como comida, transporte, etc.',
       position: 'bottom',
+      navigateTo: '/tabs/budgets',
     },
     {
       id: 'goals',
       title: '4. Define Metas de Ahorro',
       description:
-        'Establece objetivos financieros y haz seguimiento de tu progreso. Ve a "Metas" para crear tus objetivos.',
+        'Las metas te ayudan a ahorrar para objetivos específicos como vacaciones, un auto, o emergencias. Es como tener un plan de ahorro.',
       position: 'bottom',
+      navigateTo: '/tabs/goals',
     },
     {
       id: 'fixed-expenses',
       title: '5. Programa Gastos Fijos',
       description:
-        'Configura gastos recurrentes como renta, servicios, etc. Ve a "Gastos Fijos" y programa recordatorios automáticos.',
+        'Los gastos fijos son pagos que haces regularmente como renta, servicios, suscripciones. La app te recordará cuándo pagarlos.',
       position: 'bottom',
+      navigateTo: '/tabs/fixedExpenses',
     },
     {
       id: 'metrics',
       title: '6. Analiza tus Finanzas',
       description:
-        'Revisa gráficos y estadísticas de tus hábitos financieros. Ve a "Métricas" para ver análisis detallados.',
+        'Las métricas te muestran gráficos y estadísticas de tus gastos. Te ayudan a entender mejor tus hábitos financieros.',
       position: 'bottom',
+      navigateTo: '/tabs/metrics',
     },
     {
       id: 'complete',
@@ -103,7 +111,27 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
     }
   }, [isVisible]);
 
+  // Navegar automáticamente cuando cambia el paso
+  useEffect(() => {
+    if (isVisible && currentStep > 0) {
+      const currentStepData = tutorialSteps[currentStep];
+      if (currentStepData.navigateTo) {
+        // Pequeño delay para que se vea la transición
+        setTimeout(() => {
+          router.push(currentStepData.navigateTo as any);
+        }, 100);
+      }
+    }
+  }, [currentStep, isVisible, router]);
+
   const handleNext = () => {
+    const currentStepData = tutorialSteps[currentStep];
+
+    // Navegar a la pantalla correspondiente si está definida
+    if (currentStepData.navigateTo) {
+      router.push(currentStepData.navigateTo as any);
+    }
+
     if (currentStep < tutorialSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -113,7 +141,15 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
 
   const handlePrevious = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      const previousStep = currentStep - 1;
+      const previousStepData = tutorialSteps[previousStep];
+
+      // Navegar a la pantalla del paso anterior si está definida
+      if (previousStepData.navigateTo) {
+        router.push(previousStepData.navigateTo as any);
+      }
+
+      setCurrentStep(previousStep);
     }
   };
 
@@ -131,15 +167,8 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
     <Modal visible={isVisible} transparent animationType="fade" statusBarTranslucent>
       <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
         <SafeAreaView style={styles.container}>
-          {/* Spotlight effect - solo para pasos específicos */}
-          {currentStepData.showSpotlight && (
-            <View style={styles.spotlight}>
-              <View style={styles.spotlightHole} />
-            </View>
-          )}
-
           {/* Tutorial content */}
-          <View style={[styles.tutorialContent, getPositionStyles(currentStepData.position)]}>
+          <View style={styles.tutorialContent}>
             <View style={styles.stepContainer}>
               <Text style={styles.stepTitle}>{currentStepData.title}</Text>
               <Text style={styles.stepDescription}>{currentStepData.description}</Text>

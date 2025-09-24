@@ -5,9 +5,15 @@ export const getOnboardingStyles = (colors: any) =>
     overlay: {
       flex: 1,
       backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 16,
     },
     container: {
       flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: '100%',
     },
     spotlight: {
       position: 'absolute',
@@ -37,13 +43,16 @@ export const getOnboardingStyles = (colors: any) =>
     },
     tutorialContent: {
       flex: 1,
-      paddingHorizontal: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: '100%',
+      maxWidth: 380,
     },
     stepContainer: {
       backgroundColor: colors.background,
       borderRadius: 16,
-      padding: 24,
-      marginHorizontal: 20,
+      padding: 20,
+      width: '100%',
       shadowColor: '#000',
       shadowOffset: {
         width: 0,
@@ -54,16 +63,16 @@ export const getOnboardingStyles = (colors: any) =>
       elevation: 8,
     },
     stepTitle: {
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: 'bold',
       color: colors.text,
       textAlign: 'center',
-      marginBottom: 12,
+      marginBottom: 16,
     },
     stepDescription: {
       fontSize: 16,
       color: colors.text,
-      opacity: 0.7,
+      opacity: 0.8,
       textAlign: 'center',
       lineHeight: 24,
       marginBottom: 24,
@@ -103,11 +112,12 @@ export const getOnboardingStyles = (colors: any) =>
     },
     button: {
       paddingHorizontal: 20,
-      paddingVertical: 12,
-      borderRadius: 8,
+      paddingVertical: 14,
+      borderRadius: 12,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
+      minHeight: 48,
     },
     secondaryButton: {
       backgroundColor: colors.border,
