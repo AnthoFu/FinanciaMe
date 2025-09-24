@@ -8,6 +8,7 @@ export const getOnboardingStyles = (colors: any) =>
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: 16,
+      paddingBottom: 100, // Espacio para el navbar
     },
     container: {
       flex: 1,

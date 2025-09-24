@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Animated, Dimensions, Modal, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { IconSymbol } from '../ui/IconSymbol';
 import { getOnboardingStyles } from './styles';
+import { TabSpotlight } from './TabSpotlight';
 
 interface TutorialStep {
   id: string;
@@ -15,6 +16,7 @@ interface TutorialStep {
   navigateTo?: string;
   spotlightElement?: string;
   showSpotlight?: boolean;
+  highlightTab?: string; // Nombre del tab a iluminar
 }
 
 interface OnboardingTutorialProps {
@@ -31,6 +33,8 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
   const styles = getOnboardingStyles(colors);
   const [currentStep, setCurrentStep] = useState(0);
   const [fadeAnim] = useState(new Animated.Value(0));
+  const [spotlightAnim] = useState(new Animated.Value(0));
+  const [highlightedTab, setHighlightedTab] = useState<string | null>(null);
 
   const tutorialSteps: TutorialStep[] = [
     {
@@ -46,6 +50,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
         'Primero necesitas crear una billetera para empezar. Esto te permitirá organizar tu dinero y hacer seguimiento de tus gastos.',
       position: 'bottom',
       navigateTo: '/tabs/wallets',
+      highlightTab: 'wallets',
     },
     {
       id: 'transactions',
@@ -54,6 +59,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
         'Ahora vamos a aprender a registrar ingresos y gastos. Esto te ayudará a saber exactamente en qué gastas tu dinero.',
       position: 'bottom',
       navigateTo: '/tabs',
+      highlightTab: 'index',
     },
     {
       id: 'budgets',
@@ -62,6 +68,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
         'Los presupuestos te ayudan a no gastar más de lo que planeas. Puedes establecer límites por categoría como comida, transporte, etc.',
       position: 'bottom',
       navigateTo: '/tabs/budgets',
+      highlightTab: 'budgets',
     },
     {
       id: 'goals',
@@ -70,6 +77,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
         'Las metas te ayudan a ahorrar para objetivos específicos como vacaciones, un auto, o emergencias. Es como tener un plan de ahorro.',
       position: 'bottom',
       navigateTo: '/tabs/goals',
+      highlightTab: 'goals',
     },
     {
       id: 'fixed-expenses',
@@ -78,6 +86,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
         'Los gastos fijos son pagos que haces regularmente como renta, servicios, suscripciones. La app te recordará cuándo pagarlos.',
       position: 'bottom',
       navigateTo: '/tabs/fixedExpenses',
+      highlightTab: 'fixedExpenses',
     },
     {
       id: 'metrics',
@@ -86,6 +95,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
         'Las métricas te muestran gráficos y estadísticas de tus gastos. Te ayudan a entender mejor tus hábitos financieros.',
       position: 'bottom',
       navigateTo: '/tabs/metrics',
+      highlightTab: 'metrics',
     },
     {
       id: 'complete',
@@ -123,6 +133,28 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
       }
     }
   }, [currentStep, isVisible, router]);
+
+  // Manejar el spotlight del tab
+  useEffect(() => {
+    const currentStepData = tutorialSteps[currentStep];
+
+    if (currentStepData.highlightTab) {
+      setHighlightedTab(currentStepData.highlightTab);
+      // Hacer el spotlight completamente visible
+      Animated.timing(spotlightAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      setHighlightedTab(null);
+      Animated.timing(spotlightAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [currentStep, spotlightAnim]);
 
   const handleNext = () => {
     const currentStepData = tutorialSteps[currentStep];
@@ -202,6 +234,9 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
             </View>
           </View>
         </SafeAreaView>
+
+        {/* Tab Spotlight */}
+        <TabSpotlight highlightedTab={highlightedTab} spotlightAnim={spotlightAnim} colors={colors} />
       </Animated.View>
     </Modal>
   );
