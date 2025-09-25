@@ -1,7 +1,8 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FixedExpense } from '../types';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { FIXED_EXPENSES_KEY } from '../constants/StorageKeys';
+import { useNotifications } from '../hooks/useNotifications';
+import { FixedExpense } from '../types';
 
 interface FixedExpensesContextType {
   expenses: FixedExpense[];
@@ -17,6 +18,8 @@ const FixedExpensesContext = createContext<FixedExpensesContextType | undefined>
 export function FixedExpensesProvider({ children }: { children: ReactNode }) {
   const [expenses, setExpenses] = useState<FixedExpense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { scheduleFixedExpenseReminder, cancelFixedExpenseReminder, scheduleAllFixedExpenseReminders } =
+    useNotifications();
 
   const loadFixedExpenses = async () => {
     setIsLoading(true);
@@ -49,21 +52,38 @@ export function FixedExpensesProvider({ children }: { children: ReactNode }) {
     }
   }, [expenses, isLoading]);
 
-  const addFixedExpense = (expenseData: Omit<FixedExpense, 'id' | 'lastPaid'>) => {
+  // Programar notificaciones cuando se cargan los gastos fijos
+  useEffect(() => {
+    if (!isLoading && expenses.length > 0) {
+      scheduleAllFixedExpenseReminders(expenses);
+    }
+  }, [isLoading, expenses, scheduleAllFixedExpenseReminders]);
+
+  const addFixedExpense = async (expenseData: Omit<FixedExpense, 'id' | 'lastPaid'>) => {
     const newExpense: FixedExpense = {
       id: Date.now().toString(),
       lastPaid: undefined,
       ...expenseData,
     };
     setExpenses((prev) => [newExpense, ...prev]);
+
+    // Programar notificación para el nuevo gasto fijo
+    await scheduleFixedExpenseReminder(newExpense);
   };
 
-  const updateFixedExpense = (updatedExpense: FixedExpense) => {
+  const updateFixedExpense = async (updatedExpense: FixedExpense) => {
     setExpenses((prev) => prev.map((exp) => (exp.id === updatedExpense.id ? updatedExpense : exp)));
+
+    // Cancelar notificación anterior y programar nueva
+    await cancelFixedExpenseReminder(updatedExpense.id);
+    await scheduleFixedExpenseReminder(updatedExpense);
   };
 
-  const deleteFixedExpense = (id: string) => {
+  const deleteFixedExpense = async (id: string) => {
     setExpenses((prev) => prev.filter((exp) => exp.id !== id));
+
+    // Cancelar notificación del gasto eliminado
+    await cancelFixedExpenseReminder(id);
   };
 
   const value = {
