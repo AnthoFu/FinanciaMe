@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider, useTheme } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -14,6 +14,33 @@ import { SavingsGoalsProvider } from '../context/SavingsGoalsContext';
 import { TransactionsProvider } from '../context/TransactionsContext';
 import { WalletsProvider } from '../context/WalletsContext';
 
+function ThemedStack() {
+  const { colors } = useTheme();
+  return (
+    <Stack>
+      <Stack.Screen name="tabs" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="categories"
+        options={{
+          presentation: 'modal',
+          title: 'Gestionar Categorías',
+          animation: 'fade',
+          contentStyle: {
+            backgroundColor: colors.background,
+          },
+          headerStyle: {
+            backgroundColor: colors.card,
+          },
+          headerTitleStyle: {
+            color: colors.text,
+          },
+        }}
+      />
+      <Stack.Screen name="+not-found" />
+    </Stack>
+  );
+}
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const { isOnboardingCompleted, isLoading: onboardingLoading, completeOnboarding } = useOnboarding();
@@ -22,7 +49,6 @@ export default function RootLayout() {
   });
 
   if (!loaded || onboardingLoading) {
-    // Async font loading only occurs in development.
     return null;
   }
 
@@ -34,17 +60,8 @@ export default function RootLayout() {
             <SavingsGoalsProvider>
               <BudgetsProvider>
                 <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                  <Stack>
-                    <Stack.Screen name="tabs" options={{ headerShown: false }} />
-                    <Stack.Screen
-                      name="categories"
-                      options={{ presentation: 'modal', title: 'Gestionar Categorías' }}
-                    />
-                    <Stack.Screen name="+not-found" />
-                  </Stack>
+                  <ThemedStack />
                   <StatusBar style="auto" />
-
-                  {/* Tutorial de bienvenida */}
                   <OnboardingTutorial
                     isVisible={!isOnboardingCompleted}
                     onComplete={completeOnboarding}

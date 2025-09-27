@@ -7,6 +7,7 @@
     "icon": "./assets/images/AnthoFu-Icon.png",
     "scheme": "financiame",
     "userInterfaceStyle": "automatic",
+    "backgroundColor": "#121212",
     "newArchEnabled": true,
     "sdkVersion": "54.0.0",
     "ios": {
@@ -15,7 +16,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/AnthoFu-Icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#121212"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.anthofu.FinanciaMe"
@@ -33,7 +34,7 @@
           "image": "./assets/images/AnthoFu-Icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#121212"
         }
       ]
     ],
