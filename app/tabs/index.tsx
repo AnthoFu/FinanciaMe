@@ -1,6 +1,6 @@
 import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -16,8 +16,8 @@ import { SummaryCard } from '../../components/home/SummaryCard';
 import { WalletsCarousel } from '../../components/home/WalletsCarousel';
 import Toast from '../../components/Toast';
 import TransactionModal from '../../components/TransactionModal';
-import { IconSymbol } from '../../components/ui/IconSymbol';
 import TransferModal from '../../components/TransferModal';
+import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useFixedExpenses } from '../../context/FixedExpensesContext';
 import { useTransactions } from '../../context/TransactionsContext';
 import { useWallets } from '../../context/WalletsContext';
