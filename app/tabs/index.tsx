@@ -17,6 +17,7 @@ import { WalletsCarousel } from '../../components/home/WalletsCarousel';
 import Toast from '../../components/Toast';
 import TransactionModal from '../../components/TransactionModal';
 import { IconSymbol } from '../../components/ui/IconSymbol';
+import TransferModal from '../../components/TransferModal';
 import { useFixedExpenses } from '../../context/FixedExpensesContext';
 import { useTransactions } from '../../context/TransactionsContext';
 import { useWallets } from '../../context/WalletsContext';
@@ -30,8 +31,14 @@ export default function FinanciaMeScreen() {
   const styles = getThemedStyles(colors);
 
   // --- Hooks de Datos ---
-  const { wallets, setWallets, isLoading: walletsLoading } = useWallets();
-  const { transactions, setTransactions, addTransaction, isLoading: transactionsLoading } = useTransactions();
+  const { wallets, setWallets, isLoading: walletsLoading, updateBalancesForTransfer } = useWallets();
+  const {
+    transactions,
+    setTransactions,
+    addTransaction,
+    addTransfer,
+    isLoading: transactionsLoading,
+  } = useTransactions();
   const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
   const { bcvRate, usdtRate, averageRate, loading: ratesLoading, error: ratesError } = useExchangeRates();
   const balances = useFinancialSummary(wallets, bcvRate, usdtRate, averageRate, ratesLoading);
@@ -55,6 +62,7 @@ export default function FinanciaMeScreen() {
   // --- Estados Locales ---
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isTransferModalVisible, setTransferModalVisible] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
   const [selectedWalletIdForModal, setSelectedWalletIdForModal] = useState<string | null>(null);
   const [toast, setToast] = useState({ isVisible: false, message: '' });
@@ -108,6 +116,39 @@ export default function FinanciaMeScreen() {
     }
   };
 
+  const handleTransferSubmit = (
+    fromWalletId: string,
+    toWalletId: string,
+    fromAmount: number,
+    toAmount: number,
+    rate: number,
+  ) => {
+    const fromWallet = wallets.find((w) => w.id === fromWalletId);
+    const toWallet = wallets.find((w) => w.id === toWalletId);
+
+    if (!fromWallet || !toWallet) {
+      showToast('Error: No se encontraron las billeteras.');
+      return;
+    }
+
+    // 1. Update wallet balances
+    updateBalancesForTransfer(fromWalletId, toWalletId, fromAmount, toAmount);
+
+    // 2. Add the two transactions
+    addTransfer({
+      fromWalletId,
+      toWalletId,
+      fromAmount,
+      toAmount,
+      fromWalletName: fromWallet.name,
+      toWalletName: toWallet.name,
+      date: new Date().toISOString(),
+    });
+
+    setTransferModalVisible(false);
+    showToast('Transferencia realizada con éxito');
+  };
+
   // --- Renderizado ---
   const renderContent = () => {
     if (loading) return <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1 }} />;
@@ -126,9 +167,14 @@ export default function FinanciaMeScreen() {
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>FinanciaMe</Text>
-        <TouchableOpacity onPress={() => router.push('/categories')}>
-          <IconSymbol name="gearshape.fill" size={24} color={colors.text} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 15 }}>
+          <TouchableOpacity onPress={() => setTransferModalVisible(true)}>
+            <IconSymbol name="arrow.left.arrow.right.circle.fill" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/categories')}>
+            <IconSymbol name="gearshape.fill" size={24} color={colors.text} />
+          </TouchableOpacity>
+        </View>
       </View>
       {renderContent()}
       <TransactionModal
@@ -140,10 +186,16 @@ export default function FinanciaMeScreen() {
         showToast={showToast}
         initialWalletId={selectedWalletIdForModal}
       />
+      <TransferModal
+        isVisible={isTransferModalVisible}
+        onClose={() => setTransferModalVisible(false)}
+        onSubmit={handleTransferSubmit}
+        showToast={showToast}
+      />
       <Toast
         isVisible={toast.isVisible}
         message={toast.message}
-        onClose={() => setToast({ isVisible: false, message: '' })}
+        onHide={() => setToast({ isVisible: false, message: '' })}
       />
     </KeyboardAvoidingView>
   );

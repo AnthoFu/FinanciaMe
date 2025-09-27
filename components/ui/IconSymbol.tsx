@@ -49,6 +49,9 @@ const MAPPING = {
   'gearshape.fill': 'settings',
   'arrow.down': 'arrow-downward',
   'arrow.up': 'arrow-upward',
+  'arrow.left.arrow.right.circle.fill': 'swap-horiz',
+  'arrow.down.left.circle.fill': 'call-received',
+  'arrow.up.right.circle.fill': 'call-made',
 } as IconMapping;
 
 /**
