@@ -24,6 +24,7 @@ import { useWallets } from '../../context/WalletsContext';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
 import { useFinancialSummary } from '../../hooks/useFinancialSummary';
 import { useFixedExpensesHandler } from '../../hooks/useFixedExpensesHandler';
+import { useTransactionHandler } from '../../hooks/useTransactionHandler';
 import { getThemedStyles } from '../../styles/themedStyles';
 
 export default function FinanciaMeScreen() {
@@ -42,6 +43,7 @@ export default function FinanciaMeScreen() {
   const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
   const { bcvRate, usdtRate, averageRate, loading: ratesLoading, error: ratesError } = useExchangeRates();
   const balances = useFinancialSummary(wallets, bcvRate, usdtRate, averageRate, ratesLoading);
+  const { handleNewTransaction, handleTransfer } = useTransactionHandler();
 
   // --- Lógica de Gastos Fijos ---
   const { checkDueFixedExpenses } = useFixedExpensesHandler({
@@ -89,64 +91,23 @@ export default function FinanciaMeScreen() {
   };
 
   const handleSubmitTransaction = (amount: number, description: string, walletId: string, categoryId: string) => {
-    let wasTransactionSuccessful = false;
-    const newWallets = wallets.map((wallet) => {
-      if (wallet.id === walletId) {
-        const newBalance = transactionType === 'income' ? wallet.balance + amount : wallet.balance - amount;
-        if (newBalance < 0) {
-          Alert.alert('Saldo Insuficiente', 'La billetera no tiene fondos suficientes.');
-          return wallet;
-        }
-        wasTransactionSuccessful = true;
-        return { ...wallet, balance: newBalance };
-      }
-      return wallet;
-    });
-    if (wasTransactionSuccessful) {
-      addTransaction({
-        amount,
-        description,
-        date: new Date().toISOString(),
-        type: transactionType,
-        walletId: walletId,
-        categoryId: categoryId,
-      });
-      setWallets(newWallets);
+    const success = handleNewTransaction(amount, description, walletId, categoryId, transactionType);
+    if (success) {
       setModalVisible(false);
+      showToast(transactionType === 'income' ? 'Ingreso añadido con éxito' : 'Gasto añadido con éxito');
     }
   };
 
-  const handleTransferSubmit = (
-    fromWalletId: string,
-    toWalletId: string,
-    fromAmount: number,
-    toAmount: number,
-    rate: number,
-  ) => {
-    const fromWallet = wallets.find((w) => w.id === fromWalletId);
-    const toWallet = wallets.find((w) => w.id === toWalletId);
-
-    if (!fromWallet || !toWallet) {
-      showToast('Error: No se encontraron las billeteras.');
-      return;
+  const handleTransferSubmit = (fromWalletId: string, toWalletId: string, fromAmount: number, toAmount: number) => {
+    try {
+      const success = handleTransfer(fromWalletId, toWalletId, fromAmount, toAmount);
+      if (success) {
+        setTransferModalVisible(false);
+        showToast('Transferencia realizada con éxito');
+      }
+    } catch (error: any) {
+      showToast(error.message);
     }
-
-    // 1. Update wallet balances
-    updateBalancesForTransfer(fromWalletId, toWalletId, fromAmount, toAmount);
-
-    // 2. Add the two transactions
-    addTransfer({
-      fromWalletId,
-      toWalletId,
-      fromAmount,
-      toAmount,
-      fromWalletName: fromWallet.name,
-      toWalletName: toWallet.name,
-      date: new Date().toISOString(),
-    });
-
-    setTransferModalVisible(false);
-    showToast('Transferencia realizada con éxito');
   };
 
   // --- Renderizado ---
