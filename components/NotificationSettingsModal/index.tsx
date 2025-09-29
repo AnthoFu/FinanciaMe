@@ -22,7 +22,6 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
   onSave,
 }) => {
   const { colors } = useTheme();
-  const styles = getThemedStyles(colors);
   const [localSettings, setLocalSettings] = useState(settings);
 
   const handleSave = () => {
@@ -39,8 +38,6 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
   };
 
   const showTimePicker = () => {
-    // En una implementación real, usarías un DatePicker
-    // Por ahora, mostramos opciones predefinidas
     Alert.alert('Seleccionar Hora', 'Elige la hora para los recordatorios:', [
       { text: '08:00', onPress: () => handleTimeChange('08:00') },
       { text: '09:00', onPress: () => handleTimeChange('09:00') },
@@ -50,6 +47,142 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
       { text: 'Cancelar', style: 'cancel' },
     ]);
   };
+
+  // Los estilos se definen aquí para poder usar `colors` del tema
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    closeButton: {
+      padding: 8,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    placeholder: {
+      width: 40,
+    },
+    content: {
+      flex: 1,
+      padding: 20,
+    },
+    settingRow: {
+      marginBottom: 24,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    settingInfo: {
+      flex: 1,
+      marginRight: 12,
+    },
+    settingTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 4,
+    },
+    settingDescription: {
+      fontSize: 14,
+      color: colors.text,
+      opacity: 0.7,
+    },
+    optionsContainer: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    optionButton: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.card,
+    },
+    optionButtonSelected: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    optionText: {
+      fontSize: 14,
+      color: colors.text,
+    },
+    optionTextSelected: {
+      color: '#FFFFFF',
+      fontWeight: '600',
+    },
+    timeButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.card,
+    },
+    timeText: {
+      fontSize: 16,
+      color: colors.text,
+    },
+    infoContainer: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      backgroundColor: colors.card,
+      padding: 16,
+      borderRadius: 8,
+      marginTop: 20,
+    },
+    infoText: {
+      flex: 1,
+      fontSize: 14,
+      color: colors.primary,
+      marginLeft: 12,
+      lineHeight: 20,
+    },
+    footer: {
+      flexDirection: 'row',
+      padding: 20,
+      gap: 12,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    button: {
+      flex: 1,
+      paddingVertical: 12,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    cancelButton: {
+      backgroundColor: colors.card,
+    },
+    saveButton: {
+      backgroundColor: colors.primary,
+    },
+    cancelButtonText: {
+      fontSize: 16,
+      color: colors.text,
+      fontWeight: '600',
+    },
+    saveButtonText: {
+      fontSize: 16,
+      color: '#FFFFFF',
+      fontWeight: '600',
+    },
+  });
 
   return (
     <Modal visible={isVisible} animationType="slide" presentationStyle="pageSheet">
@@ -72,7 +205,7 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
             <Switch
               value={localSettings.enabled}
               onValueChange={(enabled) => setLocalSettings((prev) => ({ ...prev, enabled }))}
-              trackColor={{ false: colors.border, true: colors.tint }}
+              trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor={localSettings.enabled ? '#FFFFFF' : colors.text}
             />
           </View>
@@ -112,7 +245,7 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
 
           {/* Información adicional */}
           <View style={styles.infoContainer}>
-            <IconSymbol name="info.circle" size={20} color={colors.tint} />
+            <IconSymbol name="info.circle" size={20} color={colors.primary} />
             <Text style={styles.infoText}>
               Las notificaciones te ayudarán a no olvidar tus gastos fijos y mantener un mejor control de tus finanzas.
             </Text>

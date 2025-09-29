@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import { SchedulableTriggerInputTypes } from 'expo-notifications';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { NOTIFICATION_SETTINGS_KEY } from '../constants/StorageKeys';
@@ -13,6 +14,8 @@ try {
       shouldShowAlert: true,
       shouldPlaySound: true,
       shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
     }),
   });
 } catch (error) {
@@ -128,6 +131,7 @@ export const useNotifications = () => {
           },
         },
         trigger: {
+          type: SchedulableTriggerInputTypes.DATE,
           date: reminderDate,
         },
       });
