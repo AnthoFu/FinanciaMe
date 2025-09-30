@@ -6,6 +6,15 @@ import { TRANSACTIONS_KEY } from '../constants/StorageKeys';
 interface TransactionsContextType {
   transactions: Transaction[];
   addTransaction: (transactionData: Omit<Transaction, 'id'>) => void;
+  addTransfer: (transferData: {
+    fromWalletId: string;
+    toWalletId: string;
+    fromAmount: number;
+    toAmount: number;
+    fromWalletName: string;
+    toWalletName: string;
+    date: string;
+  }) => void;
   isLoading: boolean;
   setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
 }
@@ -55,9 +64,43 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     setTransactions((prev) => [newTransaction, ...prev]);
   };
 
+  const addTransfer = (transferData: {
+    fromWalletId: string;
+    toWalletId: string;
+    fromAmount: number;
+    toAmount: number;
+    fromWalletName: string;
+    toWalletName: string;
+    date: string;
+  }) => {
+    const transferId = Date.now().toString();
+    const expenseTransaction: Transaction = {
+      id: `t_${transferId}_exp`,
+      amount: transferData.fromAmount,
+      description: `Transferencia a ${transferData.toWalletName}`,
+      date: transferData.date,
+      type: 'expense',
+      walletId: transferData.fromWalletId,
+      categoryId: 'transfer-out',
+    };
+
+    const incomeTransaction: Transaction = {
+      id: `t_${transferId}_inc`,
+      amount: transferData.toAmount,
+      description: `Transferencia de ${transferData.fromWalletName}`,
+      date: transferData.date,
+      type: 'income',
+      walletId: transferData.toWalletId,
+      categoryId: 'transfer-in',
+    };
+
+    setTransactions((prev) => [expenseTransaction, incomeTransaction, ...prev]);
+  };
+
   const value = {
     transactions,
     addTransaction,
+    addTransfer,
     isLoading,
     setTransactions,
   };

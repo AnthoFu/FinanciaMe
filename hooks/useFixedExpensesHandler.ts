@@ -49,7 +49,7 @@ export function useFixedExpensesHandler({
       const failedExpenses: string[] = [];
 
       for (const expense of dueExpenses) {
-        const walletIndex = tempWallets.findIndex((w) => w.id === expense.walletId);
+        const walletIndex = tempWallets.findIndex((w: Wallet) => w.id === expense.walletId);
         if (walletIndex === -1) {
           failedExpenses.push(`${expense.name} (Billetera no encontrada)`);
           continue;
@@ -81,10 +81,11 @@ export function useFixedExpensesHandler({
 
       setWallets(tempWallets);
       setTransactions(tempTransactions);
-      setExpenses((prevExpenses) =>
-        prevExpenses.map((exp) => (paidExpensesIds.includes(exp.id) ? { ...exp, lastPaid: nowString } : exp)),
-      );
 
+      const newExpenses = expenses.map((exp: FixedExpense) =>
+        paidExpensesIds.includes(exp.id) ? { ...exp, lastPaid: nowString } : exp,
+      );
+      setExpenses(newExpenses);
       let summaryMessage =
         paidExpensesIds.length > 0
           ? `Pagos realizados: ${dueExpenses

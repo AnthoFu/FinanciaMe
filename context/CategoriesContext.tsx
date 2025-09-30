@@ -38,6 +38,8 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       try {
         const storedCategories = await AsyncStorage.getItem(CATEGORIES_STORAGE_KEY);
+        let finalCategories: Category[];
+
         if (storedCategories) {
           const parsedCategories = JSON.parse(storedCategories);
           let needsMigration = false;
@@ -55,13 +57,36 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
           if (needsMigration) {
             await AsyncStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(migratedCategories));
           }
-          setCategories(migratedCategories);
+          finalCategories = migratedCategories;
         } else {
-          setCategories(DEFAULT_CATEGORIES);
+          finalCategories = DEFAULT_CATEGORIES;
         }
+
+        // Ensure transfer categories exist
+        const transferInExists = finalCategories.some((c) => c.id === 'transfer-in');
+        if (!transferInExists) {
+          finalCategories.push({
+            id: 'transfer-in',
+            name: 'Transferencia Entrante',
+            icon: 'arrow.down.left.circle.fill',
+            type: 'income',
+          });
+        }
+
+        const transferOutExists = finalCategories.some((c) => c.id === 'transfer-out');
+        if (!transferOutExists) {
+          finalCategories.push({
+            id: 'transfer-out',
+            name: 'Transferencia Saliente',
+            icon: 'arrow.up.right.circle.fill',
+            type: 'expense',
+          });
+        }
+
+        setCategories(finalCategories);
       } catch (error) {
         console.error('[loadCategories] Fallo al intentar cargar las categorias del almacenamiento:', error);
-        setCategories(DEFAULT_CATEGORIES);
+        setCategories(DEFAULT_CATEGORIES); // Fallback to default
       } finally {
         setIsLoading(false);
       }

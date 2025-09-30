@@ -40,7 +40,7 @@ const GoalItem = ({ goal, onAddContribution }: { goal: SavingsGoal; onAddContrib
       <View style={styles.goalInfo}>
         <Text style={styles.goalName}>{goal.name}</Text>
         <Text style={styles.goalAmount}>
-          {currentAmount.toFixed(2)} / {goal.targetAmount.toFixed(2)} {goal.currency}
+          Ahorrado: {currentAmount.toFixed(2)} / {goal.targetAmount.toFixed(2)} {goal.currency}
         </Text>
       </View>
       <ProgressBar progress={progress} color={colors.primary} />

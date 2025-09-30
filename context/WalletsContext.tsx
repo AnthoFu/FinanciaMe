@@ -9,6 +9,7 @@ interface WalletsContextType {
   addWallet: (walletData: Omit<Wallet, 'id'>) => void;
   updateWallet: (walletData: Wallet) => void;
   deleteWallet: (walletId: string) => void;
+  updateBalancesForTransfer: (fromWalletId: string, toWalletId: string, fromAmount: number, toAmount: number) => void;
   isLoading: boolean;
   setWallets: React.Dispatch<React.SetStateAction<Wallet[]>>;
 }
@@ -74,11 +75,31 @@ export function WalletsProvider({ children }: { children: ReactNode }) {
     setWallets((prev) => prev.filter((w) => w.id !== walletId));
   };
 
+  const updateBalancesForTransfer = (
+    fromWalletId: string,
+    toWalletId: string,
+    fromAmount: number,
+    toAmount: number,
+  ) => {
+    setWallets((prev) =>
+      prev.map((wallet) => {
+        if (wallet.id === fromWalletId) {
+          return { ...wallet, balance: wallet.balance - fromAmount };
+        }
+        if (wallet.id === toWalletId) {
+          return { ...wallet, balance: wallet.balance + toAmount };
+        }
+        return wallet;
+      }),
+    );
+  };
+
   const value = {
     wallets,
     addWallet,
     updateWallet,
     deleteWallet,
+    updateBalancesForTransfer,
     isLoading,
     setWallets,
   };
