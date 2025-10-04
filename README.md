@@ -25,7 +25,20 @@
 
 ## 📸 Capturas de Pantalla
 
-_Próximamente..._
+<table align="center">
+  <tr>
+    <td align="center"><strong>Inicio</strong><br><img src="./assets/images/screenshot-home.jpg" alt="Pantalla de Inicio" width="200"/></td>
+    <td align="center"><strong>Billeteras</strong><br><img src="./assets/images/screenshot-billeteras.jpg" alt="Pantalla de Billeteras" width="200"/></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Gastos Fijos</strong><br><img src="./assets/images/screenshot-gastos-fijos.jpg" alt="Pantalla de Gastos Fijos" width="200"/></td>
+    <td align="center"><strong>Presupuestos</strong><br><img src="./assets/images/screenshot-presupuestos.jpg" alt="Pantalla de Presupuestos" width="200"/></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Metas de Ahorro</strong><br><img src="./assets/images/screenshot-metas.jpg" alt="Pantalla de Metas de Ahorro" width="200"/></td>
+    <td align="center"><strong>Métricas</strong><br><img src="./assets/images/screenshot-metricas.jpg" alt="Pantalla de Métricas" width="200"/></td>
+  </tr>
+</table>
 
 ## 🛠️ Stack de Tecnología
 
