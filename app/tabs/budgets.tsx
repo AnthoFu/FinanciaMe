@@ -4,11 +4,11 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity, KeyboardAvoidingVie
 
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useBudgets } from '../../context/BudgetsContext';
-import { useTransactions } from '../../context/TransactionsContext';
 import { getThemedStyles } from '../../styles/themedStyles';
 import { Budget } from '../../types';
 
 import { BudgetModal } from '../../components/BudgetModal';
+import { useBudgetSpending } from '../../hooks/useBudgetSpending';
 
 const ProgressBar = ({ progress, color }: { progress: number; color: string }) => {
   const styles = getStyles({} as any); // Empty colors, just for the container style
@@ -22,23 +22,7 @@ const ProgressBar = ({ progress, color }: { progress: number; color: string }) =
 const BudgetItem = ({ budget }: { budget: Budget }) => {
   const { colors } = useTheme();
   const styles = getStyles(colors);
-  const { transactions } = useTransactions();
-
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  const spending = transactions
-    .filter((t) => {
-      const transactionDate = new Date(t.date);
-      const periodMatch =
-        budget.period === 'mensual'
-          ? transactionDate.getMonth() === currentMonth && transactionDate.getFullYear() === currentYear
-          : transactionDate.getFullYear() === currentYear;
-
-      return t.categoryId === budget.categoryId && t.type === 'expense' && periodMatch;
-    })
-    .reduce((sum, t) => sum + t.amount, 0);
+  const spending = useBudgetSpending(budget);
 
   const progress = budget.amount > 0 ? spending / budget.amount : 0;
 
