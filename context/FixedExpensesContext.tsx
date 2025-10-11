@@ -26,7 +26,15 @@ export function FixedExpensesProvider({ children }: { children: ReactNode }) {
     try {
       const storedExpenses = await AsyncStorage.getItem(FIXED_EXPENSES_KEY);
       if (storedExpenses) {
-        setExpenses(JSON.parse(storedExpenses));
+        const parsedExpenses: FixedExpense[] = JSON.parse(storedExpenses);
+        // Simple migration for old data
+        const migratedExpenses = parsedExpenses.map((exp) => {
+          if (!exp.frequency) {
+            return { ...exp, frequency: 'monthly' };
+          }
+          return exp;
+        });
+        setExpenses(migratedExpenses);
       }
     } catch (e) {
       console.error('[loadFixedExpenses] Error al cargar los gastos fijos:', e);

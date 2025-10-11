@@ -10,7 +10,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import { FixedExpense, Wallet, Category } from '../../types';
+import { FixedExpense, Wallet, Category, ExpenseFrequency } from '../../types';
 import { useCategories } from '../../context/CategoriesContext';
 import { IconSymbol } from '../ui/IconSymbol';
 import { getStyles } from './styles';
@@ -24,6 +24,14 @@ interface FixedExpenseModalProps {
   wallets: Wallet[];
   initialData?: FixedExpense | null;
 }
+
+const frequencyOptions: { label: string; value: ExpenseFrequency }[] = [
+  { label: 'Diario', value: 'daily' },
+  { label: 'Semanal', value: 'weekly' },
+  { label: 'Quincenal', value: 'biweekly' },
+  { label: 'Mensual', value: 'monthly' },
+  { label: 'Anual', value: 'yearly' },
+];
 
 export default function FixedExpenseModal({
   isVisible,
@@ -39,6 +47,7 @@ export default function FixedExpenseModal({
   const [amount, setAmount] = useState('');
   const [dayOfMonth, setDayOfMonth] = useState('');
   const [currency, setCurrency] = useState<'USD' | 'VEF' | 'USDT'>('USD');
+  const [frequency, setFrequency] = useState<ExpenseFrequency>('monthly');
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [startDate, setStartDate] = useState('');
@@ -51,7 +60,8 @@ export default function FixedExpenseModal({
       if (initialData) {
         setName(initialData.name);
         setAmount(initialData.amount.toString());
-        setDayOfMonth(initialData.dayOfMonth.toString());
+        setFrequency(initialData.frequency);
+        setDayOfMonth(initialData.dayOfMonth?.toString() || '');
         setCurrency(initialData.currency);
         setSelectedWalletId(initialData.walletId);
         setSelectedCategoryId(initialData.categoryId);
@@ -61,6 +71,7 @@ export default function FixedExpenseModal({
         setName('');
         setAmount('');
         setDayOfMonth('');
+        setFrequency('monthly');
         setCurrency('USD');
         setSelectedWalletId(wallets.length > 0 ? wallets[0].id : null);
         setSelectedCategoryId(expenseCategories.length > 0 ? expenseCategories[0].id : null);
@@ -74,23 +85,21 @@ export default function FixedExpenseModal({
     const numericAmount = parseFloat(amount);
     const numericDay = parseInt(dayOfMonth, 10);
 
-    if (
-      !name ||
-      !numericAmount ||
-      !numericDay ||
-      numericDay < 1 ||
-      numericDay > 31 ||
-      !selectedWalletId ||
-      !selectedCategoryId
-    ) {
-      alert('Por favor, completa todos los campos obligatorios (Nombre, Monto, Día, Billetera y Categoría).');
+    if (!name || !numericAmount || !selectedWalletId || !selectedCategoryId) {
+      alert('Por favor, completa todos los campos obligatorios (Nombre, Monto, Billetera y Categoría).');
+      return;
+    }
+
+    if (frequency === 'monthly' && (!numericDay || numericDay < 1 || numericDay > 31)) {
+      alert('Para la frecuencia mensual, por favor, introduce un día del mes válido (1-31).');
       return;
     }
 
     onSubmit({
       name,
       amount: numericAmount,
-      dayOfMonth: numericDay,
+      frequency,
+      dayOfMonth: frequency === 'monthly' ? numericDay : undefined,
       currency: currency,
       walletId: selectedWalletId,
       categoryId: selectedCategoryId,
@@ -109,12 +118,30 @@ export default function FixedExpenseModal({
               <Text style={styles.modalTitle}>{initialData ? 'Editar' : 'Añadir'} Gasto Fijo</Text>
               <StyledInput placeholder="Nombre (ej. Alquiler)" value={name} onChangeText={setName} />
               <StyledInput placeholder="Monto" keyboardType="numeric" value={amount} onChangeText={setAmount} />
-              <StyledInput
-                placeholder="Día del Mes (1-31)"
-                keyboardType="numeric"
-                value={dayOfMonth}
-                onChangeText={setDayOfMonth}
+
+              <HorizontalPicker<(typeof frequencyOptions)[0]>
+                label="Frecuencia"
+                data={frequencyOptions}
+                selectedValue={frequency}
+                onSelect={(item) => setFrequency(item.value)}
+                keyExtractor={(item) => item.value}
+                renderItem={(item, isSelected) => (
+                  <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
+                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected]}>
+                      {item.label}
+                    </Text>
+                  </View>
+                )}
               />
+
+              {frequency === 'monthly' && (
+                <StyledInput
+                  placeholder="Día del Mes (1-31)"
+                  keyboardType="numeric"
+                  value={dayOfMonth}
+                  onChangeText={setDayOfMonth}
+                />
+              )}
 
               <View style={styles.currencySelector}>
                 <TouchableOpacity

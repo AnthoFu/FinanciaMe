@@ -12,6 +12,27 @@ import { useNotifications } from '../../hooks/useNotifications';
 import { getThemedStyles } from '../../styles/themedStyles';
 import { FixedExpense } from '../../types';
 
+const formatFrequency = (expense: FixedExpense): string => {
+  switch (expense.frequency) {
+    case 'daily':
+      return 'Se paga a diario';
+    case 'weekly':
+      return 'Se paga semanalmente';
+    case 'biweekly':
+      return 'Se paga quincenalmente';
+    case 'monthly':
+      return `Día ${expense.dayOfMonth} de cada mes`;
+    case 'yearly':
+      return 'Se paga anualmente';
+    default:
+      // Fallback for older data that might not have frequency
+      if ('dayOfMonth' in expense) {
+        return `Día ${expense.dayOfMonth} de cada mes`;
+      }
+      return 'Frecuencia no especificada';
+  }
+};
+
 export default function FixedExpensesScreen() {
   const { colors } = useTheme();
   const styles = getStyles(colors);
@@ -111,7 +132,7 @@ export default function FixedExpensesScreen() {
               <View style={styles.itemDetails}>
                 <Text style={styles.itemName}>{item.name}</Text>
                 {category && <Text style={styles.categoryName}>{category.name}</Text>}
-                <Text style={styles.itemSubText}>Día {item.dayOfMonth} de cada mes</Text>
+                <Text style={styles.itemSubText}>{formatFrequency(item)}</Text>
                 <Text style={styles.walletText}>Desde: {wallet ? wallet.name : 'Billetera no encontrada'}</Text>
               </View>
               <View style={styles.itemRightSection}>

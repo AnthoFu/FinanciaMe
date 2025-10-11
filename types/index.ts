@@ -44,12 +44,15 @@ export interface Budget {
   creationDate: string;
 }
 
+export type ExpenseFrequency = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'yearly';
+
 export interface FixedExpense {
   id: string;
   name: string;
   amount: number;
   currency: Currency;
-  dayOfMonth: number;
+  dayOfMonth?: number;
+  frequency: ExpenseFrequency;
   walletId: string | null;
   lastPaid?: string;
   startDate?: string;
