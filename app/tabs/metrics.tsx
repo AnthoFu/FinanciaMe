@@ -23,6 +23,8 @@ export default function MetricsScreen() {
 
   const [spendingByCategory, setSpendingByCategory] = useState<Record<string, number>>({});
   const [totalSpending, setTotalSpending] = useState(0);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [netFlow, setNetFlow] = useState(0);
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>('30_days');
 
   const getAmountInUSD = useCallback(
@@ -58,25 +60,32 @@ export default function MetricsScreen() {
 
     const filtered = transactions.filter((t) => {
       const transactionDate = new Date(t.date);
-      return t.type === 'expense' && transactionDate >= startDate;
+      return transactionDate >= startDate;
     });
 
     const categorySpending: Record<string, number> = {};
-    let total = 0;
+    let spending = 0;
+    let income = 0;
 
     filtered.forEach((t) => {
       const wallet = wallets.find((w) => w.id === t.walletId);
       if (!wallet) return;
 
       const amountInUSD = getAmountInUSD(t.amount, wallet.currency);
-      const categoryName = categories.find((c) => c.id === t.categoryId)?.name || 'Sin Categoría';
 
-      categorySpending[categoryName] = (categorySpending[categoryName] || 0) + amountInUSD;
-      total += amountInUSD;
+      if (t.type === 'expense') {
+        const categoryName = categories.find((c) => c.id === t.categoryId)?.name || 'Sin Categoría';
+        categorySpending[categoryName] = (categorySpending[categoryName] || 0) + amountInUSD;
+        spending += amountInUSD;
+      } else if (t.type === 'income') {
+        income += amountInUSD;
+      }
     });
 
     setSpendingByCategory(categorySpending);
-    setTotalSpending(total);
+    setTotalSpending(spending);
+    setTotalIncome(income);
+    setNetFlow(income - spending);
   }, [transactions, categories, wallets, selectedTimeRange, getAmountInUSD]);
 
   useEffect(() => {
@@ -107,8 +116,8 @@ export default function MetricsScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Métricas de Gastos' }} />
-      <Text style={globalStyles.title}>Métricas de Gastos</Text>
+      <Stack.Screen options={{ title: 'Métricas Financieras' }} />
+      <Text style={globalStyles.title}>Métricas Financieras</Text>
 
       <View style={styles.timeRangeContainer}>
         <TouchableOpacity
@@ -145,8 +154,20 @@ export default function MetricsScreen() {
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.summaryCard}>
+          <Text style={styles.summaryTitle}>Ingreso Total</Text>
+          <Text style={styles.incomeAmount}>$ {totalIncome.toFixed(2)}</Text>
+        </View>
+
+        <View style={styles.summaryCard}>
           <Text style={styles.summaryTitle}>Gasto Total</Text>
           <Text style={styles.summaryAmount}>$ {totalSpending.toFixed(2)}</Text>
+        </View>
+
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryTitle}>Flujo Neto</Text>
+          <Text style={netFlow >= 0 ? styles.netFlowAmountPositive : styles.netFlowAmountNegative}>
+            $ {netFlow.toFixed(2)}
+          </Text>
         </View>
 
         <Text style={styles.sectionTitle}>Gasto por Categoría</Text>

@@ -77,6 +77,21 @@ export const getStyles = (colors: any) =>
       fontWeight: 'bold',
       color: colors.notification, // Use notification for total spending (often red)
     },
+    incomeAmount: {
+      fontSize: 32,
+      fontWeight: 'bold',
+      color: colors.primary, // Use primary for total income
+    },
+    netFlowAmountPositive: {
+      fontSize: 32,
+      fontWeight: 'bold',
+      color: '#28a745', // A standard green color for positive values
+    },
+    netFlowAmountNegative: {
+      fontSize: 32,
+      fontWeight: 'bold',
+      color: colors.notification, // Use notification for negative values (often red)
+    },
     sectionTitle: {
       fontSize: 20,
       fontWeight: 'bold',
