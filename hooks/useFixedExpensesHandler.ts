@@ -113,15 +113,59 @@ export function useFixedExpensesHandler({
   const checkDueFixedExpenses = useCallback(async () => {
     if (fixedExpensesLoading || walletsLoading || ratesLoading) return;
     const now = new Date();
+
     const dueExpenses = expenses.filter((exp) => {
-      if (!exp.lastPaid) return isWithinDateRange(exp, now) && now.getDate() >= exp.dayOfMonth;
-      const lastPaid = new Date(exp.lastPaid);
-      const isDue =
-        (now.getFullYear() > lastPaid.getFullYear() || now.getMonth() > lastPaid.getMonth()) &&
-        now.getDate() >= exp.dayOfMonth;
-      return isDue && isWithinDateRange(exp, now);
+      if (!exp.startDate || !isWithinDateRange(exp, now)) {
+        return false;
+      }
+
+      const lastPaid = exp.lastPaid ? new Date(exp.lastPaid) : null;
+
+      // Get the anchor date for the expense, which is its start date.
+      const startDate = new Date(exp.startDate);
+
+      // Determine the due date for the current cycle.
+      let currentDueDate = new Date(startDate);
+
+      // Logic to find the most recent due date that is <= now
+      while (true) {
+        let nextDueDate = new Date(currentDueDate);
+        switch (exp.frequency) {
+          case 'daily':
+            nextDueDate.setDate(nextDueDate.getDate() + 1);
+            break;
+          case 'weekly':
+            nextDueDate.setDate(nextDueDate.getDate() + 7);
+            break;
+          case 'biweekly':
+            nextDueDate.setDate(nextDueDate.getDate() + 14);
+            break;
+          case 'yearly':
+            nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+            break;
+          case 'monthly':
+            if (typeof exp.dayOfMonth !== 'number') return false;
+            nextDueDate.setMonth(nextDueDate.getMonth() + 1, exp.dayOfMonth);
+            break;
+        }
+        if (nextDueDate > now) {
+          break; // `currentDueDate` is the one we care about
+        }
+        currentDueDate = nextDueDate;
+      }
+
+      // Now `currentDueDate` is the most recent date the expense should have been paid.
+      // An expense is due if this date is after the last payment date.
+      if (!lastPaid || lastPaid < currentDueDate) {
+        return true;
+      }
+
+      return false;
     });
-    if (dueExpenses.length > 0) promptToPayDueExpenses(dueExpenses);
+
+    if (dueExpenses.length > 0) {
+      promptToPayDueExpenses(dueExpenses);
+    }
   }, [fixedExpensesLoading, walletsLoading, ratesLoading, expenses, isWithinDateRange, promptToPayDueExpenses]);
 
   return { checkDueFixedExpenses };
