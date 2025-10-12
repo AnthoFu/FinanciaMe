@@ -59,3 +59,51 @@ export interface FixedExpense {
   endDate?: string;
   categoryId: string;
 }
+
+// New Context Types
+export interface WalletsContextType {
+  wallets: Wallet[];
+  addWallet: (wallet: Omit<Wallet, 'id'>) => void;
+  updateWallet: (wallet: Wallet) => void;
+  deleteWallet: (id: string) => void;
+  getWalletById: (id: string) => Wallet | undefined;
+}
+
+export interface CategoriesContextType {
+  categories: Category[];
+  addCategory: (category: Omit<Category, 'id'>) => void;
+  updateCategory: (category: Category) => void;
+  deleteCategory: (id: string) => void;
+  getCategoryById: (id: string) => Category | undefined;
+}
+
+export interface TransactionsContextType {
+  transactions: Transaction[];
+  addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
+  updateTransaction: (transaction: Transaction) => void;
+  deleteTransaction: (id: string) => void;
+}
+
+export interface SavingsGoalsContextType {
+  goals: SavingsGoal[];
+  addGoal: (goal: Omit<SavingsGoal, 'id'>) => void;
+  updateGoal: (goal: SavingsGoal) => void;
+  deleteGoal: (id: string) => void;
+  getGoalById: (id: string) => SavingsGoal | undefined;
+  addContribution: (goalId: string, amount: number, walletId: string) => void;
+}
+
+export interface BudgetsContextType {
+  budgets: Budget[];
+  addBudget: (budget: Omit<Budget, 'id'>) => void;
+  updateBudget: (budget: Budget) => void;
+  deleteBudget: (id: string) => void;
+}
+
+export interface FixedExpensesContextType {
+  fixedExpenses: FixedExpense[];
+  addFixedExpense: (expense: Omit<FixedExpense, 'id'>) => void;
+  updateFixedExpense: (expense: FixedExpense) => void;
+  deleteFixedExpense: (id: string) => void;
+  payFixedExpense: (id: string, walletId: string) => void;
+}

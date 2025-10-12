@@ -59,4 +59,12 @@ export const getStyles = (colors: any) =>
     expenseIconBackground: {
       backgroundColor: 'rgba(220, 53, 69, 0.1)', // Lighter red
     },
+    rightAction: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: 50,
+      height: '85%',
+      borderRadius: 10,
+      marginHorizontal: 2,
+    },
   });

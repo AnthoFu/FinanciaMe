@@ -26,26 +26,21 @@ import { useFinancialSummary } from '../../hooks/useFinancialSummary';
 import { useFixedExpensesHandler } from '../../hooks/useFixedExpensesHandler';
 import { useTransactionHandler } from '../../hooks/useTransactionHandler';
 import { getThemedStyles } from '../../styles/themedStyles';
+import { Transaction } from '../../types';
 
 export default function FinanciaMeScreen() {
   const { colors } = useTheme();
   const styles = getThemedStyles(colors);
 
-  // --- Hooks de Datos ---
-  const { wallets, setWallets, isLoading: walletsLoading, updateBalancesForTransfer } = useWallets();
-  const {
-    transactions,
-    setTransactions,
-    addTransaction,
-    addTransfer,
-    isLoading: transactionsLoading,
-  } = useTransactions();
+  // --- Data Hooks ---
+  const { wallets, setWallets, isLoading: walletsLoading } = useWallets();
+  const { transactions, setTransactions, deleteTransaction, isLoading: transactionsLoading } = useTransactions();
   const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
   const { bcvRate, usdtRate, averageRate, loading: ratesLoading, error: ratesError } = useExchangeRates();
   const balances = useFinancialSummary(wallets, bcvRate, usdtRate, averageRate, ratesLoading);
-  const { handleNewTransaction, handleTransfer } = useTransactionHandler();
+  const { handleSaveTransaction, handleTransfer } = useTransactionHandler();
 
-  // --- Lógica de Gastos Fijos ---
+  // --- Fixed Expenses Logic ---
   const { checkDueFixedExpenses } = useFixedExpensesHandler({
     wallets,
     setWallets,
@@ -61,18 +56,19 @@ export default function FinanciaMeScreen() {
     ratesLoading,
   });
 
-  // --- Estados Locales ---
+  // --- Local State ---
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setModalVisible] = useState(false);
   const [isTransferModalVisible, setTransferModalVisible] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
   const [selectedWalletIdForModal, setSelectedWalletIdForModal] = useState<string | null>(null);
   const [toast, setToast] = useState({ isVisible: false, message: '' });
+  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
 
   const showToast = (message: string) => setToast({ isVisible: true, message });
   const router = useRouter();
 
-  // --- Efectos ---
+  // --- Effects ---
   useEffect(() => {
     setLoading(walletsLoading || transactionsLoading || fixedExpensesLoading || ratesLoading);
   }, [walletsLoading, transactionsLoading, fixedExpensesLoading, ratesLoading]);
@@ -83,19 +79,54 @@ export default function FinanciaMeScreen() {
     }
   }, [loading, checkDueFixedExpenses]);
 
-  // --- Lógica de Transacciones Manuales ---
+  // --- Transaction Logic ---
   const handleOpenModal = (type: 'income' | 'expense', walletId: string) => {
     setTransactionType(type);
     setSelectedWalletIdForModal(walletId);
+    setTransactionToEdit(null);
     setModalVisible(true);
   };
 
-  const handleSubmitTransaction = (amount: number, description: string, walletId: string, categoryId: string) => {
-    const success = handleNewTransaction(amount, description, walletId, categoryId, transactionType);
+  const handleSubmitTransaction = (
+    amount: number,
+    description: string,
+    walletId: string,
+    categoryId: string,
+    type: 'income' | 'expense',
+    transactionToUpdate?: Transaction,
+  ) => {
+    const success = handleSaveTransaction(amount, description, walletId, categoryId, type, transactionToUpdate);
     if (success) {
       setModalVisible(false);
-      showToast(transactionType === 'income' ? 'Ingreso añadido con éxito' : 'Gasto añadido con éxito');
+      setTransactionToEdit(null);
+      showToast(transactionToUpdate ? 'Movimiento actualizado' : 'Movimiento añadido');
     }
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    setTransactionToEdit(transaction);
+    setModalVisible(true);
+  };
+
+  const handleDeleteTransaction = (transaction: Transaction) => {
+    Alert.alert('Eliminar Movimiento', '¿Estás seguro de que quieres eliminar este movimiento?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: () => {
+          // Revert balance
+          const wallet = wallets.find((w) => w.id === transaction.walletId);
+          if (wallet) {
+            const newBalance =
+              transaction.type === 'income' ? wallet.balance - transaction.amount : wallet.balance + transaction.amount;
+            setWallets(wallets.map((w) => (w.id === wallet.id ? { ...w, balance: newBalance } : w)));
+          }
+          deleteTransaction(transaction.id);
+          showToast('Movimiento eliminado');
+        },
+      },
+    ]);
   };
 
   const handleTransferSubmit = (fromWalletId: string, toWalletId: string, fromAmount: number, toAmount: number) => {
@@ -110,7 +141,7 @@ export default function FinanciaMeScreen() {
     }
   };
 
-  // --- Renderizado ---
+  // --- Render ---
   const renderContent = () => {
     if (loading) return <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1 }} />;
     if (ratesError) return <Text style={styles.errorText}>Error cargando tasas: {ratesError}</Text>;
@@ -119,7 +150,12 @@ export default function FinanciaMeScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <SummaryCard balances={balances} bcvRate={bcvRate} usdtRate={usdtRate} averageRate={averageRate} />
         <WalletsCarousel wallets={wallets} onOpenModal={handleOpenModal} />
-        <RecentTransactionsList transactions={transactions} wallets={wallets} />
+        <RecentTransactionsList
+          transactions={transactions}
+          wallets={wallets}
+          onEdit={handleEditTransaction}
+          onDelete={handleDeleteTransaction}
+        />
       </ScrollView>
     );
   };
@@ -140,12 +176,16 @@ export default function FinanciaMeScreen() {
       {renderContent()}
       <TransactionModal
         isVisible={isModalVisible}
-        onClose={() => setModalVisible(false)}
+        onClose={() => {
+          setModalVisible(false);
+          setTransactionToEdit(null);
+        }}
         onSubmit={handleSubmitTransaction}
         type={transactionType}
         wallets={wallets}
         showToast={showToast}
         initialWalletId={selectedWalletIdForModal}
+        transactionToEdit={transactionToEdit}
       />
       <TransferModal
         isVisible={isTransferModalVisible}

@@ -1,42 +1,83 @@
 import { Alert } from 'react-native';
 import { useTransactions } from '../context/TransactionsContext';
 import { useWallets } from '../context/WalletsContext';
+import { Transaction } from '../types';
 
 export function useTransactionHandler() {
   const { wallets, setWallets, updateBalancesForTransfer } = useWallets();
-  const { addTransaction, addTransfer } = useTransactions();
+  const { addTransaction, updateTransaction, addTransfer } = useTransactions();
 
-  const handleNewTransaction = (
+  const handleSaveTransaction = (
     amount: number,
     description: string,
     walletId: string,
     categoryId: string,
     type: 'income' | 'expense',
+    transactionToUpdate?: Transaction,
   ): boolean => {
     let wasTransactionSuccessful = false;
-    const newWallets = wallets.map((wallet) => {
-      if (wallet.id === walletId) {
-        const newBalance = type === 'income' ? wallet.balance + amount : wallet.balance - amount;
+
+    if (transactionToUpdate) {
+      // Editing existing transaction
+      const originalTransaction = transactionToUpdate;
+      const originalAmount = originalTransaction.amount;
+      const originalType = originalTransaction.type;
+      const originalWalletId = originalTransaction.walletId;
+
+      const newWallets = wallets.map((wallet) => {
+        let newBalance = wallet.balance;
+        // Revert original transaction
+        if (wallet.id === originalWalletId) {
+          newBalance = originalType === 'income' ? newBalance - originalAmount : newBalance + originalAmount;
+        }
+        // Apply new transaction
+        if (wallet.id === walletId) {
+          newBalance = type === 'income' ? newBalance + amount : newBalance - amount;
+        }
         if (newBalance < 0) {
           Alert.alert('Saldo Insuficiente', 'La billetera no tiene fondos suficientes.');
-          return wallet; // Return original wallet
+          return wallet;
         }
-        wasTransactionSuccessful = true;
         return { ...wallet, balance: newBalance };
-      }
-      return wallet;
-    });
+      });
 
-    if (wasTransactionSuccessful) {
-      addTransaction({
+      const updatedTransaction: Transaction = {
+        ...originalTransaction,
         amount,
         description,
-        date: new Date().toISOString(),
-        type,
         walletId,
         categoryId,
-      });
+        type,
+      };
+      updateTransaction(updatedTransaction);
       setWallets(newWallets);
+      wasTransactionSuccessful = true;
+    } else {
+      // Creating new transaction
+      const newWallets = wallets.map((wallet) => {
+        if (wallet.id === walletId) {
+          const newBalance = type === 'income' ? wallet.balance + amount : wallet.balance - amount;
+          if (newBalance < 0) {
+            Alert.alert('Saldo Insuficiente', 'La billetera no tiene fondos suficientes.');
+            return wallet; // Return original wallet
+          }
+          wasTransactionSuccessful = true;
+          return { ...wallet, balance: newBalance };
+        }
+        return wallet;
+      });
+
+      if (wasTransactionSuccessful) {
+        addTransaction({
+          amount,
+          description,
+          date: new Date().toISOString(),
+          type,
+          walletId,
+          categoryId,
+        });
+        setWallets(newWallets);
+      }
     }
     return wasTransactionSuccessful;
   };
@@ -71,5 +112,5 @@ export function useTransactionHandler() {
     return true;
   };
 
-  return { handleNewTransaction, handleTransfer };
+  return { handleSaveTransaction, handleTransfer };
 }

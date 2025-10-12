@@ -1,7 +1,7 @@
 import { useTheme } from '@react-navigation/native';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
-import { Wallet, Category } from '../../types';
+import { Wallet, Category, Transaction } from '../../types';
 import { useCategories } from '../../context/CategoriesContext';
 import { IconSymbol } from '../ui/IconSymbol';
 import { getStyles } from './styles';
@@ -11,11 +11,19 @@ import { HorizontalPicker } from '../ui/HorizontalPicker';
 interface TransactionModalProps {
   isVisible: boolean;
   onClose: () => void;
-  onSubmit: (amount: number, description: string, walletId: string, categoryId: string) => void;
+  onSubmit: (
+    amount: number,
+    description: string,
+    walletId: string,
+    categoryId: string,
+    type: 'income' | 'expense',
+    transactionToEdit?: Transaction,
+  ) => void;
   type: 'income' | 'expense';
   wallets: Wallet[];
   showToast: (message: string) => void;
   initialWalletId?: string | null;
+  transactionToEdit?: Transaction | null;
 }
 
 export default function TransactionModal({
@@ -26,6 +34,7 @@ export default function TransactionModal({
   wallets,
   showToast,
   initialWalletId,
+  transactionToEdit,
 }: TransactionModalProps) {
   const { colors } = useTheme();
   const styles = getStyles(colors);
@@ -40,16 +49,22 @@ export default function TransactionModal({
 
   useEffect(() => {
     if (isVisible) {
-      setSelectedWalletId(initialWalletId || (wallets.length > 0 ? wallets[0].id : null));
-
-      const currentCats = type === 'expense' ? expenseCategories : incomeCategories;
-      if (currentCats.length > 0) {
-        setSelectedCategoryId(currentCats[0].id);
+      if (transactionToEdit) {
+        setAmount(transactionToEdit.amount.toString());
+        setDescription(transactionToEdit.description);
+        setSelectedWalletId(transactionToEdit.walletId);
+        setSelectedCategoryId(transactionToEdit.categoryId);
       } else {
-        setSelectedCategoryId(null);
+        setSelectedWalletId(initialWalletId || (wallets.length > 0 ? wallets[0].id : null));
+        const currentCats = type === 'expense' ? expenseCategories : incomeCategories;
+        if (currentCats.length > 0) {
+          setSelectedCategoryId(currentCats[0].id);
+        } else {
+          setSelectedCategoryId(null);
+        }
       }
     }
-  }, [isVisible, initialWalletId, wallets, type, expenseCategories, incomeCategories]);
+  }, [isVisible, initialWalletId, wallets, type, expenseCategories, incomeCategories, transactionToEdit]);
 
   const handleSubmit = () => {
     const numericAmount = parseFloat(amount);
@@ -57,7 +72,14 @@ export default function TransactionModal({
       showToast('Por favor, completa todos los campos.');
       return;
     }
-    onSubmit(numericAmount, description, selectedWalletId, selectedCategoryId);
+    onSubmit(
+      numericAmount,
+      description,
+      selectedWalletId,
+      selectedCategoryId,
+      transactionToEdit ? transactionToEdit.type : type,
+      transactionToEdit,
+    );
     handleClose();
   };
 
@@ -71,7 +93,19 @@ export default function TransactionModal({
   const selectedWallet = wallets.find((w) => w.id === selectedWalletId);
   const placeholderText = `Monto (${selectedWallet ? selectedWallet.currency : '...'})`;
 
-  const currentCategories = type === 'expense' ? expenseCategories : incomeCategories;
+  const currentCategories = transactionToEdit
+    ? transactionToEdit.type === 'expense'
+      ? expenseCategories
+      : incomeCategories
+    : type === 'expense'
+      ? expenseCategories
+      : incomeCategories;
+
+  const modalTitle = transactionToEdit
+    ? 'Editar Movimiento'
+    : type === 'income'
+      ? 'Registrar Ingreso'
+      : 'Registrar Gasto';
 
   return (
     <Modal visible={isVisible} animationType="slide" transparent={true} onRequestClose={handleClose}>
@@ -79,7 +113,7 @@ export default function TransactionModal({
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
-              <Text style={styles.modalTitle}>{type === 'income' ? 'Registrar Ingreso' : 'Registrar Gasto'}</Text>
+              <Text style={styles.modalTitle}>{modalTitle}</Text>
 
               <HorizontalPicker<Wallet>
                 label="Billetera"
@@ -124,7 +158,7 @@ export default function TransactionModal({
             </ScrollView>
             <View style={styles.buttonContainer}>
               <Button title="Cancelar" onPress={handleClose} color={colors.notification} />
-              <Button title="Aceptar" onPress={handleSubmit} color={colors.primary} />
+              <Button title={transactionToEdit ? 'Guardar' : 'Aceptar'} onPress={handleSubmit} color={colors.primary} />
             </View>
           </View>
         </View>
