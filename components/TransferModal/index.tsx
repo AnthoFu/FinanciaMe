@@ -4,7 +4,6 @@ import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollVi
 import { Wallet } from '../../types';
 import { useWallets } from '../../context/WalletsContext';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
-import { IconSymbol } from '../ui/IconSymbol';
 import { getStyles } from './styles';
 import { StyledInput } from '../ui/StyledInput';
 import { HorizontalPicker } from '../ui/HorizontalPicker';
@@ -20,7 +19,7 @@ export default function TransferModal({ isVisible, onClose, onSubmit, showToast 
   const { colors } = useTheme();
   const styles = getStyles(colors);
   const { wallets } = useWallets();
-  const { averageRate, loading: ratesLoading } = useExchangeRates();
+  const { averageRate } = useExchangeRates();
 
   const [fromWalletId, setFromWalletId] = useState<string | null>(null);
   const [toWalletId, setToWalletId] = useState<string | null>(null);

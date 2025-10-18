@@ -2,6 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider, useTheme } from '@react-navigat
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { OnboardingTutorial } from '@/components/OnboardingTutorial';
@@ -53,26 +54,28 @@ export default function RootLayout() {
   }
 
   return (
-    <CategoriesProvider>
-      <FixedExpensesProvider>
-        <TransactionsProvider>
-          <WalletsProvider>
-            <SavingsGoalsProvider>
-              <BudgetsProvider>
-                <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                  <ThemedStack />
-                  <StatusBar style="auto" />
-                  <OnboardingTutorial
-                    isVisible={!isOnboardingCompleted}
-                    onComplete={completeOnboarding}
-                    onSkip={completeOnboarding}
-                  />
-                </ThemeProvider>
-              </BudgetsProvider>
-            </SavingsGoalsProvider>
-          </WalletsProvider>
-        </TransactionsProvider>
-      </FixedExpensesProvider>
-    </CategoriesProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <CategoriesProvider>
+        <FixedExpensesProvider>
+          <TransactionsProvider>
+            <WalletsProvider>
+              <SavingsGoalsProvider>
+                <BudgetsProvider>
+                  <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                    <ThemedStack />
+                    <StatusBar style="auto" />
+                    <OnboardingTutorial
+                      isVisible={!isOnboardingCompleted}
+                      onComplete={completeOnboarding}
+                      onSkip={completeOnboarding}
+                    />
+                  </ThemeProvider>
+                </BudgetsProvider>
+              </SavingsGoalsProvider>
+            </WalletsProvider>
+          </TransactionsProvider>
+        </FixedExpensesProvider>
+      </CategoriesProvider>
+    </GestureHandlerRootView>
   );
 }

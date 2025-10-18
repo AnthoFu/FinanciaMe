@@ -88,7 +88,7 @@ export default function FixedExpensesScreen() {
         await addFixedExpense(expenseData);
       }
       showToast(isEditing ? 'Gasto fijo actualizado' : 'Gasto fijo creado con éxito');
-    } catch (error) {
+    } catch {
       showToast('Error al guardar el gasto fijo');
     }
   };
@@ -97,7 +97,7 @@ export default function FixedExpensesScreen() {
     try {
       await saveNotificationSettings(settings);
       showToast('Configuración de notificaciones guardada');
-    } catch (error) {
+    } catch {
       showToast('Error al guardar la configuración');
     }
   };

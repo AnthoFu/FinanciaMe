@@ -67,7 +67,7 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
         }
       }
     }
-  }, [isVisible, budget]);
+  }, [isVisible, budget, expenseCategories]);
 
   const handleSave = () => {
     const budgetAmount = parseFloat(amount);
@@ -81,7 +81,7 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
       };
 
       if (budget) {
-        // updateBudget({ ...budget, ...budgetData });
+        updateBudget({ ...budget, ...budgetData });
       } else {
         addBudget(budgetData as Omit<Budget, 'id' | 'creationDate'>);
       }
