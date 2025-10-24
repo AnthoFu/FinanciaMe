@@ -1,9 +1,9 @@
 import { useTheme } from '@react-navigation/native';
-import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Button, Keyboard, Modal, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { Wallet } from '../../types';
-import { getStyles } from './styles';
 import { StyledInput } from '../ui/StyledInput';
+import { getStyles } from './styles';
 
 interface WalletModalProps {
   isVisible: boolean;
@@ -34,7 +34,8 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
     }
   }, [initialData, isVisible]);
 
-  const handleSubmit = () => {
+  // Memoizar la función handleSubmit
+  const handleSubmit = useCallback(() => {
     const numericBalance = parseFloat(balance);
     if (!name || isNaN(numericBalance)) {
       alert('Por favor, ingresa un nombre y un saldo válidos.');
@@ -47,7 +48,24 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
       currency: currency,
     });
     onClose();
-  };
+  }, [name, balance, currency, onSubmit, onClose]);
+
+  // Memoizar las opciones de moneda (comentado por ahora)
+  // const currencyOptions = useMemo(() => [
+  //   { value: 'VEF', label: 'VEF' },
+  //   { value: 'USD', label: 'USD' },
+  //   { value: 'USDT', label: 'USDT' }
+  // ], []);
+
+  // Memoizar los handlers de cambio de moneda
+  const handleCurrencyChange = useCallback(
+    (newCurrency: 'USD' | 'VEF' | 'USDT') => {
+      if (!isEditing) {
+        setCurrency(newCurrency);
+      }
+    },
+    [isEditing],
+  );
 
   return (
     <Modal visible={isVisible} animationType="slide" transparent={true} onRequestClose={onClose}>
@@ -67,21 +85,21 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
             <View style={styles.currencySelector}>
               <TouchableOpacity
                 style={[styles.currencyOption, currency === 'VEF' && styles.currencyOptionSelected]}
-                onPress={() => !isEditing && setCurrency('VEF')}
+                onPress={() => handleCurrencyChange('VEF')}
                 disabled={isEditing}
               >
                 <Text style={[styles.currencyText, currency === 'VEF' && styles.currencyTextSelected]}>VEF</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.currencyOption, currency === 'USD' && styles.currencyOptionSelected]}
-                onPress={() => !isEditing && setCurrency('USD')}
+                onPress={() => handleCurrencyChange('USD')}
                 disabled={isEditing}
               >
                 <Text style={[styles.currencyText, currency === 'USD' && styles.currencyTextSelected]}>USD</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.currencyOption, currency === 'USDT' && styles.currencyOptionSelected]}
-                onPress={() => !isEditing && setCurrency('USDT')}
+                onPress={() => handleCurrencyChange('USDT')}
                 disabled={isEditing}
               >
                 <Text style={[styles.currencyText, currency === 'USDT' && styles.currencyTextSelected]}>USDT</Text>

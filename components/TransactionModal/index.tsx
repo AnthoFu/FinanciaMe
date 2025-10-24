@@ -1,12 +1,12 @@
 import { useTheme } from '@react-navigation/native';
-import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
-import { Wallet, Category, Transaction } from '../../types';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Button, Keyboard, Modal, ScrollView, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { useCategories } from '../../context/CategoriesContext';
-import { IconSymbol } from '../ui/IconSymbol';
-import { getStyles } from './styles';
-import { StyledInput } from '../ui/StyledInput';
+import { Category, Transaction, Wallet } from '../../types';
 import { HorizontalPicker } from '../ui/HorizontalPicker';
+import { IconSymbol } from '../ui/IconSymbol';
+import { StyledInput } from '../ui/StyledInput';
+import { getStyles } from './styles';
 
 interface TransactionModalProps {
   isVisible: boolean;
@@ -66,7 +66,8 @@ export default function TransactionModal({
     }
   }, [isVisible, initialWalletId, wallets, type, expenseCategories, incomeCategories, transactionToEdit]);
 
-  const handleSubmit = () => {
+  // Memoizar las funciones de manejo
+  const handleSubmit = useCallback(() => {
     const numericAmount = parseFloat(amount);
     if (!numericAmount || numericAmount <= 0 || !description || !selectedWalletId || !selectedCategoryId) {
       showToast('Por favor, completa todos los campos.');
@@ -78,34 +79,52 @@ export default function TransactionModal({
       selectedWalletId,
       selectedCategoryId,
       transactionToEdit ? transactionToEdit.type : type,
-      transactionToEdit,
+      transactionToEdit || undefined,
     );
     handleClose();
-  };
+  }, [
+    amount,
+    description,
+    selectedWalletId,
+    selectedCategoryId,
+    onSubmit,
+    transactionToEdit,
+    type,
+    showToast,
+    handleClose,
+  ]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setAmount('');
     setDescription('');
     // Do not reset wallet/category to provide a better UX
     onClose();
-  };
+  }, [onClose]);
 
-  const selectedWallet = wallets.find((w) => w.id === selectedWalletId);
-  const placeholderText = `Monto (${selectedWallet ? selectedWallet.currency : '...'})`;
+  // Memoizar cálculos costosos
+  const selectedWallet = useMemo(() => wallets.find((w) => w.id === selectedWalletId), [wallets, selectedWalletId]);
 
-  const currentCategories = transactionToEdit
-    ? transactionToEdit.type === 'expense'
-      ? expenseCategories
-      : incomeCategories
-    : type === 'expense'
-      ? expenseCategories
-      : incomeCategories;
+  const placeholderText = useMemo(
+    () => `Monto (${selectedWallet ? selectedWallet.currency : '...'})`,
+    [selectedWallet],
+  );
 
-  const modalTitle = transactionToEdit
-    ? 'Editar Movimiento'
-    : type === 'income'
-      ? 'Registrar Ingreso'
-      : 'Registrar Gasto';
+  const currentCategories = useMemo(
+    () =>
+      transactionToEdit
+        ? transactionToEdit.type === 'expense'
+          ? expenseCategories
+          : incomeCategories
+        : type === 'expense'
+          ? expenseCategories
+          : incomeCategories,
+    [transactionToEdit, expenseCategories, incomeCategories, type],
+  );
+
+  const modalTitle = useMemo(
+    () => (transactionToEdit ? 'Editar Movimiento' : type === 'income' ? 'Registrar Ingreso' : 'Registrar Gasto'),
+    [transactionToEdit, type],
+  );
 
   return (
     <Modal visible={isVisible} animationType="slide" transparent={true} onRequestClose={handleClose}>
