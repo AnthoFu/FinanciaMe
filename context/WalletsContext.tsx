@@ -1,7 +1,9 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Wallet } from '../types';
 import { WALLETS_KEY } from '../constants/StorageKeys';
+
+import { v4 as uuidv4 } from 'uuid';
 
 // Define the shape of the context value
 interface WalletsContextType {
@@ -59,50 +61,51 @@ export function WalletsProvider({ children }: { children: ReactNode }) {
     }
   }, [wallets, isLoading]);
 
-  const addWallet = (walletData: Omit<Wallet, 'id'>) => {
+  const addWallet = useCallback((walletData: Omit<Wallet, 'id'>) => {
     const newWallet: Wallet = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       ...walletData, // contains name, balance, and currency
     };
     setWallets((prev) => [...prev, newWallet]);
-  };
+  }, []);
 
-  const updateWallet = (walletData: Wallet) => {
+  const updateWallet = useCallback((walletData: Wallet) => {
     setWallets((prev) => prev.map((w) => (w.id === walletData.id ? walletData : w)));
-  };
+  }, []);
 
-  const deleteWallet = (walletId: string) => {
+  const deleteWallet = useCallback((walletId: string) => {
     setWallets((prev) => prev.filter((w) => w.id !== walletId));
-  };
+  }, []);
 
-  const updateBalancesForTransfer = (
-    fromWalletId: string,
-    toWalletId: string,
-    fromAmount: number,
-    toAmount: number,
-  ) => {
-    setWallets((prev) =>
-      prev.map((wallet) => {
-        if (wallet.id === fromWalletId) {
-          return { ...wallet, balance: wallet.balance - fromAmount };
-        }
-        if (wallet.id === toWalletId) {
-          return { ...wallet, balance: wallet.balance + toAmount };
-        }
-        return wallet;
-      }),
-    );
-  };
+  const updateBalancesForTransfer = useCallback(
+    (fromWalletId: string, toWalletId: string, fromAmount: number, toAmount: number) => {
+      setWallets((prev) =>
+        prev.map((wallet) => {
+          if (wallet.id === fromWalletId) {
+            return { ...wallet, balance: wallet.balance - fromAmount };
+          }
+          if (wallet.id === toWalletId) {
+            return { ...wallet, balance: wallet.balance + toAmount };
+          }
+          return wallet;
+        }),
+      );
+    },
+    [],
+  );
 
-  const value = {
-    wallets,
-    addWallet,
-    updateWallet,
-    deleteWallet,
-    updateBalancesForTransfer,
-    isLoading,
-    setWallets,
-  };
+  const value = useMemo(
+    () => ({
+      wallets,
+      addWallet,
+      updateWallet,
+      deleteWallet,
+      updateBalancesForTransfer,
+      isLoading,
+      setWallets,
+    }),
+    [wallets, addWallet, updateWallet, deleteWallet, updateBalancesForTransfer, isLoading],
+  );
 
   return <WalletsContext.Provider value={value}>{children}</WalletsContext.Provider>;
 }
