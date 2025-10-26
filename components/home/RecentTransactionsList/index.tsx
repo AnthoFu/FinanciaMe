@@ -3,7 +3,7 @@ import React, { useCallback, useMemo } from 'react';
 import { Animated, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { useCategories } from '../../../context/CategoriesContext';
-import { Transaction, Wallet } from '../../../types';
+import { Category, ColorTheme, Transaction, Wallet } from '../../../types';
 import { IconSymbol } from '../../ui/IconSymbol';
 import { getStyles } from './styles';
 
@@ -13,15 +13,17 @@ const getCurrencySymbol = (currency: 'USD' | 'VEF' | 'USDT') => {
   return symbols[currency] || '';
 };
 
+type Styles = ReturnType<typeof getStyles>;
+
 // Componente memoizado para cada item de transacción
 interface TransactionItemProps {
   item: Transaction;
   wallet: Wallet | undefined;
-  category: any;
+  category: Category | undefined;
   onEdit: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
-  colors: any;
-  styles: any;
+  colors: ColorTheme;
+  styles: Styles;
 }
 
 const TransactionItem = React.memo(function TransactionItem({
@@ -59,7 +61,7 @@ const TransactionItem = React.memo(function TransactionItem({
               },
             ]}
           >
-            <IconSymbol name={icon as any} size={20} color="white" />
+            <IconSymbol name={icon} size={20} color="white" />
           </Animated.View>
         </TouchableOpacity>
       );
@@ -78,7 +80,7 @@ const TransactionItem = React.memo(function TransactionItem({
     >
       <View style={styles.transactionItem}>
         <View style={[styles.transactionIcon, isIncome ? styles.incomeIconBackground : styles.expenseIconBackground]}>
-          <IconSymbol name={iconName as any} size={20} color={isIncome ? '#28a745' : colors.notification} />
+          <IconSymbol name={iconName} size={20} color={isIncome ? '#28a745' : colors.notification} />
         </View>
         <View style={styles.transactionDetails}>
           <Text style={styles.transactionDescription} numberOfLines={1}>

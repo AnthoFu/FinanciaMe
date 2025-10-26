@@ -1,10 +1,12 @@
 import React from 'react';
 import { Animated, Dimensions, StyleSheet } from 'react-native';
 
+import { ColorTheme } from '../../types';
+
 interface TabSpotlightProps {
   highlightedTab: string | null;
   spotlightAnim: Animated.Value;
-  colors: any;
+  colors: ColorTheme;
 }
 
 // Mapeo de tabs a sus índices en el navbar

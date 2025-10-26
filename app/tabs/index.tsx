@@ -136,8 +136,9 @@ export default function FinanciaMeScreen() {
         setTransferModalVisible(false);
         showToast('Transferencia realizada con éxito');
       }
-    } catch (error: any) {
-      showToast(error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Ocurrió un error desconocido';
+      showToast(errorMessage);
     }
   };
 

@@ -6,7 +6,7 @@ import { IconSymbol } from '../../components/ui/IconSymbol';
 import WalletModal from '../../components/WalletModal';
 import { useWallets } from '../../context/WalletsContext';
 import { getThemedStyles } from '../../styles/themedStyles';
-import { Wallet } from '../../types';
+import { Wallet, ColorTheme } from '../../types';
 
 export default function WalletsScreen() {
   const { colors } = useTheme();
@@ -139,7 +139,7 @@ export default function WalletsScreen() {
   );
 }
 
-const getStyles = (colors: any) =>
+const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
     list: { flex: 1, width: '100%' },
     itemContainer: {

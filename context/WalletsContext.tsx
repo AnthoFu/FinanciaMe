@@ -31,7 +31,7 @@ export function WalletsProvider({ children }: { children: ReactNode }) {
       if (storedWallets) {
         const parsedWallets = JSON.parse(storedWallets);
         // Ensure balance is always a number
-        const sanitizedWallets = parsedWallets.map((wallet: any) => ({
+        const sanitizedWallets = parsedWallets.map((wallet: Wallet) => ({
           ...wallet,
           balance: parseFloat(wallet.balance) || 0,
         }));

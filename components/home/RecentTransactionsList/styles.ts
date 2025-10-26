@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
+import { ColorTheme } from '../../../types';
 
-export const getStyles = (colors: any) =>
+export const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
     sectionTitle: {
       fontSize: 20,

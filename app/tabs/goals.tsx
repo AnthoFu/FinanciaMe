@@ -16,14 +16,32 @@ import { GoalModal } from '../../components/GoalModal';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useSavingsGoals } from '../../context/SavingsGoalsContext';
 import { getThemedStyles } from '../../styles/themedStyles';
-import { SavingsGoal } from '../../types';
+import { SavingsGoal, ColorTheme } from '../../types';
 
 // A simple progress bar component
-const ProgressBar = ({ progress, color }: { progress: number; color: string }) => {
-  const styles = getStyles({} as any); // Empty colors, just for the container style
+const progressBarStyles = StyleSheet.create({
+  progressBarContainer: {
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+  },
+});
+
+const ProgressBar = ({
+  progress,
+  color,
+  backgroundColor,
+}: {
+  progress: number;
+  color: string;
+  backgroundColor: string;
+}) => {
   return (
-    <View style={styles.progressBarContainer}>
-      <View style={[styles.progressBar, { width: `${progress * 100}%`, backgroundColor: color }]} />
+    <View style={[progressBarStyles.progressBarContainer, { backgroundColor }]}>
+      <View style={[progressBarStyles.progressBar, { width: `${progress * 100}%`, backgroundColor: color }]} />
     </View>
   );
 };
@@ -43,7 +61,7 @@ const GoalItem = ({ goal, onAddContribution }: { goal: SavingsGoal; onAddContrib
           Ahorrado: {currentAmount.toFixed(2)} / {goal.targetAmount.toFixed(2)} {goal.currency}
         </Text>
       </View>
-      <ProgressBar progress={progress} color={colors.primary} />
+      <ProgressBar progress={progress} color={colors.primary} backgroundColor={colors.border} />
       <View style={styles.goalActions}>
         <Button title="Añadir Ahorro" onPress={onAddContribution} color={colors.primary} />
       </View>
@@ -90,7 +108,7 @@ export default function GoalsScreen() {
   );
 }
 
-const getStyles = (colors: any) =>
+const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
     goalItemContainer: {
       backgroundColor: colors.card,
@@ -116,15 +134,6 @@ const getStyles = (colors: any) =>
       color: colors.text,
       opacity: 0.7,
       marginTop: 5,
-    },
-    progressBarContainer: {
-      height: 8,
-      backgroundColor: colors.border,
-      borderRadius: 4,
-      overflow: 'hidden',
-    },
-    progressBar: {
-      height: '100%',
     },
     goalActions: {
       marginTop: 15,

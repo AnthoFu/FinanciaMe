@@ -107,3 +107,12 @@ export interface FixedExpensesContextType {
   deleteFixedExpense: (id: string) => void;
   payFixedExpense: (id: string, walletId: string) => void;
 }
+
+export type ColorTheme = {
+  text: string;
+  background: string;
+  tint: string;
+  icon: string;
+  tabIconDefault: string;
+  tabIconSelected: string;
+};

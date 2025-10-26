@@ -15,6 +15,8 @@ import { CATEGORY_ICONS } from '../constants/Icons';
 import { useCategories } from '../context/CategoriesContext';
 import { IconSymbol } from '../components/ui/IconSymbol';
 
+import { ColorTheme } from '../types';
+
 export default function CategoriesScreen() {
   const { colors } = useTheme();
   const styles = getStyles(colors);
@@ -148,7 +150,7 @@ export default function CategoriesScreen() {
   );
 }
 
-const getStyles = (colors: any) =>
+const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
     container: {
       flex: 1,

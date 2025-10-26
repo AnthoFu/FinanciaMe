@@ -127,10 +127,11 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
         goalId: goal.id,
       });
       return { success: true, message: 'Ahorro añadido con éxito.' };
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Rollback wallet update if transaction fails
       setWallets(wallets);
-      return { success: false, message: error.message || 'Ocurrió un error al añadir el ahorro.' };
+      const errorMessage = error instanceof Error ? error.message : 'Ocurrió un error desconocido';
+      return { success: false, message: errorMessage };
     }
   };
 

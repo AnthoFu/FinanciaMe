@@ -1,7 +1,7 @@
 import { useTheme } from '@react-navigation/native';
 import React, { useCallback, useMemo } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
-import { Wallet } from '../../../types';
+import { ColorTheme, Wallet } from '../../../types';
 import { IconSymbol } from '../../ui/IconSymbol';
 import { getStyles } from './styles';
 
@@ -11,12 +11,14 @@ const getCurrencySymbol = (currency: 'USD' | 'VEF' | 'USDT') => {
   return symbols[currency] || '';
 };
 
+type Styles = ReturnType<typeof getStyles>;
+
 // Componente memoizado para cada item de billetera
 interface WalletItemProps {
   item: Wallet;
   onOpenModal: (type: 'income' | 'expense', walletId: string) => void;
-  colors: any;
-  styles: any;
+  colors: ColorTheme;
+  styles: Styles;
 }
 
 const WalletItem = React.memo(function WalletItem({ item, onOpenModal, colors, styles }: WalletItemProps) {

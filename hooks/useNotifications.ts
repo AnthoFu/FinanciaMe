@@ -176,7 +176,7 @@ export const useNotifications = () => {
     }
   };
 
-  const sendImmediateNotification = async (title: string, body: string, data?: any) => {
+  const sendImmediateNotification = async (title: string, body: string, data?: Record<string, unknown>) => {
     try {
       await Notifications.scheduleNotificationAsync({
         content: {
