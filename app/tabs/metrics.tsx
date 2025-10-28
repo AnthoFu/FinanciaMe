@@ -2,6 +2,7 @@ import { useTheme } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+// import { PieChart } from 'react-native-chart-kit';
 import { useCategories } from '../../context/CategoriesContext';
 import { useTransactions } from '../../context/TransactionsContext';
 import { useWallets } from '../../context/WalletsContext';
@@ -10,6 +11,16 @@ import { getStyles } from '../../styles/metrics.styles';
 import { getThemedStyles } from '../../styles/themedStyles';
 
 type TimeRange = '7_days' | '30_days' | 'all_time';
+
+// // Function to generate a random color
+// const getRandomColor = () => {
+//   const letters = '0123456789ABCDEF';
+//   let color = '#';
+//   for (let i = 0; i < 6; i++) {
+//     color += letters[Math.floor(Math.random() * 16)];
+//   }
+//   return color;
+// };
 
 export default function MetricsScreen() {
   const { colors } = useTheme();
@@ -26,6 +37,14 @@ export default function MetricsScreen() {
   const [totalIncome, setTotalIncome] = useState(0);
   const [netFlow, setNetFlow] = useState(0);
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>('30_days');
+
+  // const chartData = Object.entries(spendingByCategory).map(([name, population]) => ({
+  //   name,
+  //   population,
+  //   color: getRandomColor(),
+  //   legendFontColor: colors.text,
+  //   legendFontSize: 15,
+  // }));
 
   const getAmountInUSD = useCallback(
     (amount: number, currency: 'VEF' | 'USD' | 'USDT') => {
@@ -171,6 +190,7 @@ export default function MetricsScreen() {
         </View>
 
         <Text style={styles.sectionTitle}>Gasto por Categoría</Text>
+        {/* {Object.keys(spendingByCategory).length > 0 ? ( ... ) : ( ... )} */}
         {Object.keys(spendingByCategory).length > 0 ? (
           Object.entries(spendingByCategory)
             .sort(([, amountA], [, amountB]) => amountB - amountA) // Sort by amount descending

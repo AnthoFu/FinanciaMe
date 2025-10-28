@@ -69,6 +69,15 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
     }
   }, [isVisible, budget, expenseCategories]);
 
+  const handleClose = () => {
+    setName('');
+    setAmount('');
+    setCurrency('USD');
+    setPeriod('mensual');
+    setCategoryId(null);
+    onClose();
+  };
+
   const handleSave = () => {
     const budgetAmount = parseFloat(amount);
     if (name.trim() && budgetAmount > 0 && categoryId) {
@@ -89,15 +98,6 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
     } else {
       alert('Por favor, completa todos los campos.');
     }
-  };
-
-  const handleClose = () => {
-    setName('');
-    setAmount('');
-    setCurrency('USD');
-    setPeriod('mensual');
-    setCategoryId(null);
-    onClose();
   };
 
   return (

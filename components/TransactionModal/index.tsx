@@ -66,6 +66,13 @@ export default function TransactionModal({
     }
   }, [isVisible, initialWalletId, wallets, type, expenseCategories, incomeCategories, transactionToEdit]);
 
+  const handleClose = useCallback(() => {
+    setAmount('');
+    setDescription('');
+    // Do not reset wallet/category to provide a better UX
+    onClose();
+  }, [onClose]);
+
   // Memoizar las funciones de manejo
   const handleSubmit = useCallback(() => {
     const numericAmount = parseFloat(amount);
@@ -93,13 +100,6 @@ export default function TransactionModal({
     showToast,
     handleClose,
   ]);
-
-  const handleClose = useCallback(() => {
-    setAmount('');
-    setDescription('');
-    // Do not reset wallet/category to provide a better UX
-    onClose();
-  }, [onClose]);
 
   // Memoizar cálculos costosos
   const selectedWallet = useMemo(() => wallets.find((w) => w.id === selectedWalletId), [wallets, selectedWalletId]);

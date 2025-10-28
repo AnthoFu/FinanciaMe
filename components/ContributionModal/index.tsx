@@ -54,6 +54,11 @@ export function ContributionModal({ isVisible, onClose, goal }: ContributionModa
     }
   }, [goal, wallets]);
 
+  const handleClose = () => {
+    setAmount('');
+    onClose(); // Keep selected wallet for next time, but close the modal
+  };
+
   const handleSave = async () => {
     if (!goal || !selectedWalletId) return;
 
@@ -71,11 +76,6 @@ export function ContributionModal({ isVisible, onClose, goal }: ContributionModa
     } else {
       Alert.alert('Error', result.message);
     }
-  };
-
-  const handleClose = () => {
-    setAmount('');
-    onClose(); // Keep selected wallet for next time, but close the modal
   };
 
   return (
