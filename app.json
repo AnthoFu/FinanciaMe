@@ -2,9 +2,9 @@
   "expo": {
     "name": "FinanciaMe",
     "slug": "FinanciaMe",
-    "version": "1.10.7",
+    "version": "1.10.8",
     "orientation": "portrait",
-    "icon": "./assets/images/AnthoFu-Icon.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "financiame",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#121212",
@@ -15,7 +15,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/AnthoFu-Icon.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#121212"
       },
       "edgeToEdgeEnabled": true,
@@ -24,14 +24,14 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/AnthoFu-Icon.png"
+      "favicon": "./assets/images/icon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/AnthoFu-Icon.png",
+          "image": "./assets/images/icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#121212"
