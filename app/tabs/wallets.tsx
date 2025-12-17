@@ -1,12 +1,12 @@
 import { useTheme } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Toast from '../../components/Toast';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import WalletModal from '../../components/WalletModal';
 import { useWallets } from '../../context/WalletsContext';
 import { getThemedStyles } from '../../styles/themedStyles';
-import { Wallet } from '../../types';
+import { Wallet, ColorTheme } from '../../types';
 
 export default function WalletsScreen() {
   const { colors } = useTheme();
@@ -18,60 +18,71 @@ export default function WalletsScreen() {
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
   const [toast, setToast] = useState({ isVisible: false, message: '' });
 
-  const showToast = (message: string) => {
+  const showToast = useCallback((message: string) => {
     setToast({ isVisible: true, message });
-  };
+  }, []);
 
-  const getCurrencySymbol = (currency: 'USD' | 'VEF' | 'USDT') => {
-    switch (currency) {
-      case 'USD':
-        return '$';
-      case 'VEF':
-        return 'Bs.';
-      case 'USDT':
-        return 'USDT';
-      default:
-        return currency;
-    }
-  };
+  // Memoizar la función getCurrencySymbol para evitar recrearla
+  const getCurrencySymbol = useMemo(() => {
+    return (currency: 'USD' | 'VEF' | 'USDT') => {
+      switch (currency) {
+        case 'USD':
+          return '$';
+        case 'VEF':
+          return 'Bs.';
+        case 'USDT':
+          return 'USDT';
+        default:
+          return currency;
+      }
+    };
+  }, []);
 
-  const handleAddNew = () => {
+  // Memoizar las funciones de manejo de eventos
+  const handleAddNew = useCallback(() => {
     setEditingWallet(null);
     setModalVisible(true);
-  };
+  }, []);
 
-  const handleEdit = (wallet: Wallet) => {
+  const handleEdit = useCallback((wallet: Wallet) => {
     setEditingWallet(wallet);
     setModalVisible(true);
-  };
+  }, []);
 
-  const handleDelete = (id: string) => {
-    Alert.alert(
-      'Eliminar Billetera',
-      '¿Estás seguro? Esta acción no se puede deshacer y borrará la billetera permanentemente.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: () => {
-            deleteWallet(id);
-            showToast('Billetera eliminada con éxito');
+  const handleDelete = useCallback(
+    (id: string) => {
+      Alert.alert(
+        'Eliminar Billetera',
+        '¿Estás seguro? Esta acción no se puede deshacer y borrará la billetera permanentemente.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: () => {
+              deleteWallet(id);
+              showToast('Billetera eliminada con éxito');
+            },
           },
-        },
-      ],
-    );
-  };
+        ],
+      );
+    },
+    [deleteWallet, showToast],
+  );
 
-  const handleSubmit = (walletData: Omit<Wallet, 'id'>) => {
-    const isEditing = !!editingWallet;
-    if (isEditing) {
-      updateWallet({ ...editingWallet, ...walletData });
-    } else {
-      addWallet(walletData);
-    }
-    showToast(isEditing ? 'Billetera actualizada con éxito' : 'Billetera creada con éxito');
-  };
+  // Memoizar la función handleSubmit
+  const handleSubmit = useCallback(
+    (walletData: Omit<Wallet, 'id'>) => {
+      const isEditing = !!editingWallet;
+      if (isEditing) {
+        updateWallet({ ...editingWallet, ...walletData });
+      } else {
+        addWallet(walletData);
+      }
+      showToast(isEditing ? 'Billetera actualizada con éxito' : 'Billetera creada con éxito');
+    },
+    [editingWallet, updateWallet, addWallet, showToast],
+  );
 
   return (
     <View style={globalStyles.container}>
@@ -83,27 +94,35 @@ export default function WalletsScreen() {
       </View>
       <FlatList
         data={wallets}
-        keyExtractor={(item) => item.id}
+        keyExtractor={useCallback((item: Wallet) => item.id, [])}
         style={styles.list}
-        renderItem={({ item }) => (
-          <View style={styles.itemContainer}>
-            <View style={styles.itemDetails}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemBalance}>
-                {getCurrencySymbol(item.currency)} {item.balance.toFixed(2)}
-              </Text>
+        renderItem={useCallback(
+          ({ item }: { item: Wallet }) => (
+            <View style={styles.itemContainer}>
+              <View style={styles.itemDetails}>
+                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemBalance}>
+                  {getCurrencySymbol(item.currency)} {item.balance.toFixed(2)}
+                </Text>
+              </View>
+              <View style={styles.itemActions}>
+                <TouchableOpacity onPress={() => handleEdit(item)}>
+                  <Text style={styles.actionText}>Editar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                  <Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <View style={styles.itemActions}>
-              <TouchableOpacity onPress={() => handleEdit(item)}>
-                <Text style={styles.actionText}>Editar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                <Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          ),
+          [handleEdit, handleDelete, getCurrencySymbol, styles],
         )}
-        ListEmptyComponent={<Text style={styles.emptyText}>Aún no has añadido ninguna billetera.</Text>}
+        ListEmptyComponent={useMemo(
+          () => (
+            <Text style={styles.emptyText}>Aún no has añadido ninguna billetera.</Text>
+          ),
+          [styles.emptyText],
+        )}
       />
       <WalletModal
         isVisible={isModalVisible}
@@ -120,7 +139,7 @@ export default function WalletsScreen() {
   );
 }
 
-const getStyles = (colors: any) =>
+const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
     list: { flex: 1, width: '100%' },
     itemContainer: {

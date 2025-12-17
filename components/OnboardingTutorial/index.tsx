@@ -1,7 +1,7 @@
 import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Animated, Dimensions, Modal, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Animated, Modal, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { IconSymbol } from '../ui/IconSymbol';
 import { getOnboardingStyles } from './styles';
 import { TabSpotlight } from './TabSpotlight';
@@ -25,8 +25,6 @@ interface OnboardingTutorialProps {
   onSkip: () => void;
 }
 
-const { width, height } = Dimensions.get('window');
-
 export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisible, onComplete, onSkip }) => {
   const { colors } = useTheme();
   const router = useRouter();
@@ -36,74 +34,77 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
   const [spotlightAnim] = useState(new Animated.Value(0));
   const [highlightedTab, setHighlightedTab] = useState<string | null>(null);
 
-  const tutorialSteps: TutorialStep[] = [
-    {
-      id: 'welcome',
-      title: '¡Bienvenido a FinanciaMe!',
-      description: 'Te ayudaremos a gestionar tus finanzas personales de manera sencilla y efectiva.',
-      position: 'top',
-    },
-    {
-      id: 'wallets',
-      title: '1. Crea tu Primera Billetera',
-      description:
-        'Primero necesitas crear una billetera para empezar. Esto te permitirá organizar tu dinero y hacer seguimiento de tus gastos.',
-      position: 'bottom',
-      navigateTo: '/tabs/wallets',
-      highlightTab: 'wallets',
-    },
-    {
-      id: 'transactions',
-      title: '2. Registra Transacciones',
-      description:
-        'Ahora vamos a aprender a registrar ingresos y gastos. Esto te ayudará a saber exactamente en qué gastas tu dinero.',
-      position: 'bottom',
-      navigateTo: '/tabs',
-      highlightTab: 'index',
-    },
-    {
-      id: 'budgets',
-      title: '3. Controla tus Presupuestos',
-      description:
-        'Los presupuestos te ayudan a no gastar más de lo que planeas. Puedes establecer límites por categoría como comida, transporte, etc.',
-      position: 'bottom',
-      navigateTo: '/tabs/budgets',
-      highlightTab: 'budgets',
-    },
-    {
-      id: 'goals',
-      title: '4. Define Metas de Ahorro',
-      description:
-        'Las metas te ayudan a ahorrar para objetivos específicos como vacaciones, un auto, o emergencias. Es como tener un plan de ahorro.',
-      position: 'bottom',
-      navigateTo: '/tabs/goals',
-      highlightTab: 'goals',
-    },
-    {
-      id: 'fixed-expenses',
-      title: '5. Programa Gastos Fijos',
-      description:
-        'Los gastos fijos son pagos que haces regularmente como renta, servicios, suscripciones. La app te recordará cuándo pagarlos.',
-      position: 'bottom',
-      navigateTo: '/tabs/fixedExpenses',
-      highlightTab: 'fixedExpenses',
-    },
-    {
-      id: 'metrics',
-      title: '6. Analiza tus Finanzas',
-      description:
-        'Las métricas te muestran gráficos y estadísticas de tus gastos. Te ayudan a entender mejor tus hábitos financieros.',
-      position: 'bottom',
-      navigateTo: '/tabs/metrics',
-      highlightTab: 'metrics',
-    },
-    {
-      id: 'complete',
-      title: '¡Listo para comenzar!',
-      description: 'Ya conoces las funciones principales. ¡Empieza a gestionar tus finanzas de manera inteligente!',
-      position: 'top',
-    },
-  ];
+  const tutorialSteps: TutorialStep[] = useMemo(
+    () => [
+      {
+        id: 'welcome',
+        title: '¡Bienvenido a FinanciaMe!',
+        description: 'Te ayudaremos a gestionar tus finanzas personales de manera sencilla y efectiva.',
+        position: 'top',
+      },
+      {
+        id: 'wallets',
+        title: '1. Crea tu Primera Billetera',
+        description:
+          'Primero necesitas crear una billetera para empezar. Esto te permitirá organizar tu dinero y hacer seguimiento de tus gastos.',
+        position: 'bottom',
+        navigateTo: '/tabs/wallets',
+        highlightTab: 'wallets',
+      },
+      {
+        id: 'transactions',
+        title: '2. Registra Transacciones',
+        description:
+          'Ahora vamos a aprender a registrar ingresos y gastos. Esto te ayudará a saber exactamente en qué gastas tu dinero.',
+        position: 'bottom',
+        navigateTo: '/tabs',
+        highlightTab: 'index',
+      },
+      {
+        id: 'budgets',
+        title: '3. Controla tus Presupuestos',
+        description:
+          'Los presupuestos te ayudan a no gastar más de lo que planeas. Puedes establecer límites por categoría como comida, transporte, etc.',
+        position: 'bottom',
+        navigateTo: '/tabs/budgets',
+        highlightTab: 'budgets',
+      },
+      {
+        id: 'goals',
+        title: '4. Define Metas de Ahorro',
+        description:
+          'Las metas te ayudan a ahorrar para objetivos específicos como vacaciones, un auto, o emergencias. Es como tener un plan de ahorro.',
+        position: 'bottom',
+        navigateTo: '/tabs/goals',
+        highlightTab: 'goals',
+      },
+      {
+        id: 'fixed-expenses',
+        title: '5. Programa Gastos Fijos',
+        description:
+          'Los gastos fijos son pagos que haces regularmente como renta, servicios, suscripciones. La app te recordará cuándo pagarlos.',
+        position: 'bottom',
+        navigateTo: '/tabs/fixedExpenses',
+        highlightTab: 'fixedExpenses',
+      },
+      {
+        id: 'metrics',
+        title: '6. Analiza tus Finanzas',
+        description:
+          'Las métricas te muestran gráficos y estadísticas de tus gastos. Te ayudan a entender mejor tus hábitos financieros.',
+        position: 'bottom',
+        navigateTo: '/tabs/metrics',
+        highlightTab: 'metrics',
+      },
+      {
+        id: 'complete',
+        title: '¡Listo para comenzar!',
+        description: 'Ya conoces las funciones principales. ¡Empieza a gestionar tus finanzas de manera inteligente!',
+        position: 'top',
+      },
+    ],
+    [],
+  );
 
   useEffect(() => {
     if (isVisible) {
@@ -119,7 +120,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
         useNativeDriver: true,
       }).start();
     }
-  }, [isVisible]);
+  }, [isVisible, fadeAnim]);
 
   // Navegar automáticamente cuando cambia el paso
   useEffect(() => {
@@ -132,7 +133,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
         }, 100);
       }
     }
-  }, [currentStep, isVisible, router]);
+  }, [currentStep, isVisible, router, tutorialSteps]);
 
   // Manejar el spotlight del tab
   useEffect(() => {
@@ -154,7 +155,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
         useNativeDriver: true,
       }).start();
     }
-  }, [currentStep, spotlightAnim]);
+  }, [currentStep, spotlightAnim, tutorialSteps]);
 
   const handleNext = () => {
     const currentStepData = tutorialSteps[currentStep];
@@ -240,15 +241,4 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
       </Animated.View>
     </Modal>
   );
-};
-
-const getPositionStyles = (position: string) => {
-  switch (position) {
-    case 'top':
-      return { justifyContent: 'flex-start' as const, paddingTop: 100 };
-    case 'bottom':
-      return { justifyContent: 'flex-end' as const, paddingBottom: 100 };
-    default:
-      return { justifyContent: 'center' as const };
-  }
 };

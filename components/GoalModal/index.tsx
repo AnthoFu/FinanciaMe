@@ -38,6 +38,13 @@ export function GoalModal({ isVisible, onClose }: GoalModalProps) {
   const { colors } = useTheme();
   const styles = getStyles(colors);
 
+  const handleClose = () => {
+    setName('');
+    setTargetAmount('');
+    setCurrency('USD');
+    onClose();
+  };
+
   const handleSave = () => {
     const amount = parseFloat(targetAmount);
     if (name.trim() && amount > 0) {
@@ -50,13 +57,6 @@ export function GoalModal({ isVisible, onClose }: GoalModalProps) {
     } else {
       alert('Por favor, introduce un nombre válido y un monto mayor a cero.');
     }
-  };
-
-  const handleClose = () => {
-    setName('');
-    setTargetAmount('');
-    setCurrency('USD');
-    onClose();
   };
 
   return (

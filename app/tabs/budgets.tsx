@@ -5,16 +5,35 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity, KeyboardAvoidingVie
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useBudgets } from '../../context/BudgetsContext';
 import { getThemedStyles } from '../../styles/themedStyles';
-import { Budget } from '../../types';
+import { Budget, ColorTheme } from '../../types';
 
 import { BudgetModal } from '../../components/BudgetModal';
 import { useBudgetSpending } from '../../hooks/useBudgetSpending';
 
-const ProgressBar = ({ progress, color }: { progress: number; color: string }) => {
-  const styles = getStyles({} as any); // Empty colors, just for the container style
+const progressBarStyles = StyleSheet.create({
+  progressBarContainer: {
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginTop: 10,
+  },
+  progressBar: {
+    height: '100%',
+  },
+});
+
+const ProgressBar = ({
+  progress,
+  color,
+  backgroundColor,
+}: {
+  progress: number;
+  color: string;
+  backgroundColor: string;
+}) => {
   return (
-    <View style={styles.progressBarContainer}>
-      <View style={[styles.progressBar, { width: `${progress * 100}%`, backgroundColor: color }]} />
+    <View style={[progressBarStyles.progressBarContainer, { backgroundColor }]}>
+      <View style={[progressBarStyles.progressBar, { width: `${progress * 100}%`, backgroundColor: color }]} />
     </View>
   );
 };
@@ -34,7 +53,7 @@ const BudgetItem = ({ budget }: { budget: Budget }) => {
           {spending.toFixed(2)} / {budget.amount.toFixed(2)} {budget.currency}
         </Text>
       </View>
-      <ProgressBar progress={progress} color={colors.primary} />
+      <ProgressBar progress={progress} color={colors.primary} backgroundColor={colors.border} />
     </View>
   );
 };
@@ -74,7 +93,7 @@ export default function BudgetsScreen() {
   );
 }
 
-const getStyles = (colors: any) =>
+const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
     budgetItemContainer: {
       backgroundColor: colors.card,
@@ -100,16 +119,6 @@ const getStyles = (colors: any) =>
       color: colors.text,
       opacity: 0.7,
       marginTop: 5,
-    },
-    progressBarContainer: {
-      height: 8,
-      backgroundColor: colors.border,
-      borderRadius: 4,
-      overflow: 'hidden',
-      marginTop: 10,
-    },
-    progressBar: {
-      height: '100%',
     },
     emptyText: {
       textAlign: 'center',

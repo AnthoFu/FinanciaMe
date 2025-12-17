@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
+import { ColorTheme } from '../../../types';
 
-export const getStyles = (colors: any) =>
+export const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
     sectionTitle: {
       fontSize: 20,
@@ -58,5 +59,13 @@ export const getStyles = (colors: any) =>
     },
     expenseIconBackground: {
       backgroundColor: 'rgba(220, 53, 69, 0.1)', // Lighter red
+    },
+    rightAction: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: 50,
+      height: '85%',
+      borderRadius: 10,
+      marginHorizontal: 2,
     },
   });

@@ -67,7 +67,16 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
         }
       }
     }
-  }, [isVisible, budget]);
+  }, [isVisible, budget, expenseCategories]);
+
+  const handleClose = () => {
+    setName('');
+    setAmount('');
+    setCurrency('USD');
+    setPeriod('mensual');
+    setCategoryId(null);
+    onClose();
+  };
 
   const handleSave = () => {
     const budgetAmount = parseFloat(amount);
@@ -81,7 +90,7 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
       };
 
       if (budget) {
-        // updateBudget({ ...budget, ...budgetData });
+        updateBudget({ ...budget, ...budgetData });
       } else {
         addBudget(budgetData as Omit<Budget, 'id' | 'creationDate'>);
       }
@@ -89,15 +98,6 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
     } else {
       alert('Por favor, completa todos los campos.');
     }
-  };
-
-  const handleClose = () => {
-    setName('');
-    setAmount('');
-    setCurrency('USD');
-    setPeriod('mensual');
-    setCategoryId(null);
-    onClose();
   };
 
   return (

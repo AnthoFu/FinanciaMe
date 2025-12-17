@@ -73,8 +73,9 @@ export const useExchangeRates = () => {
             throw apiError;
           }
         }
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : 'Ocurrió un error desconocido';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }

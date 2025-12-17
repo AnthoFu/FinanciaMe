@@ -10,7 +10,7 @@ import { useFixedExpenses } from '../../context/FixedExpensesContext';
 import { useWallets } from '../../context/WalletsContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import { getThemedStyles } from '../../styles/themedStyles';
-import { FixedExpense } from '../../types';
+import { FixedExpense, ColorTheme } from '../../types';
 
 const formatFrequency = (expense: FixedExpense): string => {
   switch (expense.frequency) {
@@ -88,7 +88,7 @@ export default function FixedExpensesScreen() {
         await addFixedExpense(expenseData);
       }
       showToast(isEditing ? 'Gasto fijo actualizado' : 'Gasto fijo creado con éxito');
-    } catch (error) {
+    } catch {
       showToast('Error al guardar el gasto fijo');
     }
   };
@@ -97,7 +97,7 @@ export default function FixedExpensesScreen() {
     try {
       await saveNotificationSettings(settings);
       showToast('Configuración de notificaciones guardada');
-    } catch (error) {
+    } catch {
       showToast('Error al guardar la configuración');
     }
   };
@@ -126,7 +126,7 @@ export default function FixedExpensesScreen() {
             <View style={styles.itemContainer}>
               {category && (
                 <View style={styles.iconContainer}>
-                  <IconSymbol name={category.icon as any} size={24} color={colors.text} />
+                  <IconSymbol name={category.icon} size={24} color={colors.text} />
                 </View>
               )}
               <View style={styles.itemDetails}>
@@ -175,7 +175,7 @@ export default function FixedExpensesScreen() {
   );
 }
 
-const getStyles = (colors: any) =>
+const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
     list: { flex: 1, width: '100%' },
     headerActions: {

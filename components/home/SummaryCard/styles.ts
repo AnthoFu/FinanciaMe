@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
+import { ColorTheme } from '../../../types';
 
-export const getStyles = (colors: any) =>
+export const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
     summaryCard: {
       backgroundColor: '#FF6F00', // Custom vibrant orange

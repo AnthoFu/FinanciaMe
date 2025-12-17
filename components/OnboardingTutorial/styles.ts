@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
+import { ColorTheme } from '../../types';
 
-export const getOnboardingStyles = (colors: any) =>
+export const getOnboardingStyles = (colors: ColorTheme) =>
   StyleSheet.create({
     overlay: {
       flex: 1,

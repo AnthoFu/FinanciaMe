@@ -1,23 +1,7 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Transaction } from '../types';
+import { Transaction, TransactionsContextType } from '../types';
 import { TRANSACTIONS_KEY } from '../constants/StorageKeys';
-
-interface TransactionsContextType {
-  transactions: Transaction[];
-  addTransaction: (transactionData: Omit<Transaction, 'id'>) => void;
-  addTransfer: (transferData: {
-    fromWalletId: string;
-    toWalletId: string;
-    fromAmount: number;
-    toAmount: number;
-    fromWalletName: string;
-    toWalletName: string;
-    date: string;
-  }) => void;
-  isLoading: boolean;
-  setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
-}
 
 const TransactionsContext = createContext<TransactionsContextType | undefined>(undefined);
 
@@ -64,6 +48,14 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     setTransactions((prev) => [newTransaction, ...prev]);
   };
 
+  const updateTransaction = (updatedTransaction: Transaction) => {
+    setTransactions((prev) => prev.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t)));
+  };
+
+  const deleteTransaction = (id: string) => {
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
+  };
+
   const addTransfer = (transferData: {
     fromWalletId: string;
     toWalletId: string;
@@ -100,6 +92,8 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   const value = {
     transactions,
     addTransaction,
+    updateTransaction,
+    deleteTransaction,
     addTransfer,
     isLoading,
     setTransactions,

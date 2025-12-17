@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
+import { ColorTheme } from '../../types';
 
 // Convert styles to a function that accepts theme colors
-export const getStyles = (colors: any) =>
+export const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
     modalContainer: {
       flex: 1,
