@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 import { SAVINGS_GOALS_KEY } from '../constants/StorageKeys';
 import { SavingsGoal, Transaction } from '../types';
@@ -65,7 +66,7 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
 
   const addSavingsGoal = (goalData: Omit<SavingsGoal, 'id' | 'creationDate'>) => {
     const newGoal: SavingsGoal = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       creationDate: new Date().toISOString(),
       ...goalData,
     };

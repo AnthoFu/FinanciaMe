@@ -82,6 +82,15 @@ export interface TransactionsContextType {
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   updateTransaction: (transaction: Transaction) => void;
   deleteTransaction: (id: string) => void;
+  addTransfer: (transferData: {
+    fromWalletId: string;
+    toWalletId: string;
+    fromAmount: number;
+    toAmount: number;
+    fromWalletName: string;
+    toWalletName: string;
+    date: string;
+  }) => void;
 }
 
 export interface SavingsGoalsContextType {

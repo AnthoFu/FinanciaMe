@@ -1,5 +1,6 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { v4 as uuidv4 } from 'uuid';
 import { Transaction, TransactionsContextType } from '../types';
 import { TRANSACTIONS_KEY } from '../constants/StorageKeys';
 
@@ -42,7 +43,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
 
   const addTransaction = (transactionData: Omit<Transaction, 'id'>) => {
     const newTransaction: Transaction = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       ...transactionData,
     };
     setTransactions((prev) => [newTransaction, ...prev]);
@@ -65,7 +66,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     toWalletName: string;
     date: string;
   }) => {
-    const transferId = Date.now().toString();
+    const transferId = uuidv4();
     const expenseTransaction: Transaction = {
       id: `t_${transferId}_exp`,
       amount: transferData.fromAmount,
