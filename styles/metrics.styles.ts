@@ -37,7 +37,7 @@ export const getStyles = (colors: ColorTheme) =>
     },
     timeRangeButton: {
       paddingVertical: 8,
-      paddingHorizontal: 15,
+      paddingHorizontal: 12,
       borderRadius: 8,
     },
     timeRangeButtonSelected: {
@@ -45,11 +45,13 @@ export const getStyles = (colors: ColorTheme) =>
     },
     timeRangeButtonText: {
       color: colors.primary,
-      fontWeight: 'bold',
+      fontWeight: '600',
+      fontSize: 14,
     },
     timeRangeButtonTextSelected: {
       color: colors.card,
       fontWeight: 'bold',
+      fontSize: 14,
     },
     scrollView: {
       flex: 1,
@@ -74,22 +76,22 @@ export const getStyles = (colors: ColorTheme) =>
       marginBottom: 5,
     },
     summaryAmount: {
-      fontSize: 32,
+      fontSize: 28,
       fontWeight: 'bold',
       color: colors.notification, // Use notification for total spending (often red)
     },
     incomeAmount: {
-      fontSize: 32,
+      fontSize: 28,
       fontWeight: 'bold',
       color: colors.primary, // Use primary for total income
     },
     netFlowAmountPositive: {
-      fontSize: 32,
+      fontSize: 28,
       fontWeight: 'bold',
       color: '#28a745', // A standard green color for positive values
     },
     netFlowAmountNegative: {
-      fontSize: 32,
+      fontSize: 28,
       fontWeight: 'bold',
       color: colors.notification, // Use notification for negative values (often red)
     },

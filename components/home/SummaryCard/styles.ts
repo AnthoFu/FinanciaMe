@@ -21,7 +21,7 @@ export const getStyles = (colors: ColorTheme) =>
     },
     summaryCardBalance: {
       color: 'white', // White text
-      fontSize: 40,
+      fontSize: 32,
       fontWeight: 'bold',
       marginVertical: 8,
     },
@@ -33,7 +33,7 @@ export const getStyles = (colors: ColorTheme) =>
     },
     summaryRateText: {
       color: 'white', // White text
-      fontSize: 12,
+      fontSize: 11,
     },
     summaryCurrencies: {
       flexDirection: 'row',

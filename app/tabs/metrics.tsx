@@ -146,7 +146,7 @@ export default function MetricsScreen() {
           <Text
             style={selectedTimeRange === '7_days' ? styles.timeRangeButtonTextSelected : styles.timeRangeButtonText}
           >
-            Últimos 7 Días
+            7 Días
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -156,7 +156,7 @@ export default function MetricsScreen() {
           <Text
             style={selectedTimeRange === '30_days' ? styles.timeRangeButtonTextSelected : styles.timeRangeButtonText}
           >
-            Últimos 30 Días
+            30 Días
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -166,7 +166,7 @@ export default function MetricsScreen() {
           <Text
             style={selectedTimeRange === 'all_time' ? styles.timeRangeButtonTextSelected : styles.timeRangeButtonText}
           >
-            Todo el Tiempo
+            Total
           </Text>
         </TouchableOpacity>
       </View>
