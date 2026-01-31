@@ -1,4 +1,4 @@
-import { useTheme } from '@react-navigation/native';
+import { useTheme } from '@/hooks/useTheme';
 import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
 
@@ -95,7 +95,7 @@ export function ContributionModal({ isVisible, onClose, goal }: ContributionModa
 
             {walletsForCurrency.length > 0 ? (
               <View style={styles.walletContainer}>
-                <HorizontalPicker<Wallet>
+                <HorizontalPicker<Wallet, string>
                   label="Billetera de Origen"
                   data={walletsForCurrency}
                   selectedValue={selectedWalletId}

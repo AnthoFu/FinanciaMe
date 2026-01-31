@@ -1,4 +1,4 @@
-import { useTheme } from '@react-navigation/native';
+import { useTheme } from '@/hooks/useTheme';
 import React, { useState } from 'react';
 import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard } from 'react-native';
 
@@ -82,7 +82,7 @@ export function GoalModal({ isVisible, onClose }: GoalModalProps) {
             />
 
             <View style={styles.currencyContainer}>
-              <HorizontalPicker<Currency>
+              <HorizontalPicker<Currency, Currency>
                 label="Moneda"
                 data={currencyOptions}
                 selectedValue={currency}

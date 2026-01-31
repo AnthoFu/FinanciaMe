@@ -1,4 +1,4 @@
-import { useTheme } from '@react-navigation/native';
+import { useTheme } from '@/hooks/useTheme';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Keyboard, Modal, ScrollView, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { useCategories } from '../../context/CategoriesContext';
@@ -134,7 +134,7 @@ export default function TransactionModal({
             <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
               <Text style={styles.modalTitle}>{modalTitle}</Text>
 
-              <HorizontalPicker<Wallet>
+              <HorizontalPicker<Wallet, string>
                 label="Billetera"
                 data={wallets}
                 selectedValue={selectedWalletId}
@@ -149,7 +149,7 @@ export default function TransactionModal({
                 )}
               />
 
-              <HorizontalPicker<Category>
+              <HorizontalPicker<Category, string>
                 label="Categoría"
                 data={currentCategories}
                 selectedValue={selectedCategoryId}

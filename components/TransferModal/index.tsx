@@ -1,4 +1,4 @@
-import { useTheme } from '@react-navigation/native';
+import { useTheme } from '@/hooks/useTheme';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView, Alert } from 'react-native';
 import { Wallet } from '../../types';
@@ -122,7 +122,7 @@ export default function TransferModal({ isVisible, onClose, onSubmit, showToast 
             <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
               <Text style={styles.modalTitle}>Realizar Transferencia</Text>
 
-              <HorizontalPicker<Wallet>
+              <HorizontalPicker<Wallet, string>
                 label="Desde"
                 data={wallets}
                 selectedValue={fromWalletId}
@@ -137,7 +137,7 @@ export default function TransferModal({ isVisible, onClose, onSubmit, showToast 
                 )}
               />
 
-              <HorizontalPicker<Wallet>
+              <HorizontalPicker<Wallet, string>
                 label="Hacia"
                 data={wallets}
                 selectedValue={toWalletId}

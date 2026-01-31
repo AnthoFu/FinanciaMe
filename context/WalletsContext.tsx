@@ -33,7 +33,7 @@ export function WalletsProvider({ children }: { children: ReactNode }) {
         // Ensure balance is always a number
         const sanitizedWallets = parsedWallets.map((wallet: Wallet) => ({
           ...wallet,
-          balance: parseFloat(wallet.balance) || 0,
+          balance: typeof wallet.balance === 'number' ? wallet.balance : 0,
         }));
         setWallets(sanitizedWallets);
       }

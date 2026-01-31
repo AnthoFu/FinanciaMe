@@ -1,4 +1,4 @@
-import { useTheme } from '@react-navigation/native';
+import { useTheme } from '@/hooks/useTheme';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Modal,
@@ -119,11 +119,11 @@ export default function FixedExpenseModal({
               <StyledInput placeholder="Nombre (ej. Alquiler)" value={name} onChangeText={setName} />
               <StyledInput placeholder="Monto" keyboardType="numeric" value={amount} onChangeText={setAmount} />
 
-              <HorizontalPicker<(typeof frequencyOptions)[0]>
+              <HorizontalPicker<(typeof frequencyOptions)[0], ExpenseFrequency>
                 label="Frecuencia"
                 data={frequencyOptions}
                 selectedValue={frequency}
-                onSelect={(item) => setFrequency(item.value)}
+                onSelect={setFrequency}
                 keyExtractor={(item) => item.value}
                 renderItem={(item, isSelected) => (
                   <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
@@ -164,7 +164,7 @@ export default function FixedExpenseModal({
                 </TouchableOpacity>
               </View>
 
-              <HorizontalPicker<Category>
+              <HorizontalPicker<Category, string>
                 label="Categoría"
                 data={expenseCategories}
                 selectedValue={selectedCategoryId}
@@ -186,7 +186,7 @@ export default function FixedExpenseModal({
                 )}
               />
 
-              <HorizontalPicker<Wallet>
+              <HorizontalPicker<Wallet, string>
                 label="Billetera de Pago"
                 data={wallets}
                 selectedValue={selectedWalletId}
