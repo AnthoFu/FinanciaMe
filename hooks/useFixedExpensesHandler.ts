@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { Alert } from 'react-native';
+import { v4 as uuidv4 } from 'uuid';
 import { FixedExpense, Wallet, Transaction } from '../types';
 
 interface UseFixedExpensesHandlerProps {
@@ -65,7 +66,7 @@ export function useFixedExpensesHandler({
         if (wallet.balance >= expenseCostInWalletCurrency) {
           tempWallets[walletIndex].balance -= expenseCostInWalletCurrency;
           tempTransactions.unshift({
-            id: `${Date.now()}-${expense.id}`,
+            id: uuidv4(),
             amount: expenseCostInWalletCurrency,
             description: `Gasto fijo: ${expense.name}`,
             type: 'expense',

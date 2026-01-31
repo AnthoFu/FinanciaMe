@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { FIXED_EXPENSES_KEY } from '../constants/StorageKeys';
 import { useNotifications } from '../hooks/useNotifications';
 import { FixedExpense } from '../types';
@@ -69,7 +70,7 @@ export function FixedExpensesProvider({ children }: { children: ReactNode }) {
 
   const addFixedExpense = async (expenseData: Omit<FixedExpense, 'id' | 'lastPaid'>) => {
     const newExpense: FixedExpense = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       lastPaid: undefined,
       ...expenseData,
     };

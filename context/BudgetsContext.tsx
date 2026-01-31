@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 import { BUDGETS_KEY } from '../constants/StorageKeys';
 import { Budget } from '../types';
@@ -53,7 +54,7 @@ export function BudgetsProvider({ children }: { children: ReactNode }) {
 
   const addBudget = (budgetData: Omit<Budget, 'id' | 'creationDate'>) => {
     const newBudget: Budget = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       creationDate: new Date().toISOString(),
       ...budgetData,
     };

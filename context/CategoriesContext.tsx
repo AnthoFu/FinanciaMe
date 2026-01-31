@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { Category } from '../types';
 
 const CATEGORIES_STORAGE_KEY = 'user_defined_categories_v2';
@@ -109,7 +110,7 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
 
   const addCategory = (name: string, icon: string, type: 'income' | 'expense') => {
     const newCategory: Category = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       name: name.trim(),
       icon,
       type,
