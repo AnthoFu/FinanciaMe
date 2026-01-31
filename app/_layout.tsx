@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useTheme } from '@/hooks/useTheme';
 import { useFonts } from 'expo-font';
