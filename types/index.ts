@@ -79,6 +79,8 @@ export interface CategoriesContextType {
 
 export interface TransactionsContextType {
   transactions: Transaction[];
+  isLoading: boolean;
+  setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   updateTransaction: (transaction: Transaction) => void;
   deleteTransaction: (id: string) => void;
@@ -118,10 +120,14 @@ export interface FixedExpensesContextType {
 }
 
 export type ColorTheme = {
-  text: string;
+  primary: string;
   background: string;
+  card: string;
+  text: string;
+  border: string;
   tint: string;
   icon: string;
+  notification: string;
   tabIconDefault: string;
   tabIconSelected: string;
 };

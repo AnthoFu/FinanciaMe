@@ -1,4 +1,4 @@
-import { useTheme } from '@react-navigation/native';
+import { useTheme } from '@/hooks/useTheme';
 import React, { useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FixedExpenseModal from '../../components/FixedExpenseModal';
@@ -126,7 +126,7 @@ export default function FixedExpensesScreen() {
             <View style={styles.itemContainer}>
               {category && (
                 <View style={styles.iconContainer}>
-                  <IconSymbol name={category.icon} size={24} color={colors.text} />
+                  <IconSymbol name={category.icon as any} size={24} color={colors.text} />
                 </View>
               )}
               <View style={styles.itemDetails}>

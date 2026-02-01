@@ -1,4 +1,6 @@
-import { DarkTheme, DefaultTheme, ThemeProvider, useTheme } from '@react-navigation/native';
+import 'react-native-get-random-values';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useTheme } from '@/hooks/useTheme';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -8,12 +10,30 @@ import 'react-native-reanimated';
 import { OnboardingTutorial } from '@/components/OnboardingTutorial';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useOnboarding } from '@/hooks/useOnboarding';
+import { Colors } from '@/constants/Colors';
 import { BudgetsProvider } from '../context/BudgetsContext';
 import { CategoriesProvider } from '../context/CategoriesContext';
 import { FixedExpensesProvider } from '../context/FixedExpensesContext';
 import { SavingsGoalsProvider } from '../context/SavingsGoalsContext';
 import { TransactionsProvider } from '../context/TransactionsContext';
 import { WalletsProvider } from '../context/WalletsContext';
+
+// Create custom themes
+const CustomDefaultTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    ...Colors.light,
+  },
+};
+
+const CustomDarkTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    ...Colors.dark,
+  },
+};
 
 function ThemedStack() {
   const { colors } = useTheme();
@@ -61,7 +81,7 @@ export default function RootLayout() {
             <WalletsProvider>
               <SavingsGoalsProvider>
                 <BudgetsProvider>
-                  <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                  <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
                     <ThemedStack />
                     <StatusBar style="auto" />
                     <OnboardingTutorial

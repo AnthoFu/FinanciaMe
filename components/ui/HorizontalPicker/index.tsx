@@ -1,25 +1,25 @@
-import { useTheme } from '@react-navigation/native';
+import { useTheme } from '@/hooks/useTheme';
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { getStyles } from './styles';
 
-interface HorizontalPickerProps<T> {
+interface HorizontalPickerProps<T, K extends string> {
   label: string;
   data: T[];
-  selectedValue: string | null;
-  keyExtractor: (item: T) => string;
-  onSelect: (value: string) => void;
+  selectedValue: K | null;
+  keyExtractor: (item: T) => K;
+  onSelect: (value: K) => void;
   renderItem: (item: T, isSelected: boolean) => React.ReactNode;
 }
 
-export function HorizontalPicker<T>({
+export function HorizontalPicker<T, K extends string>({
   label,
   data,
   selectedValue,
   keyExtractor,
   onSelect,
   renderItem,
-}: HorizontalPickerProps<T>) {
+}: HorizontalPickerProps<T, K>) {
   const { colors } = useTheme();
   const styles = getStyles(colors);
 

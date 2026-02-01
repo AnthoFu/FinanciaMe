@@ -1,4 +1,4 @@
-import { useTheme } from '@react-navigation/native';
+import { useTheme } from '@/hooks/useTheme';
 import React, { useCallback, useMemo } from 'react';
 import { Animated, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
@@ -61,7 +61,7 @@ const TransactionItem = React.memo(function TransactionItem({
               },
             ]}
           >
-            <IconSymbol name={icon} size={20} color="white" />
+            <IconSymbol name={icon as any} size={20} color="white" />
           </Animated.View>
         </TouchableOpacity>
       );
@@ -80,7 +80,7 @@ const TransactionItem = React.memo(function TransactionItem({
     >
       <View style={styles.transactionItem}>
         <View style={[styles.transactionIcon, isIncome ? styles.incomeIconBackground : styles.expenseIconBackground]}>
-          <IconSymbol name={iconName} size={20} color={isIncome ? '#28a745' : colors.notification} />
+          <IconSymbol name={iconName as any} size={20} color={isIncome ? '#28a745' : colors.notification} />
         </View>
         <View style={styles.transactionDetails}>
           <Text style={styles.transactionDescription} numberOfLines={1}>

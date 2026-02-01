@@ -3,7 +3,7 @@ import React, { createContext, ReactNode, useContext, useEffect, useState } from
 import { v4 as uuidv4 } from 'uuid';
 import { FIXED_EXPENSES_KEY } from '../constants/StorageKeys';
 import { useNotifications } from '../hooks/useNotifications';
-import { FixedExpense } from '../types';
+import { FixedExpense, ExpenseFrequency } from '../types';
 
 interface FixedExpensesContextType {
   expenses: FixedExpense[];
@@ -31,9 +31,9 @@ export function FixedExpensesProvider({ children }: { children: ReactNode }) {
         // Simple migration for old data
         const migratedExpenses = parsedExpenses.map((exp) => {
           if (!exp.frequency) {
-            return { ...exp, frequency: 'monthly' };
+            return { ...exp, frequency: 'monthly' as const };
           }
-          return exp;
+          return { ...exp, frequency: exp.frequency as ExpenseFrequency };
         });
         setExpenses(migratedExpenses);
       }

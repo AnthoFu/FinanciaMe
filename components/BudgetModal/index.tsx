@@ -1,4 +1,4 @@
-import { useTheme } from '@react-navigation/native';
+import { useTheme } from '@/hooks/useTheme';
 import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
 
@@ -17,7 +17,7 @@ interface BudgetModalProps {
 }
 
 const currencyOptions: Currency[] = ['USD', 'VEF', 'USDT'];
-const periodOptions = ['mensual', 'anual'];
+const periodOptions: ('mensual' | 'anual')[] = ['mensual', 'anual'];
 
 const PickerItem = ({ item, isSelected }: { item: string; isSelected: boolean }) => {
   const { colors } = useTheme();
@@ -37,7 +37,7 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState<Currency>('USD');
-  const [period, setPeriod] = useState('mensual');
+  const [period, setPeriod] = useState<'mensual' | 'anual'>('mensual');
   const [categoryId, setCategoryId] = useState<string | null>(null);
 
   const { addBudget, updateBudget } = useBudgets();
@@ -125,7 +125,7 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
                 style={styles.input}
               />
 
-              <HorizontalPicker<Currency>
+              <HorizontalPicker<Currency, Currency>
                 label="Moneda"
                 data={currencyOptions}
                 selectedValue={currency}
@@ -134,16 +134,16 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
                 renderItem={(item, isSelected) => <PickerItem item={item} isSelected={isSelected} />}
               />
 
-              <HorizontalPicker<string>
+              <HorizontalPicker<string, 'mensual' | 'anual'>
                 label="Periodo"
                 data={periodOptions}
                 selectedValue={period}
                 onSelect={(value) => setPeriod(value as 'mensual' | 'anual')}
-                keyExtractor={(item) => item}
+                keyExtractor={(item) => item as 'mensual' | 'anual'}
                 renderItem={(item, isSelected) => <PickerItem item={item} isSelected={isSelected} />}
               />
 
-              <HorizontalPicker<Category>
+              <HorizontalPicker<Category, string>
                 label="Categoría"
                 data={expenseCategories}
                 selectedValue={categoryId}

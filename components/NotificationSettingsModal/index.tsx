@@ -1,4 +1,4 @@
-import { useTheme } from '@react-navigation/native';
+import { useTheme } from '@/hooks/useTheme';
 import React, { useState } from 'react';
 import { Alert, Modal, SafeAreaView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { IconSymbol } from '../ui/IconSymbol';
