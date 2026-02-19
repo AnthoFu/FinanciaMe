@@ -195,7 +195,13 @@ export default function FinanciaMeScreen() {
           />
         }
       >
-        <SummaryCard balances={balances} bcvRate={bcvRate} usdtRate={usdtRate} averageRate={averageRate} />
+        <SummaryCard
+          balances={balances}
+          bcvRate={bcvRate}
+          usdtRate={usdtRate}
+          averageRate={averageRate}
+          lastUpdated={useExchangeRates().lastUpdated}
+        />
         <WalletsCarousel wallets={wallets} onOpenModal={handleOpenModal} />
         <RecentTransactionsList
           transactions={transactions}
