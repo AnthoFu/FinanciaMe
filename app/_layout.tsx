@@ -13,6 +13,7 @@ import { useOnboarding } from '@/hooks/useOnboarding';
 import { Colors } from '@/constants/Colors';
 import { BudgetsProvider } from '../context/BudgetsContext';
 import { CategoriesProvider } from '../context/CategoriesContext';
+import { ExchangeRatesProvider } from '../context/ExchangeRatesContext';
 import { FixedExpensesProvider } from '../context/FixedExpensesContext';
 import { SavingsGoalsProvider } from '../context/SavingsGoalsContext';
 import { TransactionsProvider } from '../context/TransactionsContext';
@@ -75,27 +76,29 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <CategoriesProvider>
-        <FixedExpensesProvider>
-          <TransactionsProvider>
-            <WalletsProvider>
-              <SavingsGoalsProvider>
-                <BudgetsProvider>
-                  <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
-                    <ThemedStack />
-                    <StatusBar style="auto" />
-                    <OnboardingTutorial
-                      isVisible={!isOnboardingCompleted}
-                      onComplete={completeOnboarding}
-                      onSkip={completeOnboarding}
-                    />
-                  </ThemeProvider>
-                </BudgetsProvider>
-              </SavingsGoalsProvider>
-            </WalletsProvider>
-          </TransactionsProvider>
-        </FixedExpensesProvider>
-      </CategoriesProvider>
+      <ExchangeRatesProvider>
+        <CategoriesProvider>
+          <FixedExpensesProvider>
+            <TransactionsProvider>
+              <WalletsProvider>
+                <SavingsGoalsProvider>
+                  <BudgetsProvider>
+                    <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
+                      <ThemedStack />
+                      <StatusBar style="auto" />
+                      <OnboardingTutorial
+                        isVisible={!isOnboardingCompleted}
+                        onComplete={completeOnboarding}
+                        onSkip={completeOnboarding}
+                      />
+                    </ThemeProvider>
+                  </BudgetsProvider>
+                </SavingsGoalsProvider>
+              </WalletsProvider>
+            </TransactionsProvider>
+          </FixedExpensesProvider>
+        </CategoriesProvider>
+      </ExchangeRatesProvider>
     </GestureHandlerRootView>
   );
 }

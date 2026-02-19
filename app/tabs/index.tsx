@@ -6,6 +6,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -33,10 +34,22 @@ export default function FinanciaMeScreen() {
   const styles = getThemedStyles(colors);
 
   // --- Data Hooks ---
-  const { wallets, setWallets, isLoading: walletsLoading } = useWallets();
+  const {
+    wallets,
+    setWallets,
+    isLoading: walletsLoading,
+  } = useWallets();
   const { transactions, setTransactions, deleteTransaction, isLoading: transactionsLoading } = useTransactions();
   const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
-  const { bcvRate, usdtRate, averageRate, loading: ratesLoading, error: ratesError } = useExchangeRates();
+  const {
+    bcvRate,
+    usdtRate,
+    averageRate,
+    loading: ratesLoading,
+    error: ratesError,
+    refreshRates,
+    isRefreshing: ratesRefreshing,
+  } = useExchangeRates();
   const balances = useFinancialSummary(wallets, bcvRate, usdtRate, averageRate, ratesLoading);
   const { handleSaveTransaction, handleTransfer } = useTransactionHandler();
 
@@ -58,6 +71,7 @@ export default function FinanciaMeScreen() {
 
   // --- Local State ---
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
   const [isTransferModalVisible, setTransferModalVisible] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
@@ -70,8 +84,9 @@ export default function FinanciaMeScreen() {
 
   // --- Effects ---
   useEffect(() => {
-    setLoading(walletsLoading || transactionsLoading || fixedExpensesLoading || ratesLoading);
-  }, [walletsLoading, transactionsLoading, fixedExpensesLoading, ratesLoading]);
+    // Only show global loading if we don't have essential data yet
+    setLoading(walletsLoading || transactionsLoading || fixedExpensesLoading || (ratesLoading && bcvRate === 0));
+  }, [walletsLoading, transactionsLoading, fixedExpensesLoading, ratesLoading, bcvRate]);
 
   useEffect(() => {
     if (!loading) {
@@ -80,6 +95,12 @@ export default function FinanciaMeScreen() {
   }, [loading, checkDueFixedExpenses]);
 
   // --- Transaction Logic ---
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshRates();
+    setIsRefreshing(false);
+  };
+
   const handleOpenModal = (type: 'income' | 'expense', walletId: string) => {
     setTransactionType(type);
     setSelectedWalletIdForModal(walletId);
@@ -145,10 +166,35 @@ export default function FinanciaMeScreen() {
   // --- Render ---
   const renderContent = () => {
     if (loading) return <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1 }} />;
-    if (ratesError) return <Text style={styles.errorText}>Error cargando tasas: {ratesError}</Text>;
+
+    // Solo mostramos error si no hay tasas en absoluto (bcvRate === 0)
+    if (ratesError && bcvRate === 0) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={[styles.errorText, { textAlign: 'center' }]}>
+            No se pudieron obtener las tasas de cambio: {ratesError}
+          </Text>
+          <TouchableOpacity
+            onPress={handleRefresh}
+            style={{ marginTop: 20, padding: 10, backgroundColor: colors.primary, borderRadius: 8 }}
+          >
+            <Text style={{ color: 'white' }}>Reintentar</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
 
     return (
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing || ratesRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+          />
+        }
+      >
         <SummaryCard balances={balances} bcvRate={bcvRate} usdtRate={usdtRate} averageRate={averageRate} />
         <WalletsCarousel wallets={wallets} onOpenModal={handleOpenModal} />
         <RecentTransactionsList
