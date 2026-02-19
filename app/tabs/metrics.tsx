@@ -1,7 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
 import { Stack } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 // import { PieChart } from 'react-native-chart-kit';
 import { useCategories } from '../../context/CategoriesContext';
 import { useTransactions } from '../../context/TransactionsContext';
@@ -30,8 +30,9 @@ export default function MetricsScreen() {
   const { transactions, isLoading: transactionsLoading } = useTransactions();
   const { categories, isLoading: categoriesLoading } = useCategories();
   const { wallets, isLoading: walletsLoading } = useWallets();
-  const { bcvRate, usdtRate, loading: ratesLoading } = useExchangeRates();
+  const { bcvRate, usdtRate, loading: ratesLoading, refreshRates, isRefreshing: ratesRefreshing } = useExchangeRates();
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [spendingByCategory, setSpendingByCategory] = useState<Record<string, number>>({});
   const [totalSpending, setTotalSpending] = useState(0);
   const [totalIncome, setTotalIncome] = useState(0);
@@ -107,8 +108,14 @@ export default function MetricsScreen() {
     setNetFlow(income - spending);
   }, [transactions, categories, wallets, selectedTimeRange, getAmountInUSD]);
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshRates();
+    setIsRefreshing(false);
+  };
+
   useEffect(() => {
-    const allLoaded = !transactionsLoading && !categoriesLoading && !walletsLoading && !ratesLoading;
+    const allLoaded = !transactionsLoading && !categoriesLoading && !walletsLoading && (!ratesLoading || bcvRate !== 0);
     if (allLoaded) {
       filterAndAggregateTransactions();
     }
@@ -119,10 +126,11 @@ export default function MetricsScreen() {
     categoriesLoading,
     walletsLoading,
     ratesLoading,
+    bcvRate,
     filterAndAggregateTransactions,
   ]);
 
-  const isLoading = transactionsLoading || categoriesLoading || walletsLoading || ratesLoading;
+  const isLoading = transactionsLoading || categoriesLoading || walletsLoading || (ratesLoading && bcvRate === 0);
 
   if (isLoading) {
     return (
@@ -171,7 +179,16 @@ export default function MetricsScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView}>
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing || ratesRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+          />
+        }
+      >
         <View style={styles.summaryCard}>
           <Text style={styles.summaryTitle}>Ingreso Total</Text>
           <Text style={styles.incomeAmount}>$ {totalIncome.toFixed(2)}</Text>
