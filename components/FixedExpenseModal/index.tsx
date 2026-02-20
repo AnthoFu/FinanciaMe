@@ -46,7 +46,7 @@ export default function FixedExpenseModal({
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [dayOfMonth, setDayOfMonth] = useState('');
-  const [currency, setCurrency] = useState<'USD' | 'VEF' | 'USDT'>('USD');
+  const [currency, setCurrency] = useState<'USD' | 'VES' | 'USDT'>('USD');
   const [frequency, setFrequency] = useState<ExpenseFrequency>('monthly');
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -145,10 +145,10 @@ export default function FixedExpenseModal({
 
               <View style={styles.currencySelector}>
                 <TouchableOpacity
-                  style={[styles.currencyOption, currency === 'VEF' && styles.currencyOptionSelected]}
-                  onPress={() => setCurrency('VEF')}
+                  style={[styles.currencyOption, currency === 'VES' && styles.currencyOptionSelected]}
+                  onPress={() => setCurrency('VES')}
                 >
-                  <Text style={[styles.currencyText, currency === 'VEF' && styles.currencyTextSelected]}>VEF</Text>
+                  <Text style={[styles.currencyText, currency === 'VES' && styles.currencyTextSelected]}>VES</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.currencyOption, currency === 'USD' && styles.currencyOptionSelected]}

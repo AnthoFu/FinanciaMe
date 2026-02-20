@@ -34,9 +34,9 @@ export function useBudgetSpending(budget: Budget) {
       const budgetCurrency = budget.currency === 'USDT' ? 'USD' : budget.currency;
       const walletCurrency = wallet.currency === 'USDT' ? 'USD' : wallet.currency;
 
-      if (budgetCurrency === 'USD' && walletCurrency === 'VEF') {
+      if (budgetCurrency === 'USD' && walletCurrency === 'VES') {
         transactionAmount = t.amount / averageRate;
-      } else if (budgetCurrency === 'VEF' && walletCurrency === 'USD') {
+      } else if (budgetCurrency === 'VES' && walletCurrency === 'USD') {
         transactionAmount = t.amount * averageRate;
       }
 

@@ -16,7 +16,7 @@ interface BudgetModalProps {
   budget?: Budget | null;
 }
 
-const currencyOptions: Currency[] = ['USD', 'VEF', 'USDT'];
+const currencyOptions: Currency[] = ['USD', 'VES', 'USDT'];
 const periodOptions: ('mensual' | 'anual')[] = ['mensual', 'anual'];
 
 const PickerItem = ({ item, isSelected }: { item: string; isSelected: boolean }) => {

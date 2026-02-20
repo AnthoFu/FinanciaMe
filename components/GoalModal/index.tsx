@@ -13,7 +13,7 @@ interface GoalModalProps {
   onClose: () => void;
 }
 
-const currencyOptions: Currency[] = ['USD', 'VEF', 'USDT'];
+const currencyOptions: Currency[] = ['USD', 'VES', 'USDT'];
 
 // A simple component to render items in the picker
 const PickerItem = ({ item, isSelected }: { item: string; isSelected: boolean }) => {

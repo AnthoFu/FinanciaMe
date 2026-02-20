@@ -24,11 +24,11 @@ export default function WalletsScreen() {
 
   // Memoizar la función getCurrencySymbol para evitar recrearla
   const getCurrencySymbol = useMemo(() => {
-    return (currency: 'USD' | 'VEF' | 'USDT') => {
+    return (currency: 'USD' | 'VES' | 'USDT') => {
       switch (currency) {
         case 'USD':
           return '$';
-        case 'VEF':
+        case 'VES':
           return 'Bs.';
         case 'USDT':
           return 'USDT';

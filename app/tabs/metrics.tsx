@@ -48,11 +48,11 @@ export default function MetricsScreen() {
   // }));
 
   const getAmountInUSD = useCallback(
-    (amount: number, currency: 'VEF' | 'USD' | 'USDT') => {
+    (amount: number, currency: 'VES' | 'USD' | 'USDT') => {
       if (!bcvRate || !usdtRate) return 0;
 
       switch (currency) {
-        case 'VEF':
+        case 'VES':
           return amount / bcvRate;
         case 'USDT':
           return (amount * usdtRate) / bcvRate;

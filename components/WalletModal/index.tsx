@@ -18,7 +18,7 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
 
   const [name, setName] = useState('');
   const [balance, setBalance] = useState('0');
-  const [currency, setCurrency] = useState<'USD' | 'VEF' | 'USDT'>('USD');
+  const [currency, setCurrency] = useState<'USD' | 'VES' | 'USDT'>('USD');
 
   const isEditing = !!initialData;
 
@@ -52,14 +52,14 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
 
   // Memoizar las opciones de moneda (comentado por ahora)
   // const currencyOptions = useMemo(() => [
-  //   { value: 'VEF', label: 'VEF' },
+  //   { value: 'VES', label: 'VES' },
   //   { value: 'USD', label: 'USD' },
   //   { value: 'USDT', label: 'USDT' }
   // ], []);
 
   // Memoizar los handlers de cambio de moneda
   const handleCurrencyChange = useCallback(
-    (newCurrency: 'USD' | 'VEF' | 'USDT') => {
+    (newCurrency: 'USD' | 'VES' | 'USDT') => {
       if (!isEditing) {
         setCurrency(newCurrency);
       }
@@ -84,11 +84,11 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
 
             <View style={styles.currencySelector}>
               <TouchableOpacity
-                style={[styles.currencyOption, currency === 'VEF' && styles.currencyOptionSelected]}
-                onPress={() => handleCurrencyChange('VEF')}
+                style={[styles.currencyOption, currency === 'VES' && styles.currencyOptionSelected]}
+                onPress={() => handleCurrencyChange('VES')}
                 disabled={isEditing}
               >
-                <Text style={[styles.currencyText, currency === 'VEF' && styles.currencyTextSelected]}>VEF</Text>
+                <Text style={[styles.currencyText, currency === 'VES' && styles.currencyTextSelected]}>VES</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.currencyOption, currency === 'USD' && styles.currencyOptionSelected]}

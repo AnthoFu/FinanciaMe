@@ -13,7 +13,7 @@ export const useFinancialSummary = (
       return {
         consolidatedBcv: 0,
         consolidatedAverage: 0,
-        byCurrency: { VEF: 0, USD: 0, USDT: 0 },
+        byCurrency: { VES: 0, USD: 0, USDT: 0 },
       };
     }
 
@@ -22,11 +22,11 @@ export const useFinancialSummary = (
         acc[wallet.currency] = (acc[wallet.currency] || 0) + wallet.balance;
         return acc;
       },
-      { VEF: 0, USD: 0, USDT: 0 } as Record<'VEF' | 'USD' | 'USDT', number>,
+      { VES: 0, USD: 0, USDT: 0 } as Record<'VES' | 'USD' | 'USDT', number>,
     );
 
     const consolidatedBcv = wallets.reduce((total, wallet) => {
-      if (wallet.currency === 'VEF') {
+      if (wallet.currency === 'VES') {
         return total + wallet.balance / bcvRate;
       }
       if (wallet.currency === 'USDT') {
@@ -36,7 +36,7 @@ export const useFinancialSummary = (
     }, 0);
 
     const consolidatedAverage = wallets.reduce((total, wallet) => {
-      if (wallet.currency === 'VEF') {
+      if (wallet.currency === 'VES') {
         return total + wallet.balance / averageRate;
       }
       if (wallet.currency === 'USDT') {

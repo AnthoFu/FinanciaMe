@@ -59,8 +59,8 @@ export function useFixedExpensesHandler({
         const wallet = tempWallets[walletIndex];
 
         if (expense.currency !== wallet.currency) {
-          if (expense.currency === 'USD' && wallet.currency === 'VEF') expenseCostInWalletCurrency *= bcvRate;
-          else if (expense.currency === 'VEF' && wallet.currency === 'USD') expenseCostInWalletCurrency /= bcvRate;
+          if (expense.currency === 'USD' && wallet.currency === 'VES') expenseCostInWalletCurrency *= bcvRate;
+          else if (expense.currency === 'VES' && wallet.currency === 'USD') expenseCostInWalletCurrency /= bcvRate;
         }
 
         if (wallet.balance >= expenseCostInWalletCurrency) {
