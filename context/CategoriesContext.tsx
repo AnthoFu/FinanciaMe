@@ -128,13 +128,16 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
     return categories.find((cat) => cat.id === categoryId);
   };
 
-  const value = {
-    categories,
-    addCategory,
-    removeCategory,
-    getCategoryById,
-    isLoading,
-  };
+  const value = React.useMemo(
+    () => ({
+      categories,
+      addCategory,
+      removeCategory,
+      getCategoryById,
+      isLoading,
+    }),
+    [categories, isLoading],
+  );
 
   return <CategoriesContext.Provider value={value}>{children}</CategoriesContext.Provider>;
 }

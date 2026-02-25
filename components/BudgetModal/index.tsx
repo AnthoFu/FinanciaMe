@@ -42,7 +42,7 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
 
   const { addBudget, updateBudget } = useBudgets();
   const { categories } = useCategories();
-  const expenseCategories = categories.filter((c) => c.type === 'expense');
+  const expenseCategories = React.useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
 
   const { colors } = useTheme();
   const styles = getStyles(colors);
