@@ -12,7 +12,7 @@
 
 ## 🚀 Funcionalidades
 
-- **Gestión de Billeteras Multimoneda:** Crea y gestiona múltiples billeteras en diferentes monedas (VEF, USD, USDT).
+- **Gestión de Billeteras Multimoneda:** Crea y gestiona múltiples billeteras en diferentes monedas (VES, USD, USDT).
 - **Tasas de Cambio en Tiempo Real:** Obtén las últimas tasas de cambio del BCV y Binance USDT para mantener tus saldos actualizados.
 - **Gestión de Transacciones:** Registra fácilmente tus ingresos y gastos. Todo tu historial en un solo lugar.
 - **Categorías Personalizables:** Crea, edita y elimina tus propias categorías de ingresos y gastos para una clasificación detallada.

@@ -73,14 +73,17 @@ export function BudgetsProvider({ children }: { children: ReactNode }) {
     return budgets.find((budget) => budget.id === budgetId);
   };
 
-  const value = {
-    budgets,
-    addBudget,
-    updateBudget,
-    deleteBudget,
-    getBudgetById,
-    isLoading,
-  };
+  const value = React.useMemo(
+    () => ({
+      budgets,
+      addBudget,
+      updateBudget,
+      deleteBudget,
+      getBudgetById,
+      isLoading,
+    }),
+    [budgets, isLoading],
+  );
 
   return <BudgetsContext.Provider value={value}>{children}</BudgetsContext.Provider>;
 }

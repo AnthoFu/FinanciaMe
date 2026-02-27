@@ -6,8 +6,8 @@ import { IconSymbol } from '../../ui/IconSymbol';
 import { getStyles } from './styles';
 
 // Helper to get currency symbol
-const getCurrencySymbol = (currency: 'USD' | 'VEF' | 'USDT') => {
-  const symbols = { USD: '$ ', VEF: 'Bs. ', USDT: 'USDT ' };
+const getCurrencySymbol = (currency: 'USD' | 'VES' | 'USDT') => {
+  const symbols = { USD: '$ ', VES: 'Bs. ', USDT: 'USDT ' };
   return symbols[currency] || '';
 };
 

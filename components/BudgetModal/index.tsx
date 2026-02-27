@@ -16,7 +16,7 @@ interface BudgetModalProps {
   budget?: Budget | null;
 }
 
-const currencyOptions: Currency[] = ['USD', 'VEF', 'USDT'];
+const currencyOptions: Currency[] = ['USD', 'VES', 'USDT'];
 const periodOptions: ('mensual' | 'anual')[] = ['mensual', 'anual'];
 
 const PickerItem = ({ item, isSelected }: { item: string; isSelected: boolean }) => {
@@ -42,7 +42,7 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
 
   const { addBudget, updateBudget } = useBudgets();
   const { categories } = useCategories();
-  const expenseCategories = categories.filter((c) => c.type === 'expense');
+  const expenseCategories = React.useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
 
   const { colors } = useTheme();
   const styles = getStyles(colors);

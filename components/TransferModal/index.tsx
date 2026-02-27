@@ -54,9 +54,9 @@ export default function TransferModal({ isVisible, onClose, onSubmit, showToast 
     const rate = parseFloat(exchangeRate);
     const from = parseFloat(amount);
     if (rate && from && fromWallet && toWallet) {
-      if (fromWallet.currency === 'VEF' && toWallet.currency === 'USD') {
+      if (fromWallet.currency === 'VES' && toWallet.currency === 'USD') {
         setToAmount((from / rate).toFixed(2));
-      } else if (fromWallet.currency === 'USD' && toWallet.currency === 'VEF') {
+      } else if (fromWallet.currency === 'USD' && toWallet.currency === 'VES') {
         setToAmount((from * rate).toFixed(2));
       } else {
         setToAmount(amount);
@@ -69,9 +69,9 @@ export default function TransferModal({ isVisible, onClose, onSubmit, showToast 
     const from = parseFloat(fromAmount);
     const to = parseFloat(amount);
     if (from && to && fromWallet && toWallet && fromWallet.currency !== toWallet.currency) {
-      if (fromWallet.currency === 'VEF' && toWallet.currency === 'USD') {
+      if (fromWallet.currency === 'VES' && toWallet.currency === 'USD') {
         setExchangeRate((from / to).toFixed(4));
-      } else if (fromWallet.currency === 'USD' && toWallet.currency === 'VEF') {
+      } else if (fromWallet.currency === 'USD' && toWallet.currency === 'VES') {
         setExchangeRate((to / from).toFixed(4));
       }
     }
@@ -82,9 +82,9 @@ export default function TransferModal({ isVisible, onClose, onSubmit, showToast 
     const rate = parseFloat(rateStr);
     const from = parseFloat(fromAmount);
     if (rate && from && fromWallet && toWallet) {
-      if (fromWallet.currency === 'VEF' && toWallet.currency === 'USD') {
+      if (fromWallet.currency === 'VES' && toWallet.currency === 'USD') {
         setToAmount((from / rate).toFixed(2));
-      } else if (fromWallet.currency === 'USD' && toWallet.currency === 'VEF') {
+      } else if (fromWallet.currency === 'USD' && toWallet.currency === 'VES') {
         setToAmount((from * rate).toFixed(2));
       }
     }
@@ -162,7 +162,7 @@ export default function TransferModal({ isVisible, onClose, onSubmit, showToast 
               {isMultiCurrency && (
                 <>
                   <StyledInput
-                    placeholder={`Tasa de Cambio (1 USD = ? VEF)`}
+                    placeholder={`Tasa de Cambio (1 USD = ? VES)`}
                     keyboardType="numeric"
                     value={exchangeRate}
                     onChangeText={handleRateChange}

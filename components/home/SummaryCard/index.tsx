@@ -8,7 +8,7 @@ interface SummaryCardProps {
   balances: {
     consolidatedBcv: number;
     consolidatedAverage: number;
-    byCurrency: { VEF: number; USD: number; USDT: number };
+    byCurrency: { VES: number; USD: number; USDT: number };
   };
   bcvRate: number;
   usdtRate: number;
@@ -65,7 +65,7 @@ export function SummaryCard({ balances, bcvRate, usdtRate, averageRate, lastUpda
         <Text style={styles.summaryRateText}>PROMEDIO: Bs. {averageRate.toFixed(2)}</Text>
       </View>
       <View style={styles.summaryCurrencies}>
-        <Text style={styles.summaryCurrencyItem}>VEF: {balances.byCurrency.VEF.toFixed(2)}</Text>
+        <Text style={styles.summaryCurrencyItem}>VES: {balances.byCurrency.VES.toFixed(2)}</Text>
         <Text style={styles.summaryCurrencyItem}>USD: {balances.byCurrency.USD.toFixed(2)}</Text>
         <Text style={styles.summaryCurrencyItem}>USDT: {balances.byCurrency.USDT.toFixed(2)}</Text>
       </View>
