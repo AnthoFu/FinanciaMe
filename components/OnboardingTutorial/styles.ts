@@ -129,7 +129,7 @@ export const getOnboardingStyles = (colors: ColorTheme) =>
       backgroundColor: colors.tint,
     },
     primaryButtonText: {
-      color: '#FFFFFF',
+      color: colors.primaryButtonText,
       fontSize: 16,
       fontWeight: '600',
       marginRight: 4,
