@@ -42,14 +42,21 @@ function ThemedStack() {
     <Stack>
       <Stack.Screen name="tabs" options={{ headerShown: false }} />
       <Stack.Screen
+        name="settings"
+        options={{
+          title: 'Configuración',
+          headerStyle: {
+            backgroundColor: colors.card,
+          },
+          headerTitleStyle: {
+            color: colors.text,
+          },
+        }}
+      />
+      <Stack.Screen
         name="categories"
         options={{
-          presentation: 'modal',
           title: 'Gestionar Categorías',
-          animation: 'fade',
-          contentStyle: {
-            backgroundColor: colors.background,
-          },
           headerStyle: {
             backgroundColor: colors.card,
           },

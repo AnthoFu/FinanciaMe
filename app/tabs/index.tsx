@@ -34,11 +34,7 @@ export default function FinanciaMeScreen() {
   const styles = getThemedStyles(colors);
 
   // --- Data Hooks ---
-  const {
-    wallets,
-    setWallets,
-    isLoading: walletsLoading,
-  } = useWallets();
+  const { wallets, setWallets, isLoading: walletsLoading } = useWallets();
   const { transactions, setTransactions, deleteTransaction, isLoading: transactionsLoading } = useTransactions();
   const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
   const {
@@ -49,6 +45,7 @@ export default function FinanciaMeScreen() {
     error: ratesError,
     refreshRates,
     isRefreshing: ratesRefreshing,
+    lastUpdated,
   } = useExchangeRates();
   const balances = useFinancialSummary(wallets, bcvRate, usdtRate, averageRate, ratesLoading);
   const { handleSaveTransaction, handleTransfer } = useTransactionHandler();
@@ -200,7 +197,7 @@ export default function FinanciaMeScreen() {
           bcvRate={bcvRate}
           usdtRate={usdtRate}
           averageRate={averageRate}
-          lastUpdated={useExchangeRates().lastUpdated}
+          lastUpdated={lastUpdated}
         />
         <WalletsCarousel wallets={wallets} onOpenModal={handleOpenModal} />
         <RecentTransactionsList
@@ -221,7 +218,7 @@ export default function FinanciaMeScreen() {
           <TouchableOpacity onPress={() => setTransferModalVisible(true)}>
             <IconSymbol name="arrow.left.arrow.right.circle.fill" size={24} color={colors.text} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/categories')}>
+          <TouchableOpacity onPress={() => router.push('/settings')}>
             <IconSymbol name="gearshape.fill" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
