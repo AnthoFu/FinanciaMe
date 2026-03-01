@@ -52,6 +52,7 @@ const MAPPING = {
   'arrow.left.arrow.right.circle.fill': 'swap-horiz',
   'arrow.down.left.circle.fill': 'call-received',
   'arrow.up.right.circle.fill': 'call-made',
+  'paintbrush.fill': 'palette',
 } as IconMapping;
 
 /**

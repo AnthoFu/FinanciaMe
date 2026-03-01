@@ -130,4 +130,5 @@ export type ColorTheme = {
   notification: string;
   tabIconDefault: string;
   tabIconSelected: string;
+  primaryButtonText: string;
 };

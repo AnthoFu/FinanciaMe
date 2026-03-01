@@ -84,6 +84,7 @@ export default function CategoriesScreen() {
             <Text style={styles.addButtonText}>Añadir Nueva Categoría</Text>
           </TouchableOpacity>
         }
+        ListFooterComponent={<View style={{ height: 50 }} />}
       />
 
       <Modal

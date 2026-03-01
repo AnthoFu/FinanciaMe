@@ -228,7 +228,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
 
                   <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={handleNext}>
                     <Text style={styles.primaryButtonText}>{isLastStep ? 'Comenzar' : 'Siguiente'}</Text>
-                    {!isLastStep && <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />}
+                    {!isLastStep && <IconSymbol name="chevron.right" size={16} color={colors.primaryButtonText} />}
                   </TouchableOpacity>
                 </View>
               </View>
