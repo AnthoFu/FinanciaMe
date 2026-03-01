@@ -8,7 +8,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { OnboardingTutorial } from '@/components/OnboardingTutorial';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { Colors } from '@/constants/Colors';
 import { BudgetsProvider } from '../context/BudgetsContext';
@@ -18,6 +17,7 @@ import { FixedExpensesProvider } from '../context/FixedExpensesContext';
 import { SavingsGoalsProvider } from '../context/SavingsGoalsContext';
 import { TransactionsProvider } from '../context/TransactionsContext';
 import { WalletsProvider } from '../context/WalletsContext';
+import { AppThemeProvider, useAppTheme } from '../context/ThemeContext';
 
 // Create custom themes
 const CustomDefaultTheme = {
@@ -65,13 +65,25 @@ function ThemedStack() {
           },
         }}
       />
+      <Stack.Screen
+        name="theme"
+        options={{
+          title: 'Apariencia',
+          headerStyle: {
+            backgroundColor: colors.card,
+          },
+          headerTitleStyle: {
+            color: colors.text,
+          },
+        }}
+      />
       <Stack.Screen name="+not-found" />
     </Stack>
   );
 }
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+function RootLayoutNav() {
+  const { colorScheme } = useAppTheme();
   const { isOnboardingCompleted, isLoading: onboardingLoading, completeOnboarding } = useOnboarding();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -82,30 +94,38 @@ export default function RootLayout() {
   }
 
   return (
+    <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
+      <ThemedStack />
+      <StatusBar style="auto" />
+      <OnboardingTutorial
+        isVisible={!isOnboardingCompleted}
+        onComplete={completeOnboarding}
+        onSkip={completeOnboarding}
+      />
+    </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ExchangeRatesProvider>
-        <CategoriesProvider>
-          <FixedExpensesProvider>
-            <TransactionsProvider>
-              <WalletsProvider>
-                <SavingsGoalsProvider>
-                  <BudgetsProvider>
-                    <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
-                      <ThemedStack />
-                      <StatusBar style="auto" />
-                      <OnboardingTutorial
-                        isVisible={!isOnboardingCompleted}
-                        onComplete={completeOnboarding}
-                        onSkip={completeOnboarding}
-                      />
-                    </ThemeProvider>
-                  </BudgetsProvider>
-                </SavingsGoalsProvider>
-              </WalletsProvider>
-            </TransactionsProvider>
-          </FixedExpensesProvider>
-        </CategoriesProvider>
-      </ExchangeRatesProvider>
+      <AppThemeProvider>
+        <ExchangeRatesProvider>
+          <CategoriesProvider>
+            <FixedExpensesProvider>
+              <TransactionsProvider>
+                <WalletsProvider>
+                  <SavingsGoalsProvider>
+                    <BudgetsProvider>
+                      <RootLayoutNav />
+                    </BudgetsProvider>
+                  </SavingsGoalsProvider>
+                </WalletsProvider>
+              </TransactionsProvider>
+            </FixedExpensesProvider>
+          </CategoriesProvider>
+        </ExchangeRatesProvider>
+      </AppThemeProvider>
     </GestureHandlerRootView>
   );
 }

@@ -12,6 +12,12 @@ const menuItems = [
     icon: 'tag.fill',
     route: '/categories',
   },
+  {
+    id: 'theme',
+    title: 'Apariencia',
+    icon: 'paintbrush.fill',
+    route: '/theme',
+  },
   // Add other settings items here in the future
 ] as const;
 
