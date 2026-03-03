@@ -124,6 +124,19 @@ export default function FixedExpensesScreen() {
           const category = categories.find((c) => c.id === item.categoryId);
           return (
             <View style={styles.itemContainer}>
+              <TouchableOpacity
+                style={styles.menuButton}
+                onPress={() => {
+                  Alert.alert('Acciones', '¿Qué deseas hacer con este gasto fijo?', [
+                    { text: 'Cancelar', style: 'cancel' },
+                    { text: 'Editar', onPress: () => handleEdit(item) },
+                    { text: 'Eliminar', style: 'destructive', onPress: () => handleDelete(item.id) },
+                  ]);
+                }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <IconSymbol name="ellipsis.vertical" size={16} color={colors.text} />
+              </TouchableOpacity>
               {category && (
                 <View style={styles.iconContainer}>
                   <IconSymbol name={category.icon as any} size={24} color={colors.text} />
@@ -139,14 +152,6 @@ export default function FixedExpensesScreen() {
                 <Text style={styles.itemAmount}>
                   {{ USD: '$', VES: 'Bs.', USDT: 'USDT' }[item.currency]} {item.amount.toFixed(2)}
                 </Text>
-                <View style={styles.itemActions}>
-                  <TouchableOpacity onPress={() => handleEdit(item)}>
-                    <Text style={styles.actionText}>Editar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                    <Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text>
-                  </TouchableOpacity>
-                </View>
               </View>
             </View>
           );
@@ -201,9 +206,13 @@ const getStyles = (colors: ColorTheme) =>
     itemSubText: { fontSize: 14, color: colors.text, opacity: 0.7, marginVertical: 2 },
     walletText: { fontSize: 14, color: colors.primary, fontStyle: 'italic' },
     itemRightSection: { alignItems: 'flex-end' },
-    itemAmount: { fontSize: 18, fontWeight: 'bold', color: colors.text },
-    itemActions: { flexDirection: 'row', marginTop: 5, gap: 15 },
-    actionText: { fontSize: 14, color: colors.primary },
-    deleteText: { color: colors.notification },
+    itemAmount: { fontSize: 15, fontWeight: 'bold', color: colors.text },
+    menuButton: {
+      position: 'absolute',
+      top: 4,
+      right: 4,
+      padding: 8,
+      zIndex: 1,
+    },
     emptyText: { textAlign: 'center', marginTop: 50, color: colors.text, opacity: 0.6 },
   });

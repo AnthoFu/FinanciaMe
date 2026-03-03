@@ -1,7 +1,6 @@
 import { useTheme } from '@/hooks/useTheme';
 import React, { useCallback, useMemo } from 'react';
-import { Animated, FlatList, Text, TouchableOpacity, View } from 'react-native';
-import Swipeable from 'react-native-gesture-handler/Swipeable';
+import { Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { useCategories } from '../../../context/CategoriesContext';
 import { Category, ColorTheme, Transaction, Wallet } from '../../../types';
 import { IconSymbol } from '../../ui/IconSymbol';
@@ -38,64 +37,42 @@ const TransactionItem = React.memo(function TransactionItem({
   const isIncome = item.type === 'income';
   const iconName = category ? category.icon : 'questionmark.circle.fill';
 
-  const renderRightActions = useCallback(
-    (
-      progress: Animated.AnimatedInterpolation<number>,
-      dragX: Animated.AnimatedInterpolation<number>,
-      onPress: () => void,
-      icon: string,
-      color: string,
-    ) => {
-      const trans = dragX.interpolate({
-        inputRange: [0, 50, 100, 101],
-        outputRange: [0, 0, 0, 1],
-      });
-      return (
-        <TouchableOpacity onPress={onPress}>
-          <Animated.View
-            style={[
-              styles.rightAction,
-              {
-                backgroundColor: color,
-                transform: [{ translateX: trans }],
-              },
-            ]}
-          >
-            <IconSymbol name={icon as any} size={20} color="white" />
-          </Animated.View>
-        </TouchableOpacity>
-      );
-    },
-    [styles.rightAction],
-  );
+  const handleMenuPress = useCallback(() => {
+    Alert.alert('Acciones', '¿Qué deseas hacer con este movimiento?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Editar',
+        onPress: () => onEdit(item),
+      },
+      {
+        text: 'Borrar',
+        style: 'destructive',
+        onPress: () => onDelete(item),
+      },
+    ]);
+  }, [item, onEdit, onDelete]);
 
   return (
-    <Swipeable
-      renderRightActions={(progress, dragX) => (
-        <View style={{ flexDirection: 'row' }}>
-          {renderRightActions(progress, dragX, () => onEdit(item), 'pencil', colors.primary)}
-          {renderRightActions(progress, dragX, () => onDelete(item), 'trash', colors.notification)}
-        </View>
-      )}
-    >
-      <View style={styles.transactionItem}>
-        <View style={[styles.transactionIcon, isIncome ? styles.incomeIconBackground : styles.expenseIconBackground]}>
-          <IconSymbol name={iconName as any} size={20} color={isIncome ? '#28a745' : colors.notification} />
-        </View>
-        <View style={styles.transactionDetails}>
-          <Text style={styles.transactionDescription} numberOfLines={1}>
-            {item.description}
-          </Text>
-          <Text style={styles.transactionSubText}>
-            {wallet ? wallet.name : 'Billetera eliminada'} · {new Date(item.date).toLocaleDateString()}
-          </Text>
-        </View>
-        <Text style={isIncome ? styles.incomeText : styles.expenseText}>
-          {isIncome ? '+' : '-'} {wallet ? getCurrencySymbol(wallet.currency) : ''}
-          {item.amount.toFixed(2)}
+    <View style={styles.transactionItem}>
+      <TouchableOpacity style={styles.menuButton} onPress={handleMenuPress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <IconSymbol name="ellipsis.vertical" size={16} color={colors.text} />
+      </TouchableOpacity>
+      <View style={[styles.transactionIcon, isIncome ? styles.incomeIconBackground : styles.expenseIconBackground]}>
+        <IconSymbol name={iconName as any} size={20} color={isIncome ? '#28a745' : colors.notification} />
+      </View>
+      <View style={styles.transactionDetails}>
+        <Text style={styles.transactionDescription} numberOfLines={1}>
+          {item.description}
+        </Text>
+        <Text style={styles.transactionSubText}>
+          {wallet ? wallet.name : 'Billetera eliminada'} · {new Date(item.date).toLocaleDateString()}
         </Text>
       </View>
-    </Swipeable>
+      <Text style={isIncome ? styles.incomeText : styles.expenseText}>
+        {isIncome ? '+' : '-'} {wallet ? getCurrencySymbol(wallet.currency) : ''}
+        {item.amount.toFixed(2)}
+      </Text>
+    </View>
   );
 });
 

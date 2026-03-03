@@ -105,17 +105,22 @@ export default function WalletsScreen() {
                   {getCurrencySymbol(item.currency)} {item.balance.toFixed(2)}
                 </Text>
               </View>
-              <View style={styles.itemActions}>
-                <TouchableOpacity onPress={() => handleEdit(item)}>
-                  <Text style={styles.actionText}>Editar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                  <Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                style={styles.menuButton}
+                onPress={() => {
+                  Alert.alert('Acciones', '¿Qué deseas hacer con esta billetera?', [
+                    { text: 'Cancelar', style: 'cancel' },
+                    { text: 'Editar', onPress: () => handleEdit(item) },
+                    { text: 'Eliminar', style: 'destructive', onPress: () => handleDelete(item.id) },
+                  ]);
+                }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <IconSymbol name="ellipsis.vertical" size={16} color={colors.text} />
+              </TouchableOpacity>
             </View>
           ),
-          [handleEdit, handleDelete, getCurrencySymbol, styles],
+          [handleEdit, handleDelete, getCurrencySymbol, styles, colors.text],
         )}
         ListEmptyComponent={useMemo(
           () => (
@@ -158,9 +163,13 @@ const getStyles = (colors: ColorTheme) =>
     },
     itemDetails: { flex: 1 },
     itemName: { fontSize: 18, fontWeight: 'bold', color: colors.text },
-    itemBalance: { fontSize: 16, color: colors.primary, marginTop: 4 },
-    itemActions: { flexDirection: 'column', alignItems: 'flex-end', gap: 15 },
-    actionText: { fontSize: 14, color: colors.primary },
-    deleteText: { color: colors.notification },
+    itemBalance: { fontSize: 15, color: colors.primary, marginTop: 4 },
+    menuButton: {
+      position: 'absolute',
+      top: 4,
+      right: 4,
+      padding: 8,
+      zIndex: 1,
+    },
     emptyText: { textAlign: 'center', marginTop: 50, color: colors.text, opacity: 0.6 },
   });
