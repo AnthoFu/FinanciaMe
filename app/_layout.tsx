@@ -1,3 +1,4 @@
+import { MenuProvider } from 'react-native-popup-menu';
 import 'react-native-get-random-values';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useTheme } from '@/hooks/useTheme';
@@ -109,23 +110,25 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AppThemeProvider>
-        <ExchangeRatesProvider>
-          <CategoriesProvider>
-            <FixedExpensesProvider>
-              <TransactionsProvider>
-                <WalletsProvider>
-                  <SavingsGoalsProvider>
-                    <BudgetsProvider>
-                      <RootLayoutNav />
-                    </BudgetsProvider>
-                  </SavingsGoalsProvider>
-                </WalletsProvider>
-              </TransactionsProvider>
-            </FixedExpensesProvider>
-          </CategoriesProvider>
-        </ExchangeRatesProvider>
-      </AppThemeProvider>
+      <MenuProvider>
+        <AppThemeProvider>
+          <ExchangeRatesProvider>
+            <CategoriesProvider>
+              <FixedExpensesProvider>
+                <TransactionsProvider>
+                  <WalletsProvider>
+                    <SavingsGoalsProvider>
+                      <BudgetsProvider>
+                        <RootLayoutNav />
+                      </BudgetsProvider>
+                    </SavingsGoalsProvider>
+                  </WalletsProvider>
+                </TransactionsProvider>
+              </FixedExpensesProvider>
+            </CategoriesProvider>
+          </ExchangeRatesProvider>
+        </AppThemeProvider>
+      </MenuProvider>
     </GestureHandlerRootView>
   );
 }

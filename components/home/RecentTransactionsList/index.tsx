@@ -1,6 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
 import React, { useCallback, useMemo } from 'react';
 import { Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';
 import { useCategories } from '../../../context/CategoriesContext';
 import { Category, ColorTheme, Transaction, Wallet } from '../../../types';
 import { IconSymbol } from '../../ui/IconSymbol';
@@ -37,26 +38,8 @@ const TransactionItem = React.memo(function TransactionItem({
   const isIncome = item.type === 'income';
   const iconName = category ? category.icon : 'questionmark.circle.fill';
 
-  const handleMenuPress = useCallback(() => {
-    Alert.alert('Acciones', '¿Qué deseas hacer con este movimiento?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Editar',
-        onPress: () => onEdit(item),
-      },
-      {
-        text: 'Borrar',
-        style: 'destructive',
-        onPress: () => onDelete(item),
-      },
-    ]);
-  }, [item, onEdit, onDelete]);
-
   return (
     <View style={styles.transactionItem}>
-      <TouchableOpacity style={styles.menuButton} onPress={handleMenuPress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-        <IconSymbol name="ellipsis.vertical" size={16} color={colors.text} />
-      </TouchableOpacity>
       <View style={[styles.transactionIcon, isIncome ? styles.incomeIconBackground : styles.expenseIconBackground]}>
         <IconSymbol name={iconName as any} size={20} color={isIncome ? '#28a745' : colors.notification} />
       </View>
@@ -72,6 +55,33 @@ const TransactionItem = React.memo(function TransactionItem({
         {isIncome ? '+' : '-'} {wallet ? getCurrencySymbol(wallet.currency) : ''}
         {item.amount.toFixed(2)}
       </Text>
+      <View style={styles.menuButton}>
+        <Menu>
+          <MenuTrigger>
+            <IconSymbol name="ellipsis.vertical" size={20} color={colors.text} />
+          </MenuTrigger>
+          <MenuOptions
+            customStyles={{
+              optionsContainer: {
+                backgroundColor: colors.card,
+                borderRadius: 8,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+              },
+            }}
+          >
+            <MenuOption onSelect={() => onEdit(item)}>
+              <Text style={{ color: colors.text, fontSize: 16, padding: 8 }}>Editar</Text>
+            </MenuOption>
+            <MenuOption onSelect={() => onDelete(item)}>
+              <Text style={{ color: colors.notification, fontSize: 16, padding: 8 }}>Borrar</Text>
+            </MenuOption>
+          </MenuOptions>
+        </Menu>
+      </View>
     </View>
   );
 });
