@@ -3,12 +3,22 @@ import { ColorTheme } from '../../../types';
 
 export const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 25,
+      marginBottom: 15,
+    },
     sectionTitle: {
       fontSize: 20,
       fontWeight: 'bold',
       color: colors.text,
-      marginBottom: 15,
-      marginTop: 25,
+    },
+    seeAllButtonText: {
+      fontSize: 14,
+      color: colors.primary,
+      fontWeight: '600',
     },
     emptyText: {
       textAlign: 'center',

@@ -1,22 +1,24 @@
 import { useTheme } from '@/hooks/useTheme';
+import { Link } from 'expo-router';
 import React, { useCallback, useMemo } from 'react';
-import { Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';
 import { useCategories } from '../../../context/CategoriesContext';
 import { Category, ColorTheme, Transaction, Wallet } from '../../../types';
 import { IconSymbol } from '../../ui/IconSymbol';
 import { getStyles } from './styles';
+export { getStyles } from './styles';
 
 // Helper to get currency symbol
-const getCurrencySymbol = (currency: 'USD' | 'VES' | 'USDT') => {
+export const getCurrencySymbol = (currency: 'USD' | 'VES' | 'USDT') => {
   const symbols = { USD: '$ ', VES: 'Bs. ', USDT: 'USDT ' };
   return symbols[currency] || '';
 };
 
-type Styles = ReturnType<typeof getStyles>;
+export type Styles = ReturnType<typeof getStyles>;
 
 // Componente memoizado para cada item de transacción
-interface TransactionItemProps {
+export interface TransactionItemProps {
   item: Transaction;
   wallet: Wallet | undefined;
   category: Category | undefined;
@@ -26,7 +28,7 @@ interface TransactionItemProps {
   styles: Styles;
 }
 
-const TransactionItem = React.memo(function TransactionItem({
+export const TransactionItem = React.memo(function TransactionItem({
   item,
   wallet,
   category,
@@ -135,7 +137,14 @@ export function RecentTransactionsList({ transactions, wallets, onEdit, onDelete
 
   return (
     <View>
-      <Text style={styles.sectionTitle}>Movimientos Recientes</Text>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Movimientos Recientes</Text>
+        <Link href="/all-transactions" asChild>
+          <TouchableOpacity>
+            <Text style={styles.seeAllButtonText}>Ver todo</Text>
+          </TouchableOpacity>
+        </Link>
+      </View>
       <FlatList
         data={recentTransactions}
         keyExtractor={keyExtractor}
