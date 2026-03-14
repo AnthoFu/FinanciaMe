@@ -53,6 +53,9 @@ const MAPPING = {
   'arrow.down.left.circle.fill': 'call-received',
   'arrow.up.right.circle.fill': 'call-made',
   'paintbrush.fill': 'palette',
+  pencil: 'edit',
+  trash: 'delete',
+  'ellipsis.vertical': 'more-vert',
 } as IconMapping;
 
 /**

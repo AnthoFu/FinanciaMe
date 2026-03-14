@@ -1,6 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
 import React, { useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';
 import FixedExpenseModal from '../../components/FixedExpenseModal';
 import { NotificationSettingsModal } from '../../components/NotificationSettingsModal';
 import Toast from '../../components/Toast';
@@ -124,6 +125,33 @@ export default function FixedExpensesScreen() {
           const category = categories.find((c) => c.id === item.categoryId);
           return (
             <View style={styles.itemContainer}>
+              <View style={styles.menuButton}>
+                <Menu>
+                  <MenuTrigger>
+                    <IconSymbol name="ellipsis.vertical" size={20} color={colors.text} />
+                  </MenuTrigger>
+                  <MenuOptions
+                    customStyles={{
+                      optionsContainer: {
+                        backgroundColor: colors.card,
+                        borderRadius: 8,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 4,
+                        elevation: 3,
+                      },
+                    }}
+                  >
+                    <MenuOption onSelect={() => handleEdit(item)}>
+                      <Text style={{ color: colors.text, fontSize: 16, padding: 8 }}>Editar</Text>
+                    </MenuOption>
+                    <MenuOption onSelect={() => handleDelete(item.id)}>
+                      <Text style={{ color: colors.notification, fontSize: 16, padding: 8 }}>Eliminar</Text>
+                    </MenuOption>
+                  </MenuOptions>
+                </Menu>
+              </View>
               {category && (
                 <View style={styles.iconContainer}>
                   <IconSymbol name={category.icon as any} size={24} color={colors.text} />
@@ -139,14 +167,6 @@ export default function FixedExpensesScreen() {
                 <Text style={styles.itemAmount}>
                   {{ USD: '$', VES: 'Bs.', USDT: 'USDT' }[item.currency]} {item.amount.toFixed(2)}
                 </Text>
-                <View style={styles.itemActions}>
-                  <TouchableOpacity onPress={() => handleEdit(item)}>
-                    <Text style={styles.actionText}>Editar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                    <Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text>
-                  </TouchableOpacity>
-                </View>
               </View>
             </View>
           );
@@ -201,9 +221,13 @@ const getStyles = (colors: ColorTheme) =>
     itemSubText: { fontSize: 14, color: colors.text, opacity: 0.7, marginVertical: 2 },
     walletText: { fontSize: 14, color: colors.primary, fontStyle: 'italic' },
     itemRightSection: { alignItems: 'flex-end' },
-    itemAmount: { fontSize: 18, fontWeight: 'bold', color: colors.text },
-    itemActions: { flexDirection: 'row', marginTop: 5, gap: 15 },
-    actionText: { fontSize: 14, color: colors.primary },
-    deleteText: { color: colors.notification },
+    itemAmount: { fontSize: 15, fontWeight: 'bold', color: colors.text },
+    menuButton: {
+      position: 'absolute',
+      top: 4,
+      right: 4,
+      padding: 8,
+      zIndex: 1,
+    },
     emptyText: { textAlign: 'center', marginTop: 50, color: colors.text, opacity: 0.6 },
   });

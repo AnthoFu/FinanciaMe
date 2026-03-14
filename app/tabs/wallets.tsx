@@ -1,6 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';
 import Toast from '../../components/Toast';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import WalletModal from '../../components/WalletModal';
@@ -105,17 +106,36 @@ export default function WalletsScreen() {
                   {getCurrencySymbol(item.currency)} {item.balance.toFixed(2)}
                 </Text>
               </View>
-              <View style={styles.itemActions}>
-                <TouchableOpacity onPress={() => handleEdit(item)}>
-                  <Text style={styles.actionText}>Editar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                  <Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text>
-                </TouchableOpacity>
+              <View style={styles.menuButton}>
+                <Menu>
+                  <MenuTrigger>
+                    <IconSymbol name="ellipsis.vertical" size={20} color={colors.text} />
+                  </MenuTrigger>
+                  <MenuOptions
+                    customStyles={{
+                      optionsContainer: {
+                        backgroundColor: colors.card,
+                        borderRadius: 8,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 4,
+                        elevation: 3,
+                      },
+                    }}
+                  >
+                    <MenuOption onSelect={() => handleEdit(item)}>
+                      <Text style={{ color: colors.text, fontSize: 16, padding: 8 }}>Editar</Text>
+                    </MenuOption>
+                    <MenuOption onSelect={() => handleDelete(item.id)}>
+                      <Text style={{ color: colors.notification, fontSize: 16, padding: 8 }}>Eliminar</Text>
+                    </MenuOption>
+                  </MenuOptions>
+                </Menu>
               </View>
             </View>
           ),
-          [handleEdit, handleDelete, getCurrencySymbol, styles],
+          [handleEdit, handleDelete, getCurrencySymbol, styles, colors],
         )}
         ListEmptyComponent={useMemo(
           () => (
@@ -158,9 +178,13 @@ const getStyles = (colors: ColorTheme) =>
     },
     itemDetails: { flex: 1 },
     itemName: { fontSize: 18, fontWeight: 'bold', color: colors.text },
-    itemBalance: { fontSize: 16, color: colors.primary, marginTop: 4 },
-    itemActions: { flexDirection: 'column', alignItems: 'flex-end', gap: 15 },
-    actionText: { fontSize: 14, color: colors.primary },
-    deleteText: { color: colors.notification },
+    itemBalance: { fontSize: 15, color: colors.primary, marginTop: 4 },
+    menuButton: {
+      position: 'absolute',
+      top: 4,
+      right: 4,
+      padding: 8,
+      zIndex: 1,
+    },
     emptyText: { textAlign: 'center', marginTop: 50, color: colors.text, opacity: 0.6 },
   });

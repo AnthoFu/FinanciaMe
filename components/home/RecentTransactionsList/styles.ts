@@ -3,12 +3,22 @@ import { ColorTheme } from '../../../types';
 
 export const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 25,
+      marginBottom: 15,
+    },
     sectionTitle: {
       fontSize: 20,
       fontWeight: 'bold',
       color: colors.text,
-      marginBottom: 15,
-      marginTop: 25,
+    },
+    seeAllButtonText: {
+      fontSize: 14,
+      color: colors.primary,
+      fontWeight: '600',
     },
     emptyText: {
       textAlign: 'center',
@@ -21,7 +31,7 @@ export const getStyles = (colors: ColorTheme) =>
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: colors.card,
-      padding: 12,
+      padding: 16,
       borderRadius: 10,
       marginBottom: 10,
     },
@@ -47,12 +57,12 @@ export const getStyles = (colors: ColorTheme) =>
     incomeText: {
       color: '#28a745', // Keep green for income
       fontWeight: 'bold',
-      fontSize: 16,
+      fontSize: 15,
     },
     expenseText: {
       color: colors.notification, // Use notification color for expense
       fontWeight: 'bold',
-      fontSize: 16,
+      fontSize: 15,
     },
     incomeIconBackground: {
       backgroundColor: 'rgba(40, 167, 69, 0.1)', // Lighter green
@@ -60,12 +70,11 @@ export const getStyles = (colors: ColorTheme) =>
     expenseIconBackground: {
       backgroundColor: 'rgba(220, 53, 69, 0.1)', // Lighter red
     },
-    rightAction: {
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: 50,
-      height: '85%',
-      borderRadius: 10,
-      marginHorizontal: 2,
+    menuButton: {
+      position: 'absolute',
+      top: 4,
+      right: 4,
+      padding: 8,
+      zIndex: 1,
     },
   });

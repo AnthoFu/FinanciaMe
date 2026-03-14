@@ -1,22 +1,24 @@
 import { useTheme } from '@/hooks/useTheme';
+import { Link } from 'expo-router';
 import React, { useCallback, useMemo } from 'react';
-import { Animated, FlatList, Text, TouchableOpacity, View } from 'react-native';
-import Swipeable from 'react-native-gesture-handler/Swipeable';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';
 import { useCategories } from '../../../context/CategoriesContext';
 import { Category, ColorTheme, Transaction, Wallet } from '../../../types';
 import { IconSymbol } from '../../ui/IconSymbol';
 import { getStyles } from './styles';
+export { getStyles } from './styles';
 
 // Helper to get currency symbol
-const getCurrencySymbol = (currency: 'USD' | 'VES' | 'USDT') => {
+export const getCurrencySymbol = (currency: 'USD' | 'VES' | 'USDT') => {
   const symbols = { USD: '$ ', VES: 'Bs. ', USDT: 'USDT ' };
   return symbols[currency] || '';
 };
 
-type Styles = ReturnType<typeof getStyles>;
+export type Styles = ReturnType<typeof getStyles>;
 
 // Componente memoizado para cada item de transacción
-interface TransactionItemProps {
+export interface TransactionItemProps {
   item: Transaction;
   wallet: Wallet | undefined;
   category: Category | undefined;
@@ -26,7 +28,7 @@ interface TransactionItemProps {
   styles: Styles;
 }
 
-const TransactionItem = React.memo(function TransactionItem({
+export const TransactionItem = React.memo(function TransactionItem({
   item,
   wallet,
   category,
@@ -38,64 +40,51 @@ const TransactionItem = React.memo(function TransactionItem({
   const isIncome = item.type === 'income';
   const iconName = category ? category.icon : 'questionmark.circle.fill';
 
-  const renderRightActions = useCallback(
-    (
-      progress: Animated.AnimatedInterpolation<number>,
-      dragX: Animated.AnimatedInterpolation<number>,
-      onPress: () => void,
-      icon: string,
-      color: string,
-    ) => {
-      const trans = dragX.interpolate({
-        inputRange: [0, 50, 100, 101],
-        outputRange: [0, 0, 0, 1],
-      });
-      return (
-        <TouchableOpacity onPress={onPress}>
-          <Animated.View
-            style={[
-              styles.rightAction,
-              {
-                backgroundColor: color,
-                transform: [{ translateX: trans }],
-              },
-            ]}
-          >
-            <IconSymbol name={icon as any} size={20} color="white" />
-          </Animated.View>
-        </TouchableOpacity>
-      );
-    },
-    [styles.rightAction],
-  );
-
   return (
-    <Swipeable
-      renderRightActions={(progress, dragX) => (
-        <View style={{ flexDirection: 'row' }}>
-          {renderRightActions(progress, dragX, () => onEdit(item), 'pencil', colors.primary)}
-          {renderRightActions(progress, dragX, () => onDelete(item), 'trash', colors.notification)}
-        </View>
-      )}
-    >
-      <View style={styles.transactionItem}>
-        <View style={[styles.transactionIcon, isIncome ? styles.incomeIconBackground : styles.expenseIconBackground]}>
-          <IconSymbol name={iconName as any} size={20} color={isIncome ? '#28a745' : colors.notification} />
-        </View>
-        <View style={styles.transactionDetails}>
-          <Text style={styles.transactionDescription} numberOfLines={1}>
-            {item.description}
-          </Text>
-          <Text style={styles.transactionSubText}>
-            {wallet ? wallet.name : 'Billetera eliminada'} · {new Date(item.date).toLocaleDateString()}
-          </Text>
-        </View>
-        <Text style={isIncome ? styles.incomeText : styles.expenseText}>
-          {isIncome ? '+' : '-'} {wallet ? getCurrencySymbol(wallet.currency) : ''}
-          {item.amount.toFixed(2)}
+    <View style={styles.transactionItem}>
+      <View style={[styles.transactionIcon, isIncome ? styles.incomeIconBackground : styles.expenseIconBackground]}>
+        <IconSymbol name={iconName as any} size={20} color={isIncome ? '#28a745' : colors.notification} />
+      </View>
+      <View style={styles.transactionDetails}>
+        <Text style={styles.transactionDescription} numberOfLines={1}>
+          {item.description}
+        </Text>
+        <Text style={styles.transactionSubText}>
+          {wallet ? wallet.name : 'Billetera eliminada'} · {new Date(item.date).toLocaleDateString()}
         </Text>
       </View>
-    </Swipeable>
+      <Text style={isIncome ? styles.incomeText : styles.expenseText}>
+        {isIncome ? '+' : '-'} {wallet ? getCurrencySymbol(wallet.currency) : ''}
+        {item.amount.toFixed(2)}
+      </Text>
+      <View style={styles.menuButton}>
+        <Menu>
+          <MenuTrigger>
+            <IconSymbol name="ellipsis.vertical" size={20} color={colors.text} />
+          </MenuTrigger>
+          <MenuOptions
+            customStyles={{
+              optionsContainer: {
+                backgroundColor: colors.card,
+                borderRadius: 8,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+              },
+            }}
+          >
+            <MenuOption onSelect={() => onEdit(item)}>
+              <Text style={{ color: colors.text, fontSize: 16, padding: 8 }}>Editar</Text>
+            </MenuOption>
+            <MenuOption onSelect={() => onDelete(item)}>
+              <Text style={{ color: colors.notification, fontSize: 16, padding: 8 }}>Borrar</Text>
+            </MenuOption>
+          </MenuOptions>
+        </Menu>
+      </View>
+    </View>
   );
 });
 
@@ -148,7 +137,14 @@ export function RecentTransactionsList({ transactions, wallets, onEdit, onDelete
 
   return (
     <View>
-      <Text style={styles.sectionTitle}>Movimientos Recientes</Text>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Movimientos Recientes</Text>
+        <Link href="/all-transactions" asChild>
+          <TouchableOpacity>
+            <Text style={styles.seeAllButtonText}>Ver todo</Text>
+          </TouchableOpacity>
+        </Link>
+      </View>
       <FlatList
         data={recentTransactions}
         keyExtractor={keyExtractor}
