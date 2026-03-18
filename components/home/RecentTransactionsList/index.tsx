@@ -2,7 +2,6 @@ import { useTheme } from '@/hooks/useTheme';
 import { Link } from 'expo-router';
 import React, { useCallback, useMemo } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
-import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';
 import { useCategories } from '../../../context/CategoriesContext';
 import { Category, ColorTheme, Transaction, Wallet } from '../../../types';
 import { IconSymbol } from '../../ui/IconSymbol';
@@ -53,36 +52,19 @@ export const TransactionItem = React.memo(function TransactionItem({
           {wallet ? wallet.name : 'Billetera eliminada'} · {new Date(item.date).toLocaleDateString()}
         </Text>
       </View>
-      <Text style={isIncome ? styles.incomeText : styles.expenseText}>
-        {isIncome ? '+' : '-'} {wallet ? getCurrencySymbol(wallet.currency) : ''}
-        {item.amount.toFixed(2)}
-      </Text>
-      <View style={styles.menuButton}>
-        <Menu>
-          <MenuTrigger>
-            <IconSymbol name="ellipsis.vertical" size={20} color={colors.text} />
-          </MenuTrigger>
-          <MenuOptions
-            customStyles={{
-              optionsContainer: {
-                backgroundColor: colors.card,
-                borderRadius: 8,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 3,
-              },
-            }}
-          >
-            <MenuOption onSelect={() => onEdit(item)}>
-              <Text style={{ color: colors.text, fontSize: 16, padding: 8 }}>Editar</Text>
-            </MenuOption>
-            <MenuOption onSelect={() => onDelete(item)}>
-              <Text style={{ color: colors.notification, fontSize: 16, padding: 8 }}>Borrar</Text>
-            </MenuOption>
-          </MenuOptions>
-        </Menu>
+      <View style={styles.transactionRight}>
+        <Text style={isIncome ? styles.incomeText : styles.expenseText}>
+          {isIncome ? '+' : '-'} {wallet ? getCurrencySymbol(wallet.currency) : ''}
+          {item.amount.toFixed(2)}
+        </Text>
+        <View style={styles.actionButtons}>
+          <TouchableOpacity onPress={() => onEdit(item)} style={styles.iconButton}>
+            <IconSymbol name="pencil" size={16} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => onDelete(item)} style={styles.iconButton}>
+            <IconSymbol name="trash" size={16} color={colors.notification} />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

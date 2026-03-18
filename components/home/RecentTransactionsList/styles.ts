@@ -54,6 +54,10 @@ export const getStyles = (colors: ColorTheme) =>
       color: colors.text,
       opacity: 0.7,
     },
+    transactionRight: {
+      alignItems: 'flex-end',
+      justifyContent: 'center',
+    },
     incomeText: {
       color: '#28a745', // Keep green for income
       fontWeight: 'bold',
@@ -70,11 +74,12 @@ export const getStyles = (colors: ColorTheme) =>
     expenseIconBackground: {
       backgroundColor: 'rgba(220, 53, 69, 0.1)', // Lighter red
     },
-    menuButton: {
-      position: 'absolute',
-      top: 4,
-      right: 4,
-      padding: 8,
-      zIndex: 1,
+    actionButtons: {
+      flexDirection: 'row',
+      marginTop: 4,
+    },
+    iconButton: {
+      padding: 4,
+      marginLeft: 8,
     },
   });
