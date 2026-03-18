@@ -62,11 +62,13 @@ export const getStyles = (colors: ColorTheme) =>
       color: '#28a745', // Keep green for income
       fontWeight: 'bold',
       fontSize: 15,
+      marginTop: 4,
     },
     expenseText: {
       color: colors.notification, // Use notification color for expense
       fontWeight: 'bold',
       fontSize: 15,
+      marginTop: 4,
     },
     incomeIconBackground: {
       backgroundColor: 'rgba(40, 167, 69, 0.1)', // Lighter green
@@ -76,7 +78,7 @@ export const getStyles = (colors: ColorTheme) =>
     },
     actionButtons: {
       flexDirection: 'row',
-      marginTop: 4,
+      marginBottom: 4,
     },
     iconButton: {
       padding: 4,

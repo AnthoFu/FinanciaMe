@@ -53,10 +53,6 @@ export const TransactionItem = React.memo(function TransactionItem({
         </Text>
       </View>
       <View style={styles.transactionRight}>
-        <Text style={isIncome ? styles.incomeText : styles.expenseText}>
-          {isIncome ? '+' : '-'} {wallet ? getCurrencySymbol(wallet.currency) : ''}
-          {item.amount.toFixed(2)}
-        </Text>
         <View style={styles.actionButtons}>
           <TouchableOpacity onPress={() => onEdit(item)} style={styles.iconButton}>
             <IconSymbol name="pencil" size={16} color={colors.primary} />
@@ -65,6 +61,10 @@ export const TransactionItem = React.memo(function TransactionItem({
             <IconSymbol name="trash" size={16} color={colors.notification} />
           </TouchableOpacity>
         </View>
+        <Text style={isIncome ? styles.incomeText : styles.expenseText}>
+          {isIncome ? '+' : '-'} {wallet ? getCurrencySymbol(wallet.currency) : ''}
+          {item.amount.toFixed(2)}
+        </Text>
       </View>
     </View>
   );
