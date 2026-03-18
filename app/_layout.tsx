@@ -9,7 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { OnboardingTutorial } from '@/components/OnboardingTutorial';
-import { useOnboarding } from '@/hooks/useOnboarding';
+import { OnboardingProvider, useOnboarding } from '../context/OnboardingContext';
 import { Colors } from '@/constants/Colors';
 import { BudgetsProvider } from '../context/BudgetsContext';
 import { CategoriesProvider } from '../context/CategoriesContext';
@@ -112,21 +112,23 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <MenuProvider>
         <AppThemeProvider>
-          <ExchangeRatesProvider>
-            <CategoriesProvider>
-              <FixedExpensesProvider>
-                <TransactionsProvider>
-                  <WalletsProvider>
-                    <SavingsGoalsProvider>
-                      <BudgetsProvider>
-                        <RootLayoutNav />
-                      </BudgetsProvider>
-                    </SavingsGoalsProvider>
-                  </WalletsProvider>
-                </TransactionsProvider>
-              </FixedExpensesProvider>
-            </CategoriesProvider>
-          </ExchangeRatesProvider>
+          <OnboardingProvider>
+            <ExchangeRatesProvider>
+              <CategoriesProvider>
+                <FixedExpensesProvider>
+                  <TransactionsProvider>
+                    <WalletsProvider>
+                      <SavingsGoalsProvider>
+                        <BudgetsProvider>
+                          <RootLayoutNav />
+                        </BudgetsProvider>
+                      </SavingsGoalsProvider>
+                    </WalletsProvider>
+                  </TransactionsProvider>
+                </FixedExpensesProvider>
+              </CategoriesProvider>
+            </ExchangeRatesProvider>
+          </OnboardingProvider>
         </AppThemeProvider>
       </MenuProvider>
     </GestureHandlerRootView>

@@ -4,30 +4,55 @@ import { useTheme } from '@/hooks/useTheme';
 import { ColorTheme } from '@/types';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useOnboarding } from '@/context/OnboardingContext';
 
-const menuItems = [
-  {
-    id: 'categories',
-    title: 'Gestión de categorías',
-    icon: 'tag.fill',
-    route: '/categories',
-  },
-  {
-    id: 'theme',
-    title: 'Apariencia',
-    icon: 'paintbrush.fill',
-    route: '/theme',
-  },
-  // Add other settings items here in the future
-] as const;
+type MenuItem = {
+  id: string;
+  title: string;
+  icon: string;
+  route?: string;
+  action?: () => void;
+};
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
   const styles = getStyles(colors);
   const router = useRouter();
+  const { resetOnboarding } = useOnboarding();
 
-  const renderItem = ({ item }: { item: (typeof menuItems)[0] }) => (
-    <TouchableOpacity style={styles.itemContainer} onPress={() => router.push(item.route)}>
+  const menuItems: MenuItem[] = [
+    {
+      id: 'categories',
+      title: 'Gestión de categorías',
+      icon: 'tag.fill',
+      route: '/categories',
+    },
+    {
+      id: 'theme',
+      title: 'Apariencia',
+      icon: 'paintbrush.fill',
+      route: '/theme',
+    },
+    {
+      id: 'tutorial',
+      title: 'Ver tutorial',
+      icon: 'questionmark.circle.fill',
+      action: resetOnboarding,
+    },
+    // Add other settings items here in the future
+  ];
+
+  const renderItem = ({ item }: { item: MenuItem }) => (
+    <TouchableOpacity
+      style={styles.itemContainer}
+      onPress={() => {
+        if (item.route) {
+          router.push(item.route);
+        } else if (item.action) {
+          item.action();
+        }
+      }}
+    >
       <IconSymbol name={item.icon as any} size={24} color={colors.primary} />
       <Text style={styles.itemText}>{item.title}</Text>
       <IconSymbol name="chevron.right" size={18} color={colors.text} />

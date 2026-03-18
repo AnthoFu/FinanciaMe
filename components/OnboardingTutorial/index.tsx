@@ -39,67 +39,69 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
       {
         id: 'welcome',
         title: '¡Bienvenido a FinanciaMe!',
-        description: 'Te ayudaremos a gestionar tus finanzas personales de manera sencilla y efectiva.',
+        description:
+          'Tu asistente financiero personal. Comencemos un rápido recorrido para que conozcas todo lo que puedes hacer.',
         position: 'top',
       },
       {
         id: 'wallets',
-        title: '1. Crea tu Primera Billetera',
+        title: 'Billeteras: Tu Dinero, Organizado',
         description:
-          'Primero necesitas crear una billetera para empezar. Esto te permitirá organizar tu dinero y hacer seguimiento de tus gastos.',
+          'Piensa en las billeteras como tus cuentas bancarias o el efectivo que manejas. Crea una para empezar a registrar tus movimientos.',
         position: 'bottom',
         navigateTo: '/tabs/wallets',
         highlightTab: 'wallets',
       },
       {
         id: 'transactions',
-        title: '2. Registra Transacciones',
+        title: 'Transacciones: Sigue el Flujo',
         description:
-          'Ahora vamos a aprender a registrar ingresos y gastos. Esto te ayudará a saber exactamente en qué gastas tu dinero.',
+          'Aquí es donde todo sucede. Registra tus ingresos y gastos diarios. ¡No dejes que se te escape ni un centavo!',
         position: 'bottom',
         navigateTo: '/tabs',
         highlightTab: 'index',
       },
       {
         id: 'budgets',
-        title: '3. Controla tus Presupuestos',
+        title: 'Presupuestos: Gasta con Inteligencia',
         description:
-          'Los presupuestos te ayudan a no gastar más de lo que planeas. Puedes establecer límites por categoría como comida, transporte, etc.',
+          '¿Quieres controlar tus gastos en "Comida" o "Transporte"? Crea presupuestos y asegúrate de no excederte.',
         position: 'bottom',
         navigateTo: '/tabs/budgets',
         highlightTab: 'budgets',
       },
       {
         id: 'goals',
-        title: '4. Define Metas de Ahorro',
+        title: 'Metas de Ahorro: Cumple tus Sueños',
         description:
-          'Las metas te ayudan a ahorrar para objetivos específicos como vacaciones, un auto, o emergencias. Es como tener un plan de ahorro.',
+          'Ahorrar para ese viaje o un nuevo teléfono es más fácil si tienes una meta. Define un objetivo y ve tu progreso.',
         position: 'bottom',
         navigateTo: '/tabs/goals',
         highlightTab: 'goals',
       },
       {
         id: 'fixed-expenses',
-        title: '5. Programa Gastos Fijos',
+        title: 'Gastos Fijos: Pagos sin Estrés',
         description:
-          'Los gastos fijos son pagos que haces regularmente como renta, servicios, suscripciones. La app te recordará cuándo pagarlos.',
+          'Configura pagos recurrentes como el alquiler o suscripciones. Te avisaremos antes de la fecha para que no lo olvides.',
         position: 'bottom',
         navigateTo: '/tabs/fixedExpenses',
         highlightTab: 'fixedExpenses',
       },
       {
         id: 'metrics',
-        title: '6. Analiza tus Finanzas',
+        title: 'Métricas: Entiende tus Hábitos',
         description:
-          'Las métricas te muestran gráficos y estadísticas de tus gastos. Te ayudan a entender mejor tus hábitos financieros.',
+          '¿A dónde se va tu dinero? Los gráficos te mostrarán tus patrones de gasto para que tomes mejores decisiones.',
         position: 'bottom',
         navigateTo: '/tabs/metrics',
         highlightTab: 'metrics',
       },
       {
         id: 'complete',
-        title: '¡Listo para comenzar!',
-        description: 'Ya conoces las funciones principales. ¡Empieza a gestionar tus finanzas de manera inteligente!',
+        title: '¡Todo Listo!',
+        description:
+          'Ya tienes lo esencial para tomar el control de tus finanzas. ¡Explora la app y empieza a construir tu futuro financiero!',
         position: 'top',
       },
     ],
