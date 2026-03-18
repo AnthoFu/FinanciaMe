@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 
 import { ContributionModal } from '../../components/ContributionModal';
@@ -46,7 +47,17 @@ const ProgressBar = ({
   );
 };
 
-const GoalItem = ({ goal, onAddContribution }: { goal: SavingsGoal; onAddContribution: () => void }) => {
+const GoalItem = ({
+  goal,
+  onAddContribution,
+  onEdit,
+  onDelete,
+}: {
+  goal: SavingsGoal;
+  onAddContribution: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) => {
   const { colors } = useTheme();
   const styles = getStyles(colors);
   const { getGoalProgress } = useSavingsGoals();
@@ -55,11 +66,21 @@ const GoalItem = ({ goal, onAddContribution }: { goal: SavingsGoal; onAddContrib
 
   return (
     <View style={styles.goalItemContainer}>
-      <View style={styles.goalInfo}>
-        <Text style={styles.goalName}>{goal.name}</Text>
-        <Text style={styles.goalAmount}>
-          Ahorrado: {currentAmount.toFixed(2)} / {goal.targetAmount.toFixed(2)} {goal.currency}
-        </Text>
+      <View style={styles.goalHeader}>
+        <View style={styles.goalInfo}>
+          <Text style={styles.goalName}>{goal.name}</Text>
+          <Text style={styles.goalAmount}>
+            Ahorrado: {currentAmount.toFixed(2)} / {goal.targetAmount.toFixed(2)} {goal.currency}
+          </Text>
+        </View>
+        <View style={styles.actionIcons}>
+          <TouchableOpacity onPress={onEdit} style={styles.iconButton}>
+            <IconSymbol name="pencil" size={20} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onDelete} style={styles.iconButton}>
+            <IconSymbol name="trash" size={20} color={colors.notification} />
+          </TouchableOpacity>
+        </View>
       </View>
       <ProgressBar progress={progress} color={colors.primary} backgroundColor={colors.border} />
       <View style={styles.goalActions}>
@@ -74,7 +95,7 @@ export default function GoalsScreen() {
   const globalStyles = getThemedStyles(colors);
   const styles = getStyles(colors);
 
-  const { savingsGoals } = useSavingsGoals();
+  const { savingsGoals, deleteSavingsGoal } = useSavingsGoals();
   const [isGoalModalVisible, setIsGoalModalVisible] = useState(false);
   const [isContributionModalVisible, setIsContributionModalVisible] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null);
@@ -84,21 +105,53 @@ export default function GoalsScreen() {
     setIsContributionModalVisible(true);
   };
 
+  const handleEditGoal = (goal: SavingsGoal) => {
+    setSelectedGoal(goal);
+    setIsGoalModalVisible(true);
+  };
+
+  const handleDeleteGoal = (goal: SavingsGoal) => {
+    Alert.alert('Eliminar Meta', `¿Estás seguro de que quieres eliminar la meta "${goal.name}"?`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: () => deleteSavingsGoal(goal.id),
+      },
+    ]);
+  };
+
+  const handleAddNewGoal = () => {
+    setSelectedGoal(null);
+    setIsGoalModalVisible(true);
+  };
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={globalStyles.container}>
       <View style={globalStyles.header}>
         <Text style={globalStyles.title}>Metas de Ahorro</Text>
-        <TouchableOpacity onPress={() => setIsGoalModalVisible(true)}>
+        <TouchableOpacity onPress={handleAddNewGoal}>
           <IconSymbol name="plus.circle.fill" size={32} color={colors.text} />
         </TouchableOpacity>
       </View>
       <FlatList
         data={savingsGoals}
-        renderItem={({ item }) => <GoalItem goal={item} onAddContribution={() => handleOpenContributionModal(item)} />}
+        renderItem={({ item }) => (
+          <GoalItem
+            goal={item}
+            onAddContribution={() => handleOpenContributionModal(item)}
+            onEdit={() => handleEditGoal(item)}
+            onDelete={() => handleDeleteGoal(item)}
+          />
+        )}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={<Text style={styles.emptyText}>Aún no tienes metas de ahorro. ¡Crea una!</Text>}
       />
-      <GoalModal isVisible={isGoalModalVisible} onClose={() => setIsGoalModalVisible(false)} />
+      <GoalModal
+        isVisible={isGoalModalVisible}
+        onClose={() => setIsGoalModalVisible(false)}
+        goal={selectedGoal}
+      />
       <ContributionModal
         isVisible={isContributionModalVisible}
         onClose={() => setIsContributionModalVisible(false)}
@@ -121,8 +174,21 @@ const getStyles = (colors: ColorTheme) =>
       shadowRadius: 4,
       elevation: 3,
     },
-    goalInfo: {
+    goalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
       marginBottom: 10,
+    },
+    goalInfo: {
+      flex: 1,
+    },
+    actionIcons: {
+      flexDirection: 'row',
+    },
+    iconButton: {
+      padding: 5,
+      marginLeft: 10,
     },
     goalName: {
       fontSize: 18,

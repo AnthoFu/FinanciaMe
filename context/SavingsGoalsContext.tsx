@@ -11,6 +11,7 @@ import { useWallets } from './WalletsContext';
 interface SavingsGoalsContextType {
   savingsGoals: SavingsGoal[];
   addSavingsGoal: (goal: Omit<SavingsGoal, 'id' | 'creationDate'>) => void;
+  updateSavingsGoal: (goal: SavingsGoal) => void;
   deleteSavingsGoal: (goalId: string) => void;
   addContribution: (
     goal: SavingsGoal,
@@ -71,6 +72,10 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
       ...goalData,
     };
     setSavingsGoals((prevGoals) => [newGoal, ...prevGoals]);
+  };
+
+  const updateSavingsGoal = (updatedGoal: SavingsGoal) => {
+    setSavingsGoals((prevGoals) => prevGoals.map((goal) => (goal.id === updatedGoal.id ? updatedGoal : goal)));
   };
 
   const deleteSavingsGoal = (goalId: string) => {
@@ -139,6 +144,7 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
   const value = {
     savingsGoals,
     addSavingsGoal,
+    updateSavingsGoal,
     deleteSavingsGoal,
     addContribution,
     getContributionsForGoal,
