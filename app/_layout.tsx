@@ -90,19 +90,18 @@ function RootLayoutNav() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  if (!loaded || onboardingLoading) {
+  if (!loaded) {
     return null;
   }
+
+  // Si el onboarding aún carga, asumimos falso por un momento para evitar pantalla negra
+  const showOnboarding = !onboardingLoading && !isOnboardingCompleted;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
       <ThemedStack />
       <StatusBar style="auto" />
-      <OnboardingTutorial
-        isVisible={!isOnboardingCompleted}
-        onComplete={completeOnboarding}
-        onSkip={completeOnboarding}
-      />
+      <OnboardingTutorial isVisible={showOnboarding} onComplete={completeOnboarding} onSkip={completeOnboarding} />
     </ThemeProvider>
   );
 }

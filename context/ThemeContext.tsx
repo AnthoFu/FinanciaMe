@@ -1,11 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import React, { createContext, ReactNode, useContext, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
-
-import { THEME_KEY } from '../constants/StorageKeys';
-
-export type ColorScheme = 'light' | 'dark';
-export type AppTheme = ColorScheme | 'system';
+import { useThemeStore, AppTheme, ColorScheme } from '../store/themeStore';
 
 interface ThemeContextType {
   theme: AppTheme;
@@ -17,55 +12,21 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function AppThemeProvider({ children }: { children: ReactNode }) {
   const systemColorScheme = useColorScheme() || 'light';
-  const [theme, setThemeState] = useState<AppTheme>('system');
-  const [isLoading, setIsLoading] = useState(true);
+  const store = useThemeStore();
 
-  useEffect(() => {
-    const loadTheme = async () => {
-      setIsLoading(true);
-      try {
-        const storedTheme = (await AsyncStorage.getItem(THEME_KEY)) as AppTheme | null;
-        if (storedTheme) {
-          setThemeState(storedTheme);
-        }
-      } catch (error) {
-        console.error('[loadTheme] Error loading theme from storage:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadTheme();
-  }, []);
+  const colorScheme = store.theme === 'system' ? systemColorScheme : store.theme;
 
-  const setTheme = (newTheme: AppTheme) => {
-    setThemeState(newTheme);
-    if (!isLoading) {
-      const saveTheme = async () => {
-        try {
-          await AsyncStorage.setItem(THEME_KEY, newTheme);
-        } catch (error) {
-          console.error('[saveTheme] Error saving theme to storage:', error);
-        }
-      };
-      saveTheme();
-    }
-  };
-
-  const colorScheme = theme === 'system' ? systemColorScheme : theme;
-
-  const value = React.useMemo(
+  const value = useMemo(
     () => ({
-      theme,
-      setTheme,
+      theme: store.theme,
+      setTheme: store.setTheme,
       colorScheme,
     }),
-    [theme, colorScheme],
+    [store.theme, colorScheme, store.setTheme],
   );
 
-  if (isLoading) {
-    return null; // Or a loading spinner
-  }
-
+  // Ya no retornamos null, dejamos que la app cargue con el tema por defecto
+  // mientras Zustand hidrata el estado desde AsyncStorage.
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 

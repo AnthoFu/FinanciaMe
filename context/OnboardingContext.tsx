@@ -1,66 +1,29 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createContext, useContext, useEffect, useState } from 'react';
-import { ONBOARDING_COMPLETED_KEY } from '../constants/StorageKeys';
+import React, { createContext, useContext, useMemo } from 'react';
+import { useOnboardingStore } from '../store/onboardingStore';
 
 interface OnboardingContextType {
-  isOnboardingCompleted: boolean | null;
+  isOnboardingCompleted: boolean;
   isLoading: boolean;
-  completeOnboarding: () => Promise<void>;
-  resetOnboarding: () => Promise<void>;
+  completeOnboarding: () => void;
+  resetOnboarding: () => void;
 }
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
 export const OnboardingProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const store = useOnboardingStore();
 
-  useEffect(() => {
-    const checkOnboardingStatus = async () => {
-      try {
-        const completed = await AsyncStorage.getItem(ONBOARDING_COMPLETED_KEY);
-        setIsOnboardingCompleted(completed === 'true');
-      } catch (error) {
-        console.error('Error checking onboarding status:', error);
-        setIsOnboardingCompleted(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkOnboardingStatus();
-  }, []);
-
-  const completeOnboarding = async () => {
-    try {
-      await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true');
-      setIsOnboardingCompleted(true);
-    } catch (error) {
-      console.error('Error completing onboarding:', error);
-    }
-  };
-
-  const resetOnboarding = async () => {
-    try {
-      await AsyncStorage.removeItem(ONBOARDING_COMPLETED_KEY);
-      setIsOnboardingCompleted(false);
-    } catch (error) {
-      console.error('Error resetting onboarding:', error);
-    }
-  };
-
-  return (
-    <OnboardingContext.Provider
-      value={{
-        isOnboardingCompleted,
-        isLoading,
-        completeOnboarding,
-        resetOnboarding,
-      }}
-    >
-      {children}
-    </OnboardingContext.Provider>
+  const value = useMemo(
+    () => ({
+      isOnboardingCompleted: store.isOnboardingCompleted,
+      isLoading: store.isLoading,
+      completeOnboarding: store.completeOnboarding,
+      resetOnboarding: store.resetOnboarding,
+    }),
+    [store],
   );
+
+  return <OnboardingContext.Provider value={value}>{children}</OnboardingContext.Provider>;
 };
 
 export const useOnboarding = () => {
