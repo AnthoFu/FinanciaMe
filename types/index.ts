@@ -63,10 +63,25 @@ export interface FixedExpense {
 // New Context Types
 export interface WalletsContextType {
   wallets: Wallet[];
-  addWallet: (wallet: Omit<Wallet, 'id'>) => void;
-  updateWallet: (wallet: Wallet) => void;
-  deleteWallet: (id: string) => void;
+  isLoading: boolean;
+  addWallet: (walletData: Omit<Wallet, 'id'>) => void;
+  updateWallet: (walletData: Wallet) => void;
+  deleteWallet: (walletId: string) => void;
   getWalletById: (id: string) => Wallet | undefined;
+  updateBalancesForTransaction: (
+    amount: number,
+    type: 'income' | 'expense',
+    walletId: string,
+    originalTransaction?: Transaction,
+  ) => { success: boolean; error?: string };
+  updateBalancesForTransfer: (
+    fromWalletId: string,
+    toWalletId: string,
+    fromAmount: number,
+    toAmount: number,
+  ) => { success: boolean; error?: string };
+  revertTransactionBalance: (transaction: Transaction) => { success: boolean; error?: string };
+  setWallets: React.Dispatch<React.SetStateAction<Wallet[]>>;
 }
 
 export interface CategoriesContextType {

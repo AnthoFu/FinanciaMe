@@ -4,7 +4,7 @@ import { useWallets } from '../context/WalletsContext';
 import { Transaction } from '../types';
 
 export function useTransactionHandler() {
-  const { wallets, setWallets, updateBalancesForTransfer } = useWallets();
+  const { wallets, updateBalancesForTransaction, updateBalancesForTransfer } = useWallets();
   const { addTransaction, updateTransaction, addTransfer } = useTransactions();
 
   const handleSaveTransaction = (
@@ -15,34 +15,18 @@ export function useTransactionHandler() {
     type: 'income' | 'expense',
     transactionToUpdate?: Transaction,
   ): boolean => {
-    let wasTransactionSuccessful = false;
+    // 1. Update balances first (centralized logic)
+    const result = updateBalancesForTransaction(amount, type, walletId, transactionToUpdate);
 
+    if (!result.success) {
+      Alert.alert('Operación Fallida', result.error || 'No se pudo procesar la transacción.');
+      return false;
+    }
+
+    // 2. If balance update was successful, update transaction records
     if (transactionToUpdate) {
-      // Editing existing transaction
-      const originalTransaction = transactionToUpdate;
-      const originalAmount = originalTransaction.amount;
-      const originalType = originalTransaction.type;
-      const originalWalletId = originalTransaction.walletId;
-
-      const newWallets = wallets.map((wallet) => {
-        let newBalance = wallet.balance;
-        // Revert original transaction
-        if (wallet.id === originalWalletId) {
-          newBalance = originalType === 'income' ? newBalance - originalAmount : newBalance + originalAmount;
-        }
-        // Apply new transaction
-        if (wallet.id === walletId) {
-          newBalance = type === 'income' ? newBalance + amount : newBalance - amount;
-        }
-        if (newBalance < 0) {
-          Alert.alert('Saldo Insuficiente', 'La billetera no tiene fondos suficientes.');
-          return wallet;
-        }
-        return { ...wallet, balance: newBalance };
-      });
-
       const updatedTransaction: Transaction = {
-        ...originalTransaction,
+        ...transactionToUpdate,
         amount,
         description,
         walletId,
@@ -50,36 +34,18 @@ export function useTransactionHandler() {
         type,
       };
       updateTransaction(updatedTransaction);
-      setWallets(newWallets);
-      wasTransactionSuccessful = true;
     } else {
-      // Creating new transaction
-      const newWallets = wallets.map((wallet) => {
-        if (wallet.id === walletId) {
-          const newBalance = type === 'income' ? wallet.balance + amount : wallet.balance - amount;
-          if (newBalance < 0) {
-            Alert.alert('Saldo Insuficiente', 'La billetera no tiene fondos suficientes.');
-            return wallet; // Return original wallet
-          }
-          wasTransactionSuccessful = true;
-          return { ...wallet, balance: newBalance };
-        }
-        return wallet;
+      addTransaction({
+        amount,
+        description,
+        date: new Date().toISOString(),
+        type,
+        walletId,
+        categoryId,
       });
-
-      if (wasTransactionSuccessful) {
-        addTransaction({
-          amount,
-          description,
-          date: new Date().toISOString(),
-          type,
-          walletId,
-          categoryId,
-        });
-        setWallets(newWallets);
-      }
     }
-    return wasTransactionSuccessful;
+
+    return true;
   };
 
   const handleTransfer = (fromWalletId: string, toWalletId: string, fromAmount: number, toAmount: number) => {
@@ -87,18 +53,19 @@ export function useTransactionHandler() {
     const toWallet = wallets.find((w) => w.id === toWalletId);
 
     if (!fromWallet || !toWallet) {
-      throw new Error('Error: No se encontraron las billeteras.');
-    }
-
-    if (fromWallet.balance < fromAmount) {
-      Alert.alert('Saldo Insuficiente', `La billetera "${fromWallet.name}" no tiene fondos suficientes.`);
+      Alert.alert('Error', 'No se encontraron las billeteras.');
       return false;
     }
 
-    // 1. Update wallet balances
-    updateBalancesForTransfer(fromWalletId, toWalletId, fromAmount, toAmount);
+    // 1. Update balances first (centralized logic)
+    const result = updateBalancesForTransfer(fromWalletId, toWalletId, fromAmount, toAmount);
 
-    // 2. Add the two transactions for the transfer
+    if (!result.success) {
+      Alert.alert('Transferencia Fallida', result.error || 'No se pudo procesar la transferencia.');
+      return false;
+    }
+
+    // 2. If successful, add the two transactions for the transfer record
     addTransfer({
       fromWalletId,
       toWalletId,

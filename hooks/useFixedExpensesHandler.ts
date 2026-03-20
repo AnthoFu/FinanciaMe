@@ -1,37 +1,18 @@
 import { useCallback } from 'react';
 import { Alert } from 'react-native';
 import { v4 as uuidv4 } from 'uuid';
-import { FixedExpense, Wallet, Transaction } from '../types';
+import { FixedExpense } from '../types';
+import { useWallets } from '../context/WalletsContext';
+import { useTransactions } from '../context/TransactionsContext';
+import { useFixedExpenses } from '../context/FixedExpensesContext';
+import { useExchangeRates } from './useExchangeRates';
 
-interface UseFixedExpensesHandlerProps {
-  wallets: Wallet[];
-  setWallets: (wallets: Wallet[]) => void;
-  transactions: Transaction[];
-  setTransactions: (transactions: Transaction[]) => void;
-  expenses: FixedExpense[];
-  setExpenses: (expenses: FixedExpense[]) => void;
-  bcvRate: number | null;
-  usdtRate: number | null;
-  averageRate: number | null;
-  fixedExpensesLoading: boolean;
-  walletsLoading: boolean;
-  ratesLoading: boolean;
-}
+export function useFixedExpensesHandler() {
+  const { wallets, updateBalancesForTransaction } = useWallets();
+  const { addTransaction, isLoading: transactionsLoading } = useTransactions();
+  const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
+  const { bcvRate, usdtRate, averageRate, loading: ratesLoading } = useExchangeRates();
 
-export function useFixedExpensesHandler({
-  wallets,
-  setWallets,
-  transactions,
-  setTransactions,
-  expenses,
-  setExpenses,
-  bcvRate,
-  usdtRate,
-  averageRate,
-  fixedExpensesLoading,
-  walletsLoading,
-  ratesLoading,
-}: UseFixedExpensesHandlerProps) {
   const isWithinDateRange = useCallback((expense: FixedExpense, date: Date): boolean => {
     const start = expense.startDate ? new Date(expense.startDate) : null;
     const end = expense.endDate ? new Date(expense.endDate) : null;
@@ -43,30 +24,30 @@ export function useFixedExpensesHandler({
   const handlePayDueExpenses = useCallback(
     async (dueExpenses: FixedExpense[]) => {
       if (!bcvRate || !usdtRate || !averageRate) return;
-      let tempWallets = JSON.parse(JSON.stringify(wallets));
-      let tempTransactions = [...transactions];
+
       const nowString = new Date().toISOString();
       const paidExpensesIds: string[] = [];
       const failedExpenses: string[] = [];
 
+      // We process them one by one using the centralized logic
       for (const expense of dueExpenses) {
-        const walletIndex = tempWallets.findIndex((w: Wallet) => w.id === expense.walletId);
-        if (walletIndex === -1) {
+        const wallet = wallets.find((w) => w.id === expense.walletId);
+        if (!wallet) {
           failedExpenses.push(`${expense.name} (Billetera no encontrada)`);
           continue;
         }
-        let expenseCostInWalletCurrency = expense.amount;
-        const wallet = tempWallets[walletIndex];
 
+        let expenseCostInWalletCurrency = expense.amount;
         if (expense.currency !== wallet.currency) {
           if (expense.currency === 'USD' && wallet.currency === 'VES') expenseCostInWalletCurrency *= bcvRate;
           else if (expense.currency === 'VES' && wallet.currency === 'USD') expenseCostInWalletCurrency /= bcvRate;
         }
 
-        if (wallet.balance >= expenseCostInWalletCurrency) {
-          tempWallets[walletIndex].balance -= expenseCostInWalletCurrency;
-          tempTransactions.unshift({
-            id: uuidv4(),
+        // Use centralized balance update logic
+        const result = updateBalancesForTransaction(expenseCostInWalletCurrency, 'expense', wallet.id);
+
+        if (result.success) {
+          addTransaction({
             amount: expenseCostInWalletCurrency,
             description: `Gasto fijo: ${expense.name}`,
             type: 'expense',
@@ -76,17 +57,17 @@ export function useFixedExpensesHandler({
           });
           paidExpensesIds.push(expense.id);
         } else {
-          failedExpenses.push(`${expense.name} (Fondos insuficientes)`);
+          failedExpenses.push(`${expense.name} (${result.error || 'Saldo insuficiente'})`);
         }
       }
 
-      setWallets(tempWallets);
-      setTransactions(tempTransactions);
+      // Update the 'lastPaid' date for the successful expenses
+      if (paidExpensesIds.length > 0) {
+        setExpenses((prev) =>
+          prev.map((exp) => (paidExpensesIds.includes(exp.id) ? { ...exp, lastPaid: nowString } : exp)),
+        );
+      }
 
-      const newExpenses = expenses.map((exp: FixedExpense) =>
-        paidExpensesIds.includes(exp.id) ? { ...exp, lastPaid: nowString } : exp,
-      );
-      setExpenses(newExpenses);
       let summaryMessage =
         paidExpensesIds.length > 0
           ? `Pagos realizados: ${dueExpenses
@@ -97,7 +78,7 @@ export function useFixedExpensesHandler({
       if (failedExpenses.length > 0) summaryMessage += `\n\nPagos fallidos: ${failedExpenses.join('; ')}.`;
       if (summaryMessage) Alert.alert('Resumen de Pagos', summaryMessage);
     },
-    [bcvRate, usdtRate, averageRate, wallets, transactions, expenses, setWallets, setTransactions, setExpenses],
+    [bcvRate, usdtRate, averageRate, wallets, updateBalancesForTransaction, addTransaction, setExpenses],
   );
 
   const promptToPayDueExpenses = useCallback(
@@ -112,23 +93,19 @@ export function useFixedExpensesHandler({
   );
 
   const checkDueFixedExpenses = useCallback(async () => {
-    if (fixedExpensesLoading || walletsLoading || ratesLoading) return;
-    const now = new Date();
+    // Avoid checking if data is still loading
+    if (fixedExpensesLoading || transactionsLoading || ratesLoading) return;
 
+    const now = new Date();
     const dueExpenses = expenses.filter((exp) => {
       if (!exp.startDate || !isWithinDateRange(exp, now)) {
         return false;
       }
 
       const lastPaid = exp.lastPaid ? new Date(exp.lastPaid) : null;
-
-      // Get the anchor date for the expense, which is its start date.
       const startDate = new Date(exp.startDate);
-
-      // Determine the due date for the current cycle.
       let currentDueDate = new Date(startDate);
 
-      // Logic to find the most recent due date that is <= now
       while (true) {
         let nextDueDate = new Date(currentDueDate);
         switch (exp.frequency) {
@@ -150,13 +127,11 @@ export function useFixedExpensesHandler({
             break;
         }
         if (nextDueDate > now) {
-          break; // `currentDueDate` is the one we care about
+          break;
         }
         currentDueDate = nextDueDate;
       }
 
-      // Now `currentDueDate` is the most recent date the expense should have been paid.
-      // An expense is due if this date is after the last payment date.
       if (!lastPaid || lastPaid < currentDueDate) {
         return true;
       }
@@ -167,7 +142,14 @@ export function useFixedExpensesHandler({
     if (dueExpenses.length > 0) {
       promptToPayDueExpenses(dueExpenses);
     }
-  }, [fixedExpensesLoading, walletsLoading, ratesLoading, expenses, isWithinDateRange, promptToPayDueExpenses]);
+  }, [
+    fixedExpensesLoading,
+    transactionsLoading,
+    ratesLoading,
+    expenses,
+    isWithinDateRange,
+    promptToPayDueExpenses,
+  ]);
 
   return { checkDueFixedExpenses };
 }

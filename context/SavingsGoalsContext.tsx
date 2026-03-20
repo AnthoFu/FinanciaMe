@@ -31,7 +31,7 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const { transactions, addTransaction } = useTransactions();
   const { categories, addCategory } = useCategories();
-  const { wallets, setWallets } = useWallets();
+  const { updateBalancesForTransaction } = useWallets();
 
   // Load goals from storage
   useEffect(() => {
@@ -79,8 +79,6 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteSavingsGoal = (goalId: string) => {
-    // Note: This only deletes the goal, not the associated contribution transactions.
-    // This is to preserve the user's transaction history.
     setSavingsGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
   };
 
@@ -99,17 +97,12 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
     amount: number,
     description?: string,
   ): Promise<{ success: boolean; message: string }> => {
-    const wallet = wallets.find((w) => w.id === walletId);
-    if (!wallet) {
-      return { success: false, message: 'Billetera no encontrada.' };
-    }
-    if (wallet.balance < amount) {
-      return { success: false, message: 'Saldo insuficiente en la billetera.' };
-    }
+    // 1. Update wallet balance using centralized logic
+    const result = updateBalancesForTransaction(amount, 'expense', walletId);
 
-    // 1. Update wallet balance
-    const updatedWallets = wallets.map((w) => (w.id === walletId ? { ...w, balance: w.balance - amount } : w));
-    setWallets(updatedWallets);
+    if (!result.success) {
+      return { success: false, message: result.error || 'Error al actualizar el saldo.' };
+    }
 
     // 2. Find or create a 'Savings' category
     let savingsCategory = categories.find((c) => c.name === 'Ahorros' && c.type === 'expense');
@@ -119,26 +112,20 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
       savingsCategory = newCategory;
     }
 
-    const categoryId = savingsCategory?.id || '11'; // Fallback to 'Otros Gastos'
+    const categoryId = savingsCategory?.id || '11';
 
     // 3. Add the transaction record
-    try {
-      addTransaction({
-        amount,
-        description: `Ahorro para "${goal.name}"${description ? `: ${description}` : ''}`,
-        type: 'expense',
-        date: new Date().toISOString(),
-        walletId,
-        categoryId,
-        goalId: goal.id,
-      });
-      return { success: true, message: 'Ahorro añadido con éxito.' };
-    } catch (error: unknown) {
-      // Rollback wallet update if transaction fails
-      setWallets(wallets);
-      const errorMessage = error instanceof Error ? error.message : 'Ocurrió un error desconocido';
-      return { success: false, message: errorMessage };
-    }
+    addTransaction({
+      amount,
+      description: `Ahorro para "${goal.name}"${description ? `: ${description}` : ''}`,
+      type: 'expense',
+      date: new Date().toISOString(),
+      walletId,
+      categoryId,
+      goalId: goal.id,
+    });
+
+    return { success: true, message: 'Ahorro añadido con éxito.' };
   };
 
   const value = {

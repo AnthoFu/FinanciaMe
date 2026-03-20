@@ -34,7 +34,7 @@ export default function FinanciaMeScreen() {
   const styles = getThemedStyles(colors);
 
   // --- Data Hooks ---
-  const { wallets, setWallets, isLoading: walletsLoading } = useWallets();
+  const { wallets, setWallets, isLoading: walletsLoading, revertTransactionBalance } = useWallets();
   const { transactions, setTransactions, deleteTransaction, isLoading: transactionsLoading } = useTransactions();
   const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
   const {
@@ -51,20 +51,7 @@ export default function FinanciaMeScreen() {
   const { handleSaveTransaction, handleTransfer } = useTransactionHandler();
 
   // --- Fixed Expenses Logic ---
-  const { checkDueFixedExpenses } = useFixedExpensesHandler({
-    wallets,
-    setWallets,
-    transactions,
-    setTransactions,
-    expenses,
-    setExpenses,
-    bcvRate,
-    usdtRate,
-    averageRate,
-    fixedExpensesLoading,
-    walletsLoading,
-    ratesLoading,
-  });
+  const { checkDueFixedExpenses } = useFixedExpensesHandler();
 
   // --- Local State ---
   const [loading, setLoading] = useState(true);
@@ -133,15 +120,13 @@ export default function FinanciaMeScreen() {
         text: 'Eliminar',
         style: 'destructive',
         onPress: () => {
-          // Revert balance
-          const wallet = wallets.find((w) => w.id === transaction.walletId);
-          if (wallet) {
-            const newBalance =
-              transaction.type === 'income' ? wallet.balance - transaction.amount : wallet.balance + transaction.amount;
-            setWallets(wallets.map((w) => (w.id === wallet.id ? { ...w, balance: newBalance } : w)));
+          const result = revertTransactionBalance(transaction);
+          if (result.success) {
+            deleteTransaction(transaction.id);
+            showToast('Movimiento eliminado');
+          } else {
+            Alert.alert('Error', result.error || 'No se pudo eliminar el movimiento.');
           }
-          deleteTransaction(transaction.id);
-          showToast('Movimiento eliminado');
         },
       },
     ]);
