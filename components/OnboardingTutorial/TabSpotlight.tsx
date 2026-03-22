@@ -28,18 +28,19 @@ const calculateSpotlightPosition = (tabName: string): number => {
   const totalTabs = 6;
   const tabWidth = width / totalTabs;
 
-  // Calcular la posición centrada del tab
-  const tabCenter = tabIndex * tabWidth + tabWidth / 2;
+  // Calcular la posición centrada del tab con un pequeño ajuste de 2px a la izquierda
+  // para compensar el renderizado del navbar en Android
+  const tabCenter = tabIndex * tabWidth + tabWidth / 2 - 2;
 
-  // Ajustar para centrar el spotlight (que tiene 70px de ancho)
-  const spotlightWidth = 70;
-  const leftPosition = tabCenter - spotlightWidth / 2;
+  // Ajustar para centrar el círculo (66px de diámetro)
+  const spotlightDiameter = 66;
+  const leftPosition = tabCenter - spotlightDiameter / 2;
 
-  return Math.max(0, leftPosition); // Asegurar que no sea negativo
+  return leftPosition;
 };
 
 export const TabSpotlight: React.FC<TabSpotlightProps> = ({ highlightedTab, spotlightAnim, colors }) => {
-  if (!highlightedTab || !TAB_INDICES[highlightedTab as keyof typeof TAB_INDICES]) {
+  if (!highlightedTab || TAB_INDICES[highlightedTab as keyof typeof TAB_INDICES] === undefined) {
     return null;
   }
 
@@ -51,9 +52,18 @@ export const TabSpotlight: React.FC<TabSpotlightProps> = ({ highlightedTab, spot
         styles.spotlight,
         {
           left: leftPosition,
-          backgroundColor: '#007AFF', // Azul iOS elegante
-          shadowColor: '#007AFF',
+          backgroundColor: `${colors.tint}22`,
+          borderColor: colors.tint,
+          shadowColor: colors.tint,
           opacity: spotlightAnim,
+          transform: [
+            {
+              scale: spotlightAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.8, 1],
+              }),
+            },
+          ],
         },
       ]}
     />
@@ -63,17 +73,12 @@ export const TabSpotlight: React.FC<TabSpotlightProps> = ({ highlightedTab, spot
 const styles = StyleSheet.create({
   spotlight: {
     position: 'absolute',
-    bottom: 75, // Posición justo encima del navbar
-    width: 70, // Un poco más ancho
-    height: 6, // Un poco más alto
-    borderRadius: 3,
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 10,
-    zIndex: 9999, // Asegurar que esté encima
+    bottom: 40, // Elevado lo justo para no chocar con el borde del sistema
+    width: 66, // Un poco más pequeño para dar margen
+    height: 66,
+    borderRadius: 33,
+    borderWidth: 2,
+    elevation: 0,
+    zIndex: 9999,
   },
 });
