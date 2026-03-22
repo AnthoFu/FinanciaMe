@@ -1,9 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-
-import { BUDGETS_KEY } from '../constants/StorageKeys';
+import React, { createContext, useContext, ReactNode, useMemo } from 'react';
 import { Budget } from '../types';
+import { useBudgetStore } from '../store/budgetStore';
 
 interface BudgetsContextType {
   budgets: Budget[];
@@ -17,72 +14,18 @@ interface BudgetsContextType {
 const BudgetsContext = createContext<BudgetsContextType | undefined>(undefined);
 
 export function BudgetsProvider({ children }: { children: ReactNode }) {
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const store = useBudgetStore();
 
-  // Load budgets from storage
-  useEffect(() => {
-    const loadBudgets = async () => {
-      setIsLoading(true);
-      try {
-        const storedBudgets = await AsyncStorage.getItem(BUDGETS_KEY);
-        if (storedBudgets) {
-          setBudgets(JSON.parse(storedBudgets));
-        }
-      } catch (error) {
-        console.error('[loadBudgets] Error al cargar los presupuestos desde el almacenamiento:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadBudgets();
-  }, []);
-
-  // Save budgets to storage
-  useEffect(() => {
-    if (!isLoading) {
-      const saveBudgets = async () => {
-        try {
-          await AsyncStorage.setItem(BUDGETS_KEY, JSON.stringify(budgets));
-        } catch (error) {
-          console.error('[saveBudgets] Error al guardar los presupuestos en el almacenamiento:', error);
-        }
-      };
-      saveBudgets();
-    }
-  }, [budgets, isLoading]);
-
-  const addBudget = (budgetData: Omit<Budget, 'id' | 'creationDate'>) => {
-    const newBudget: Budget = {
-      id: uuidv4(),
-      creationDate: new Date().toISOString(),
-      ...budgetData,
-    };
-    setBudgets((prevBudgets) => [newBudget, ...prevBudgets]);
-  };
-
-  const updateBudget = (updatedBudget: Budget) => {
-    setBudgets((prevBudgets) => prevBudgets.map((budget) => (budget.id === updatedBudget.id ? updatedBudget : budget)));
-  };
-
-  const deleteBudget = (budgetId: string) => {
-    setBudgets((prevBudgets) => prevBudgets.filter((budget) => budget.id !== budgetId));
-  };
-
-  const getBudgetById = (budgetId: string) => {
-    return budgets.find((budget) => budget.id === budgetId);
-  };
-
-  const value = React.useMemo(
+  const value = useMemo(
     () => ({
-      budgets,
-      addBudget,
-      updateBudget,
-      deleteBudget,
-      getBudgetById,
-      isLoading,
+      budgets: store.budgets,
+      addBudget: store.addBudget,
+      updateBudget: store.updateBudget,
+      deleteBudget: store.deleteBudget,
+      getBudgetById: store.getBudgetById,
+      isLoading: store.isLoading,
     }),
-    [budgets, isLoading],
+    [store],
   );
 
   return <BudgetsContext.Provider value={value}>{children}</BudgetsContext.Provider>;

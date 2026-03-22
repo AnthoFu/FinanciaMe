@@ -9,7 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { OnboardingTutorial } from '@/components/OnboardingTutorial';
-import { useOnboarding } from '@/hooks/useOnboarding';
+import { OnboardingProvider, useOnboarding } from '../context/OnboardingContext';
 import { Colors } from '@/constants/Colors';
 import { BudgetsProvider } from '../context/BudgetsContext';
 import { CategoriesProvider } from '../context/CategoriesContext';
@@ -90,19 +90,18 @@ function RootLayoutNav() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  if (!loaded || onboardingLoading) {
+  if (!loaded) {
     return null;
   }
+
+  // Si el onboarding aún carga, asumimos falso por un momento para evitar pantalla negra
+  const showOnboarding = !onboardingLoading && !isOnboardingCompleted;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
       <ThemedStack />
       <StatusBar style="auto" />
-      <OnboardingTutorial
-        isVisible={!isOnboardingCompleted}
-        onComplete={completeOnboarding}
-        onSkip={completeOnboarding}
-      />
+      <OnboardingTutorial isVisible={showOnboarding} onComplete={completeOnboarding} onSkip={completeOnboarding} />
     </ThemeProvider>
   );
 }
@@ -112,21 +111,23 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <MenuProvider>
         <AppThemeProvider>
-          <ExchangeRatesProvider>
-            <CategoriesProvider>
-              <FixedExpensesProvider>
-                <TransactionsProvider>
-                  <WalletsProvider>
-                    <SavingsGoalsProvider>
-                      <BudgetsProvider>
-                        <RootLayoutNav />
-                      </BudgetsProvider>
-                    </SavingsGoalsProvider>
-                  </WalletsProvider>
-                </TransactionsProvider>
-              </FixedExpensesProvider>
-            </CategoriesProvider>
-          </ExchangeRatesProvider>
+          <OnboardingProvider>
+            <ExchangeRatesProvider>
+              <CategoriesProvider>
+                <FixedExpensesProvider>
+                  <TransactionsProvider>
+                    <WalletsProvider>
+                      <SavingsGoalsProvider>
+                        <BudgetsProvider>
+                          <RootLayoutNav />
+                        </BudgetsProvider>
+                      </SavingsGoalsProvider>
+                    </WalletsProvider>
+                  </TransactionsProvider>
+                </FixedExpensesProvider>
+              </CategoriesProvider>
+            </ExchangeRatesProvider>
+          </OnboardingProvider>
         </AppThemeProvider>
       </MenuProvider>
     </GestureHandlerRootView>

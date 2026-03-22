@@ -1,6 +1,15 @@
 import { useTheme } from '@/hooks/useTheme';
 import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from 'react-native';
 
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useBudgets } from '../../context/BudgetsContext';
@@ -33,12 +42,12 @@ const ProgressBar = ({
 }) => {
   return (
     <View style={[progressBarStyles.progressBarContainer, { backgroundColor }]}>
-      <View style={[progressBarStyles.progressBar, { width: `${progress * 100}%`, backgroundColor: color }]} />
+      <View style={[progressBarStyles.progressBar, { width: `${Math.min(progress, 1) * 100}%`, backgroundColor: color }]} />
     </View>
   );
 };
 
-const BudgetItem = ({ budget }: { budget: Budget }) => {
+const BudgetItem = ({ budget, onEdit, onDelete }: { budget: Budget; onEdit: () => void; onDelete: () => void }) => {
   const { colors } = useTheme();
   const styles = getStyles(colors);
   const spending = useBudgetSpending(budget);
@@ -47,13 +56,23 @@ const BudgetItem = ({ budget }: { budget: Budget }) => {
 
   return (
     <View style={styles.budgetItemContainer}>
-      <View style={styles.budgetInfo}>
-        <Text style={styles.budgetName}>{budget.name}</Text>
-        <Text style={styles.budgetAmount}>
-          {spending.toFixed(2)} / {budget.amount.toFixed(2)} {budget.currency}
-        </Text>
+      <View style={styles.budgetHeader}>
+        <View style={styles.budgetInfo}>
+          <Text style={styles.budgetName}>{budget.name}</Text>
+          <Text style={styles.budgetAmount}>
+            {spending.toFixed(2)} / {budget.amount.toFixed(2)} {budget.currency}
+          </Text>
+        </View>
+        <View style={styles.actionIcons}>
+          <TouchableOpacity onPress={onEdit} style={styles.iconButton}>
+            <IconSymbol name="pencil" size={20} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onDelete} style={styles.iconButton}>
+            <IconSymbol name="trash" size={20} color={colors.notification} />
+          </TouchableOpacity>
+        </View>
       </View>
-      <ProgressBar progress={progress} color={colors.primary} backgroundColor={colors.border} />
+      <ProgressBar progress={progress} color={progress > 1 ? colors.notification : colors.primary} backgroundColor={colors.border} />
     </View>
   );
 };
@@ -63,21 +82,44 @@ export default function BudgetsScreen() {
   const globalStyles = getThemedStyles(colors);
   const styles = getStyles(colors);
 
-  const { budgets } = useBudgets();
+  const { budgets, deleteBudget } = useBudgets();
   const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
+
+  const handleEditBudget = (budget: Budget) => {
+    setSelectedBudget(budget);
+    setIsBudgetModalVisible(true);
+  };
+
+  const handleDeleteBudget = (budget: Budget) => {
+    Alert.alert('Eliminar Presupuesto', `¿Estás seguro de que quieres eliminar el presupuesto "${budget.name}"?`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: () => deleteBudget(budget.id),
+      },
+    ]);
+  };
+
+  const handleAddNewBudget = () => {
+    setSelectedBudget(null);
+    setIsBudgetModalVisible(true);
+  };
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={globalStyles.container}>
       <View style={globalStyles.header}>
         <Text style={globalStyles.title}>Presupuestos</Text>
-        <TouchableOpacity onPress={() => setIsBudgetModalVisible(true)}>
+        <TouchableOpacity onPress={handleAddNewBudget}>
           <IconSymbol name="plus.circle.fill" size={32} color={colors.text} />
         </TouchableOpacity>
       </View>
       <FlatList
         data={budgets}
-        renderItem={({ item }) => <BudgetItem budget={item} />}
+        renderItem={({ item }) => (
+          <BudgetItem budget={item} onEdit={() => handleEditBudget(item)} onDelete={() => handleDeleteBudget(item)} />
+        )}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={<Text style={styles.emptyText}>Aún no tienes presupuestos. ¡Crea uno!</Text>}
       />
@@ -106,8 +148,21 @@ const getStyles = (colors: ColorTheme) =>
       shadowRadius: 4,
       elevation: 3,
     },
-    budgetInfo: {
+    budgetHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
       marginBottom: 10,
+    },
+    budgetInfo: {
+      flex: 1,
+    },
+    actionIcons: {
+      flexDirection: 'row',
+    },
+    iconButton: {
+      padding: 5,
+      marginLeft: 10,
     },
     budgetName: {
       fontSize: 18,

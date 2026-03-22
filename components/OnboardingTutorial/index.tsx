@@ -10,13 +10,9 @@ interface TutorialStep {
   id: string;
   title: string;
   description: string;
-  targetElement?: string;
-  position: 'top' | 'bottom' | 'left' | 'right';
-  action?: () => void;
+  position: 'top' | 'bottom' | 'center';
   navigateTo?: string;
-  spotlightElement?: string;
-  showSpotlight?: boolean;
-  highlightTab?: string; // Nombre del tab a iluminar
+  highlightTab?: string;
 }
 
 interface OnboardingTutorialProps {
@@ -31,6 +27,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
   const styles = getOnboardingStyles(colors);
   const [currentStep, setCurrentStep] = useState(0);
   const [fadeAnim] = useState(new Animated.Value(0));
+  const [contentTranslateY] = useState(new Animated.Value(20));
   const [spotlightAnim] = useState(new Animated.Value(0));
   const [highlightedTab, setHighlightedTab] = useState<string | null>(null);
 
@@ -39,68 +36,70 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
       {
         id: 'welcome',
         title: '¡Bienvenido a FinanciaMe!',
-        description: 'Te ayudaremos a gestionar tus finanzas personales de manera sencilla y efectiva.',
-        position: 'top',
+        description:
+          'Tu asistente financiero personal. Comencemos un rápido recorrido para que conozcas todo lo que puedes hacer.',
+        position: 'center',
       },
       {
         id: 'wallets',
-        title: '1. Crea tu Primera Billetera',
+        title: 'Billeteras: Tu Dinero, Organizado',
         description:
-          'Primero necesitas crear una billetera para empezar. Esto te permitirá organizar tu dinero y hacer seguimiento de tus gastos.',
-        position: 'bottom',
+          'Piensa en las billeteras como tus cuentas bancarias o el efectivo que manejas. Crea una para empezar a registrar tus movimientos.',
+        position: 'center',
         navigateTo: '/tabs/wallets',
         highlightTab: 'wallets',
       },
       {
         id: 'transactions',
-        title: '2. Registra Transacciones',
+        title: 'Transacciones: Sigue el Flujo',
         description:
-          'Ahora vamos a aprender a registrar ingresos y gastos. Esto te ayudará a saber exactamente en qué gastas tu dinero.',
-        position: 'bottom',
+          'Aquí es donde todo sucede. Registra tus ingresos y gastos diarios. ¡No dejes que se te escape ni un centavo!',
+        position: 'center',
         navigateTo: '/tabs',
         highlightTab: 'index',
       },
       {
         id: 'budgets',
-        title: '3. Controla tus Presupuestos',
+        title: 'Presupuestos: Gasta con Inteligencia',
         description:
-          'Los presupuestos te ayudan a no gastar más de lo que planeas. Puedes establecer límites por categoría como comida, transporte, etc.',
-        position: 'bottom',
+          '¿Quieres controlar tus gastos en "Comida" o "Transporte"? Crea presupuestos y asegúrate de no excederte.',
+        position: 'center',
         navigateTo: '/tabs/budgets',
         highlightTab: 'budgets',
       },
       {
         id: 'goals',
-        title: '4. Define Metas de Ahorro',
+        title: 'Metas de Ahorro: Cumple tus Sueños',
         description:
-          'Las metas te ayudan a ahorrar para objetivos específicos como vacaciones, un auto, o emergencias. Es como tener un plan de ahorro.',
-        position: 'bottom',
+          'Ahorrar para ese viaje o un nuevo teléfono es más fácil si tienes una meta. Define un objetivo y ve tu progreso.',
+        position: 'center',
         navigateTo: '/tabs/goals',
         highlightTab: 'goals',
       },
       {
         id: 'fixed-expenses',
-        title: '5. Programa Gastos Fijos',
+        title: 'Gastos Fijos: Pagos sin Estrés',
         description:
-          'Los gastos fijos son pagos que haces regularmente como renta, servicios, suscripciones. La app te recordará cuándo pagarlos.',
-        position: 'bottom',
+          'Configura pagos recurrentes como el alquiler o suscripciones. Te avisaremos antes de la fecha para que no lo olvides.',
+        position: 'center',
         navigateTo: '/tabs/fixedExpenses',
         highlightTab: 'fixedExpenses',
       },
       {
         id: 'metrics',
-        title: '6. Analiza tus Finanzas',
+        title: 'Métricas: Entiende tus Hábitos',
         description:
-          'Las métricas te muestran gráficos y estadísticas de tus gastos. Te ayudan a entender mejor tus hábitos financieros.',
-        position: 'bottom',
+          '¿A dónde se va tu dinero? Los gráficos te mostrarán tus patrones de gasto para que tomes mejores decisiones.',
+        position: 'center',
         navigateTo: '/tabs/metrics',
         highlightTab: 'metrics',
       },
       {
         id: 'complete',
-        title: '¡Listo para comenzar!',
-        description: 'Ya conoces las funciones principales. ¡Empieza a gestionar tus finanzas de manera inteligente!',
-        position: 'top',
+        title: '¡Todo Listo!',
+        description:
+          'Ya tienes lo esencial para tomar el control de tus finanzas. ¡Explora la app y empieza a construir tu futuro financiero!',
+        position: 'center',
       },
     ],
     [],
@@ -108,11 +107,19 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
 
   useEffect(() => {
     if (isVisible) {
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.spring(contentTranslateY, {
+          toValue: 0,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]).start();
     } else {
       Animated.timing(fadeAnim, {
         toValue: 0,
@@ -120,52 +127,50 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
         useNativeDriver: true,
       }).start();
     }
-  }, [isVisible, fadeAnim]);
+  }, [isVisible, fadeAnim, contentTranslateY]);
 
-  // Navegar automáticamente cuando cambia el paso
+  // Manejar cambios de paso con animaciones
   useEffect(() => {
-    if (isVisible && currentStep > 0) {
-      const currentStepData = tutorialSteps[currentStep];
-      if (currentStepData.navigateTo) {
-        // Pequeño delay para que se vea la transición
-        setTimeout(() => {
-          router.push(currentStepData.navigateTo as any);
-        }, 100);
-      }
-    }
-  }, [currentStep, isVisible, router, tutorialSteps]);
+    if (!isVisible) return;
 
-  // Manejar el spotlight del tab
-  useEffect(() => {
     const currentStepData = tutorialSteps[currentStep];
 
+    // Navegar si es necesario
+    if (currentStepData.navigateTo) {
+      setTimeout(() => {
+        router.push(currentStepData.navigateTo as any);
+      }, 100);
+    }
+
+    // Manejar Spotlight
     if (currentStepData.highlightTab) {
       setHighlightedTab(currentStepData.highlightTab);
-      // Hacer el spotlight completamente visible
-      Animated.timing(spotlightAnim, {
+      Animated.spring(spotlightAnim, {
         toValue: 1,
-        duration: 300,
+        tension: 40,
+        friction: 7,
         useNativeDriver: true,
       }).start();
     } else {
-      setHighlightedTab(null);
       Animated.timing(spotlightAnim, {
         toValue: 0,
-        duration: 300,
+        duration: 200,
         useNativeDriver: true,
-      }).start();
+      }).start(() => setHighlightedTab(null));
     }
-  }, [currentStep, spotlightAnim, tutorialSteps]);
+  }, [currentStep, isVisible, router, spotlightAnim, tutorialSteps]);
 
   const handleNext = () => {
-    const currentStepData = tutorialSteps[currentStep];
-
-    // Navegar a la pantalla correspondiente si está definida
-    if (currentStepData.navigateTo) {
-      router.push(currentStepData.navigateTo as any);
-    }
-
     if (currentStep < tutorialSteps.length - 1) {
+      // Pequeña animación de feedback al cambiar
+      contentTranslateY.setValue(10);
+      Animated.spring(contentTranslateY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }).start();
+
       setCurrentStep(currentStep + 1);
     } else {
       onComplete();
@@ -174,15 +179,15 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
 
   const handlePrevious = () => {
     if (currentStep > 0) {
-      const previousStep = currentStep - 1;
-      const previousStepData = tutorialSteps[previousStep];
+      contentTranslateY.setValue(-10);
+      Animated.spring(contentTranslateY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }).start();
 
-      // Navegar a la pantalla del paso anterior si está definida
-      if (previousStepData.navigateTo) {
-        router.push(previousStepData.navigateTo as any);
-      }
-
-      setCurrentStep(previousStep);
+      setCurrentStep(currentStep - 1);
     }
   };
 
@@ -196,12 +201,31 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
 
   if (!isVisible) return null;
 
+  const getContentStyle = () => {
+    switch (currentStepData.position) {
+      case 'top':
+        return styles.contentTop;
+      case 'bottom':
+        return styles.contentBottom;
+      default:
+        return {};
+    }
+  };
+
   return (
     <Modal visible={isVisible} transparent animationType="fade" statusBarTranslucent>
-      <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
+      <View style={styles.overlay}>
         <SafeAreaView style={styles.container}>
-          {/* Tutorial content */}
-          <View style={styles.tutorialContent}>
+          <Animated.View
+            style={[
+              styles.tutorialContent,
+              getContentStyle(),
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: contentTranslateY }],
+              },
+            ]}
+          >
             <View style={styles.stepContainer}>
               <Text style={styles.stepTitle}>{currentStepData.title}</Text>
               <Text style={styles.stepDescription}>{currentStepData.description}</Text>
@@ -209,36 +233,43 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
               {/* Progress indicator */}
               <View style={styles.progressContainer}>
                 {tutorialSteps.map((_, index) => (
-                  <View key={index} style={[styles.progressDot, index === currentStep && styles.progressDotActive]} />
+                  <View
+                    key={index}
+                    style={[
+                      styles.progressDot,
+                      index === currentStep && styles.progressDotActive,
+                      { backgroundColor: index <= currentStep ? colors.tint : colors.border },
+                    ]}
+                  />
                 ))}
               </View>
 
               {/* Navigation buttons */}
               <View style={styles.buttonContainer}>
-                <TouchableOpacity style={[styles.button, styles.skipButton]} onPress={handleSkip}>
+                <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
                   <Text style={styles.skipButtonText}>Omitir</Text>
                 </TouchableOpacity>
 
                 <View style={styles.navigationButtons}>
                   {!isFirstStep && (
                     <TouchableOpacity style={[styles.button, styles.secondaryButton]} onPress={handlePrevious}>
-                      <IconSymbol name="chevron.left" size={16} color={colors.text} />
+                      <IconSymbol name="chevron.left" size={20} color={colors.text} />
                     </TouchableOpacity>
                   )}
 
                   <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={handleNext}>
-                    <Text style={styles.primaryButtonText}>{isLastStep ? 'Comenzar' : 'Siguiente'}</Text>
-                    {!isLastStep && <IconSymbol name="chevron.right" size={16} color={colors.primaryButtonText} />}
+                    <Text style={styles.primaryButtonText}>{isLastStep ? '¡Vamos!' : 'Siguiente'}</Text>
+                    {!isLastStep && <IconSymbol name="chevron.right" size={18} color={colors.primaryButtonText} />}
                   </TouchableOpacity>
                 </View>
               </View>
             </View>
-          </View>
+          </Animated.View>
         </SafeAreaView>
 
         {/* Tab Spotlight */}
         <TabSpotlight highlightedTab={highlightedTab} spotlightAnim={spotlightAnim} colors={colors} />
-      </Animated.View>
+      </View>
     </Modal>
   );
 };

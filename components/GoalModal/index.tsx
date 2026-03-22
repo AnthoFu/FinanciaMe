@@ -1,9 +1,9 @@
 import { useTheme } from '@/hooks/useTheme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard } from 'react-native';
 
 import { useSavingsGoals } from '../../context/SavingsGoalsContext';
-import { Currency } from '../../types';
+import { Currency, SavingsGoal } from '../../types';
 import { HorizontalPicker } from '../ui/HorizontalPicker';
 import { StyledInput } from '../ui/StyledInput';
 import { getStyles } from './styles';
@@ -11,6 +11,7 @@ import { getStyles } from './styles';
 interface GoalModalProps {
   isVisible: boolean;
   onClose: () => void;
+  goal?: SavingsGoal | null;
 }
 
 const currencyOptions: Currency[] = ['USD', 'VES', 'USDT'];
@@ -30,29 +31,52 @@ const PickerItem = ({ item, isSelected }: { item: string; isSelected: boolean })
   );
 };
 
-export function GoalModal({ isVisible, onClose }: GoalModalProps) {
+export function GoalModal({ isVisible, onClose, goal }: GoalModalProps) {
   const [name, setName] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
   const [currency, setCurrency] = useState<Currency>('USD');
-  const { addSavingsGoal } = useSavingsGoals();
+  const { addSavingsGoal, updateSavingsGoal } = useSavingsGoals();
   const { colors } = useTheme();
   const styles = getStyles(colors);
 
+  useEffect(() => {
+    if (goal) {
+      setName(goal.name);
+      setTargetAmount(goal.targetAmount.toString());
+      setCurrency(goal.currency);
+    } else {
+      setName('');
+      setTargetAmount('');
+      setCurrency('USD');
+    }
+  }, [goal, isVisible]);
+
   const handleClose = () => {
-    setName('');
-    setTargetAmount('');
-    setCurrency('USD');
+    if (!goal) {
+      setName('');
+      setTargetAmount('');
+      setCurrency('USD');
+    }
     onClose();
   };
 
   const handleSave = () => {
     const amount = parseFloat(targetAmount);
     if (name.trim() && amount > 0) {
-      addSavingsGoal({
-        name: name.trim(),
-        targetAmount: amount,
-        currency,
-      });
+      if (goal) {
+        updateSavingsGoal({
+          ...goal,
+          name: name.trim(),
+          targetAmount: amount,
+          currency,
+        });
+      } else {
+        addSavingsGoal({
+          name: name.trim(),
+          targetAmount: amount,
+          currency,
+        });
+      }
       handleClose();
     } else {
       alert('Por favor, introduce un nombre válido y un monto mayor a cero.');
@@ -64,7 +88,9 @@ export function GoalModal({ isVisible, onClose }: GoalModalProps) {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-            <Text style={[styles.title, { color: colors.text }]}>Nueva Meta de Ahorro</Text>
+            <Text style={[styles.title, { color: colors.text }]}>
+              {goal ? 'Editar Meta' : 'Nueva Meta de Ahorro'}
+            </Text>
 
             <StyledInput
               placeholder="Nombre de la meta (ej. PC Gamer)"
