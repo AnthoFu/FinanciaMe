@@ -103,20 +103,65 @@ export const useNotifications = () => {
     }
   };
 
+  const calculateNextOccurrence = (expense: FixedExpense, reminderDays: number, reminderTime: string): Date | null => {
+    const today = new Date();
+    const [hours, minutes] = reminderTime.split(':').map(Number);
+    let nextDate = new Date();
+
+    if (expense.frequency === 'monthly' && expense.dayOfMonth) {
+      nextDate = new Date(today.getFullYear(), today.getMonth(), expense.dayOfMonth, hours, minutes, 0, 0);
+      
+      // Ajustar por días de anticipación
+      nextDate.setDate(nextDate.getDate() - reminderDays);
+
+      // Si ya pasó para este mes, pasar al siguiente
+      if (nextDate <= today) {
+        nextDate = new Date(today.getFullYear(), today.getMonth() + 1, expense.dayOfMonth, hours, minutes, 0, 0);
+        nextDate.setDate(nextDate.getDate() - reminderDays);
+      }
+    } else {
+      // Para otras frecuencias, usamos startDate o el día de hoy como base
+      const baseDate = expense.startDate ? new Date(expense.startDate) : new Date();
+      baseDate.setHours(hours, minutes, 0, 0);
+      
+      nextDate = new Date(baseDate);
+      nextDate.setDate(nextDate.getDate() - reminderDays);
+
+      // Si la fecha calculada ya pasó, necesitamos encontrar la próxima ocurrencia
+      while (nextDate <= today) {
+        switch (expense.frequency) {
+          case 'daily':
+            nextDate.setDate(nextDate.getDate() + 1);
+            break;
+          case 'weekly':
+            nextDate.setDate(nextDate.getDate() + 7);
+            break;
+          case 'biweekly':
+            nextDate.setDate(nextDate.getDate() + 14);
+            break;
+          case 'yearly':
+            nextDate.setFullYear(nextDate.getFullYear() + 1);
+            break;
+          default:
+            return null;
+        }
+      }
+    }
+
+    return nextDate;
+  };
+
   const scheduleFixedExpenseReminder = async (expense: FixedExpense) => {
     if (isExpoGo || !notificationSettings.enabled) return;
 
     try {
-      const today = new Date();
-      const reminderDate = new Date(today);
-      reminderDate.setDate(today.getDate() + notificationSettings.reminderDays);
+      const reminderDate = calculateNextOccurrence(
+        expense, 
+        notificationSettings.reminderDays, 
+        notificationSettings.reminderTime
+      );
 
-      const [hours, minutes] = notificationSettings.reminderTime.split(':').map(Number);
-      reminderDate.setHours(hours, minutes, 0, 0);
-
-      if (reminderDate <= today) {
-        reminderDate.setMonth(reminderDate.getMonth() + 1);
-      }
+      if (!reminderDate) return;
 
       const notificationId = `fixed_expense_${expense.id}`;
 
@@ -173,7 +218,7 @@ export const useNotifications = () => {
         console.log('Error scheduling all notifications:', error);
       }
     },
-    [notificationSettings.enabled],
+    [notificationSettings.enabled, notificationSettings.reminderDays, notificationSettings.reminderTime],
   );
 
   const sendImmediateNotification = async (title: string, body: string, data?: Record<string, unknown>) => {
