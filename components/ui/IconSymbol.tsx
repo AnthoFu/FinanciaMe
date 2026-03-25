@@ -56,6 +56,9 @@ const MAPPING = {
   pencil: 'edit',
   trash: 'delete',
   'ellipsis.vertical': 'more-vert',
+  calendar: 'calendar-today',
+  'xmark.circle.fill': 'cancel',
+  xmark: 'close',
 } as IconMapping;
 
 /**

@@ -1,10 +1,9 @@
 import { useTheme } from '@/hooks/useTheme';
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { Modal, View, Text, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native';
 
 import { useSavingsGoals } from '../../context/SavingsGoalsContext';
 import { Currency, SavingsGoal } from '../../types';
-import { HorizontalPicker } from '../ui/HorizontalPicker';
 import { StyledInput } from '../ui/StyledInput';
 import { getStyles } from './styles';
 
@@ -16,21 +15,6 @@ interface GoalModalProps {
 
 const currencyOptions: Currency[] = ['USD', 'VES', 'USDT'];
 
-// A simple component to render items in the picker
-const PickerItem = ({ item, isSelected }: { item: string; isSelected: boolean }) => {
-  const { colors } = useTheme();
-  return (
-    <View
-      style={[
-        { paddingHorizontal: 20, paddingVertical: 10, marginHorizontal: 5, borderRadius: 20 },
-        isSelected ? { backgroundColor: colors.primary } : { backgroundColor: colors.border },
-      ]}
-    >
-      <Text style={{ color: isSelected ? 'white' : colors.text }}>{item}</Text>
-    </View>
-  );
-};
-
 export function GoalModal({ isVisible, onClose, goal }: GoalModalProps) {
   const [name, setName] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
@@ -40,23 +24,20 @@ export function GoalModal({ isVisible, onClose, goal }: GoalModalProps) {
   const styles = getStyles(colors);
 
   useEffect(() => {
-    if (goal) {
-      setName(goal.name);
-      setTargetAmount(goal.targetAmount.toString());
-      setCurrency(goal.currency);
-    } else {
-      setName('');
-      setTargetAmount('');
-      setCurrency('USD');
+    if (isVisible) {
+      if (goal) {
+        setName(goal.name);
+        setTargetAmount(goal.targetAmount.toString());
+        setCurrency(goal.currency);
+      } else {
+        setName('');
+        setTargetAmount('');
+        setCurrency('USD');
+      }
     }
   }, [goal, isVisible]);
 
   const handleClose = () => {
-    if (!goal) {
-      setName('');
-      setTargetAmount('');
-      setCurrency('USD');
-    }
     onClose();
   };
 
@@ -87,40 +68,53 @@ export function GoalModal({ isVisible, onClose, goal }: GoalModalProps) {
     <Modal visible={isVisible} transparent animationType="fade" onRequestClose={handleClose}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-            <Text style={[styles.title, { color: colors.text }]}>
+          <View style={styles.modalContent}>
+            <Text style={styles.title}>
               {goal ? 'Editar Meta' : 'Nueva Meta de Ahorro'}
             </Text>
 
-            <StyledInput
-              placeholder="Nombre de la meta (ej. PC Gamer)"
-              value={name}
-              onChangeText={setName}
-              style={styles.input}
-            />
-
-            <StyledInput
-              placeholder="Monto Objetivo"
-              value={targetAmount}
-              onChangeText={setTargetAmount}
-              keyboardType="numeric"
-              style={styles.input}
-            />
-
-            <View style={styles.currencyContainer}>
-              <HorizontalPicker<Currency, Currency>
-                label="Moneda"
-                data={currencyOptions}
-                selectedValue={currency}
-                keyExtractor={(item) => item}
-                onSelect={(value) => setCurrency(value as Currency)}
-                renderItem={(item, isSelected) => <PickerItem item={item} isSelected={isSelected} />}
+            <View style={styles.section}>
+              <StyledInput
+                placeholder="Nombre (ej. Mi PC Gamer)"
+                value={name}
+                onChangeText={setName}
               />
+
+              <StyledInput
+                placeholder="Monto Objetivo"
+                value={targetAmount}
+                onChangeText={setTargetAmount}
+                keyboardType="numeric"
+              />
+
+              <View style={styles.currencySelector}>
+                {currencyOptions.map((curr) => (
+                  <TouchableOpacity
+                    key={curr}
+                    style={[styles.currencyOption, currency === curr && styles.currencyOptionSelected]}
+                    onPress={() => setCurrency(curr)}
+                  >
+                    <Text style={[styles.currencyText, currency === curr && styles.currencyTextSelected]}>
+                      {curr}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
 
             <View style={styles.buttonContainer}>
-              <Button title="Cancelar" onPress={handleClose} color={colors.notification} />
-              <Button title="Guardar" onPress={handleSave} color={colors.primary} />
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.cancelButton]} 
+                onPress={handleClose}
+              >
+                <Text style={[styles.buttonText, { color: colors.text }]}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.submitButton]} 
+                onPress={handleSave}
+              >
+                <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>Guardar</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
