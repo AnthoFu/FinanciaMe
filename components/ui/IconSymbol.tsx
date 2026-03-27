@@ -56,7 +56,13 @@ const MAPPING = {
   pencil: 'edit',
   trash: 'delete',
   'ellipsis.vertical': 'more-vert',
-} as IconMapping;
+  calendar: 'calendar-today',
+  'xmark.circle.fill': 'cancel',
+  xmark: 'close',
+  plus: 'add',
+  minus: 'remove',
+  'questionmark.circle.fill': 'help-outline',
+} as unknown as IconMapping;
 
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.

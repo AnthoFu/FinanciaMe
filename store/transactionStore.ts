@@ -19,6 +19,7 @@ interface TransactionState {
     fromWalletName: string;
     toWalletName: string;
     date: string;
+    commission?: number;
   }) => void;
   setTransactions: (transactions: Transaction[]) => void;
   setIsLoading: (loading: boolean) => void;
@@ -56,14 +57,16 @@ export const useTransactionStore = create<TransactionState>()(
 
       addTransfer: (transferData) => {
         const transferId = uuidv4();
+        const commission = transferData.commission || 0;
         const expenseTransaction: Transaction = {
           id: `t_${transferId}_exp`,
           amount: transferData.fromAmount,
-          description: `Transferencia a ${transferData.toWalletName}`,
+          description: `Transferencia a ${transferData.toWalletName}${commission > 0 ? ' (Incluye comisión)' : ''}`,
           date: transferData.date,
           type: 'expense',
           walletId: transferData.fromWalletId,
           categoryId: 'transfer-out',
+          commission: commission,
         };
 
         const incomeTransaction: Transaction = {

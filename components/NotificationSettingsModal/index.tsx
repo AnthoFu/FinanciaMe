@@ -213,17 +213,17 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
           <View style={styles.settingRow}>
             <View style={styles.settingInfo}>
               <Text style={styles.settingTitle}>Recordar con anticipación</Text>
-              <Text style={styles.settingDescription}>Días antes del vencimiento</Text>
+              <Text style={styles.settingDescription}>Días antes del vencimiento (0 = el mismo día)</Text>
             </View>
             <View style={styles.optionsContainer}>
-              {[1, 2, 3, 7].map((days) => (
+              {[0, 1, 2, 3, 7].map((days) => (
                 <TouchableOpacity
                   key={days}
                   style={[styles.optionButton, localSettings.reminderDays === days && styles.optionButtonSelected]}
                   onPress={() => handleReminderDaysChange(days)}
                 >
                   <Text style={[styles.optionText, localSettings.reminderDays === days && styles.optionTextSelected]}>
-                    {days}
+                    {days === 0 ? 'Hoy' : days}
                   </Text>
                 </TouchableOpacity>
               ))}

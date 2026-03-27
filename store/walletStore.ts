@@ -17,6 +17,7 @@ interface WalletState {
     type: 'income' | 'expense',
     walletId: string,
     originalTransaction?: Transaction,
+    commission?: number,
   ) => { success: boolean; error?: string };
   updateBalancesForTransfer: (
     fromWalletId: string,
@@ -63,7 +64,7 @@ export const useWalletStore = create<WalletState>()(
         return get().wallets.find((w) => w.id === id);
       },
 
-      updateBalancesForTransaction: (amount, type, walletId, originalTransaction) => {
+      updateBalancesForTransaction: (amount, type, walletId, originalTransaction, commission = 0) => {
         const wallets = get().wallets;
         const wallet = wallets.find((w) => w.id === walletId);
 
@@ -74,13 +75,14 @@ export const useWalletStore = create<WalletState>()(
         let potentialBalance = wallet.balance;
 
         if (originalTransaction && wallet.id === originalTransaction.walletId) {
+          const originalCommission = originalTransaction.commission || 0;
           potentialBalance =
             originalTransaction.type === 'income'
               ? potentialBalance - originalTransaction.amount
-              : potentialBalance + originalTransaction.amount;
+              : potentialBalance + (originalTransaction.amount + originalCommission);
         }
 
-        potentialBalance = type === 'income' ? potentialBalance + amount : potentialBalance - amount;
+        potentialBalance = type === 'income' ? potentialBalance + amount : potentialBalance - (amount + commission);
 
         if (potentialBalance < 0) {
           return { success: false, error: 'Saldo Insuficiente' };
@@ -90,13 +92,14 @@ export const useWalletStore = create<WalletState>()(
           wallets: state.wallets.map((w) => {
             let newBalance = w.balance;
             if (originalTransaction && w.id === originalTransaction.walletId) {
+              const originalCommission = originalTransaction.commission || 0;
               newBalance =
                 originalTransaction.type === 'income'
                   ? newBalance - originalTransaction.amount
-                  : newBalance + originalTransaction.amount;
+                  : newBalance + (originalTransaction.amount + originalCommission);
             }
             if (w.id === walletId) {
-              newBalance = type === 'income' ? newBalance + amount : newBalance - amount;
+              newBalance = type === 'income' ? newBalance + amount : newBalance - (amount + commission);
             }
             return { ...w, balance: newBalance };
           }),
@@ -141,8 +144,11 @@ export const useWalletStore = create<WalletState>()(
           return { success: false, error: 'Billetera no encontrada' };
         }
 
+        const commission = transaction.commission || 0;
         const newBalance =
-          transaction.type === 'income' ? wallet.balance - transaction.amount : wallet.balance + transaction.amount;
+          transaction.type === 'income'
+            ? wallet.balance - transaction.amount
+            : wallet.balance + (transaction.amount + commission);
 
         if (newBalance < 0) {
           return { success: false, error: 'La reversión resultaría en saldo negativo' };

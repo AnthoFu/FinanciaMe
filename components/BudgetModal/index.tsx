@@ -1,6 +1,6 @@
 import { useTheme } from '@/hooks/useTheme';
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
+import { Modal, View, Text, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity } from 'react-native';
 
 import { useBudgets } from '../../context/BudgetsContext';
 import { useCategories } from '../../context/CategoriesContext';
@@ -17,21 +17,10 @@ interface BudgetModalProps {
 }
 
 const currencyOptions: Currency[] = ['USD', 'VES', 'USDT'];
-const periodOptions: ('mensual' | 'anual')[] = ['mensual', 'anual'];
-
-const PickerItem = ({ item, isSelected }: { item: string; isSelected: boolean }) => {
-  const { colors } = useTheme();
-  return (
-    <View
-      style={[
-        { paddingHorizontal: 20, paddingVertical: 10, marginHorizontal: 5, borderRadius: 20 },
-        isSelected ? { backgroundColor: colors.primary } : { backgroundColor: colors.border },
-      ]}
-    >
-      <Text style={{ color: isSelected ? 'white' : colors.text, textTransform: 'capitalize' }}>{item}</Text>
-    </View>
-  );
-};
+const periodOptions: { label: string; value: 'mensual' | 'anual' }[] = [
+  { label: 'Mensual', value: 'mensual' },
+  { label: 'Anual', value: 'anual' }
+];
 
 export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
   const [name, setName] = useState('');
@@ -70,11 +59,6 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
   }, [isVisible, budget, expenseCategories]);
 
   const handleClose = () => {
-    setName('');
-    setAmount('');
-    setCurrency('USD');
-    setPeriod('mensual');
-    setCategoryId(null);
     onClose();
   };
 
@@ -104,43 +88,54 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
     <Modal visible={isVisible} transparent animationType="fade" onRequestClose={handleClose}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+          <View style={styles.modalContent}>
+            <Text style={styles.title}>
+              {budget ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}
+            </Text>
+
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={[styles.title, { color: colors.text }]}>
-                {budget ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}
-              </Text>
+              <View style={styles.section}>
+                <StyledInput
+                  placeholder="Nombre (ej. Mercado)"
+                  value={name}
+                  onChangeText={setName}
+                />
 
-              <StyledInput
-                placeholder="Nombre del presupuesto (ej. Mercado)"
-                value={name}
-                onChangeText={setName}
-                style={styles.input}
-              />
+                <StyledInput
+                  placeholder="Monto"
+                  value={amount}
+                  onChangeText={setAmount}
+                  keyboardType="numeric"
+                />
 
-              <StyledInput
-                placeholder="Monto del presupuesto"
-                value={amount}
-                onChangeText={setAmount}
-                keyboardType="numeric"
-                style={styles.input}
-              />
+                <View style={styles.currencySelector}>
+                  {currencyOptions.map((curr) => (
+                    <TouchableOpacity
+                      key={curr}
+                      style={[styles.currencyOption, currency === curr && styles.currencyOptionSelected]}
+                      onPress={() => setCurrency(curr)}
+                    >
+                      <Text style={[styles.currencyText, currency === curr && styles.currencyTextSelected]}>
+                        {curr}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
 
-              <HorizontalPicker<Currency, Currency>
-                label="Moneda"
-                data={currencyOptions}
-                selectedValue={currency}
-                onSelect={(value) => setCurrency(value as Currency)}
-                keyExtractor={(item) => item}
-                renderItem={(item, isSelected) => <PickerItem item={item} isSelected={isSelected} />}
-              />
-
-              <HorizontalPicker<string, 'mensual' | 'anual'>
+              <HorizontalPicker<(typeof periodOptions)[0], 'mensual' | 'anual'>
                 label="Periodo"
                 data={periodOptions}
                 selectedValue={period}
-                onSelect={(value) => setPeriod(value as 'mensual' | 'anual')}
-                keyExtractor={(item) => item as 'mensual' | 'anual'}
-                renderItem={(item, isSelected) => <PickerItem item={item} isSelected={isSelected} />}
+                onSelect={setPeriod}
+                keyExtractor={(item) => item.value}
+                renderItem={(item, isSelected) => (
+                  <View style={[styles.pickerItem, isSelected && styles.pickerItemSelected]}>
+                    <Text style={[styles.pickerItemText, isSelected && styles.pickerItemTextSelected]}>
+                      {item.label}
+                    </Text>
+                  </View>
+                )}
               />
 
               <HorizontalPicker<Category, string>
@@ -151,7 +146,7 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
                 keyExtractor={(item) => item.id}
                 renderItem={(item, isSelected) => (
                   <View style={[styles.pickerItem, isSelected && styles.pickerItemSelected]}>
-                    <IconSymbol name={item.icon as any} size={14} color={isSelected ? colors.card : colors.primary} />
+                    <IconSymbol name={item.icon as any} size={14} color={isSelected ? '#FFFFFF' : colors.primary} />
                     <Text
                       style={[styles.pickerItemText, isSelected && styles.pickerItemTextSelected, { marginLeft: 5 }]}
                     >
@@ -162,8 +157,18 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
               />
 
               <View style={styles.buttonContainer}>
-                <Button title="Cancelar" onPress={handleClose} color={colors.notification} />
-                <Button title="Guardar" onPress={handleSave} color={colors.primary} />
+                <TouchableOpacity 
+                  style={[styles.actionButton, styles.cancelButton]} 
+                  onPress={handleClose}
+                >
+                  <Text style={[styles.buttonText, { color: colors.text }]}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.actionButton, styles.submitButton]} 
+                  onPress={handleSave}
+                >
+                  <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>Guardar</Text>
+                </TouchableOpacity>
               </View>
             </ScrollView>
           </View>

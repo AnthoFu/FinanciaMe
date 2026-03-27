@@ -42,10 +42,10 @@ const WalletItem = React.memo(function WalletItem({ item, onOpenModal, colors, s
       </Text>
       <View style={styles.walletCardActions}>
         <TouchableOpacity style={[styles.walletButton, styles.expenseButton]} onPress={handleExpensePress}>
-          <IconSymbol name="arrow.down" size={16} color={colors.card} />
+          <IconSymbol name="minus" size={16} color={colors.card} />
         </TouchableOpacity>
         <TouchableOpacity style={[styles.walletButton, styles.incomeButton]} onPress={handleIncomePress}>
-          <IconSymbol name="arrow.up" size={16} color={colors.card} />
+          <IconSymbol name="plus" size={16} color={colors.card} />
         </TouchableOpacity>
       </View>
     </View>

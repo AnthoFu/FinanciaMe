@@ -4,12 +4,13 @@ import {
   Modal,
   View,
   Text,
-  Button,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
-  TouchableOpacity,
+  Platform,
 } from 'react-native';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { FixedExpense, Wallet, Category, ExpenseFrequency } from '../../types';
 import { useCategories } from '../../context/CategoriesContext';
 import { IconSymbol } from '../ui/IconSymbol';
@@ -43,6 +44,7 @@ export default function FixedExpenseModal({
   const { colors } = useTheme();
   const styles = getStyles(colors);
   const { categories } = useCategories();
+
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [dayOfMonth, setDayOfMonth] = useState('');
@@ -50,8 +52,12 @@ export default function FixedExpenseModal({
   const [frequency, setFrequency] = useState<ExpenseFrequency>('monthly');
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
   const expenseCategories = useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
 
@@ -65,8 +71,8 @@ export default function FixedExpenseModal({
         setCurrency(initialData.currency);
         setSelectedWalletId(initialData.walletId);
         setSelectedCategoryId(initialData.categoryId);
-        setStartDate(initialData.startDate || '');
-        setEndDate(initialData.endDate || '');
+        setStartDate(initialData.startDate ? new Date(initialData.startDate) : undefined);
+        setEndDate(initialData.endDate ? new Date(initialData.endDate) : undefined);
       } else {
         setName('');
         setAmount('');
@@ -75,8 +81,8 @@ export default function FixedExpenseModal({
         setCurrency('USD');
         setSelectedWalletId(wallets.length > 0 ? wallets[0].id : null);
         setSelectedCategoryId(expenseCategories.length > 0 ? expenseCategories[0].id : null);
-        setStartDate('');
-        setEndDate('');
+        setStartDate(undefined);
+        setEndDate(undefined);
       }
     }
   }, [initialData, isVisible, wallets, expenseCategories]);
@@ -86,12 +92,12 @@ export default function FixedExpenseModal({
     const numericDay = parseInt(dayOfMonth, 10);
 
     if (!name || !numericAmount || !selectedWalletId || !selectedCategoryId) {
-      alert('Por favor, completa todos los campos obligatorios (Nombre, Monto, Billetera y Categoría).');
+      alert('Por favor, completa los campos obligatorios.');
       return;
     }
 
     if (frequency === 'monthly' && (!numericDay || numericDay < 1 || numericDay > 31)) {
-      alert('Para la frecuencia mensual, por favor, introduce un día del mes válido (1-31).');
+      alert('Por favor, introduce un día del mes válido (1-31).');
       return;
     }
 
@@ -103,10 +109,29 @@ export default function FixedExpenseModal({
       currency: currency,
       walletId: selectedWalletId,
       categoryId: selectedCategoryId,
-      startDate: startDate || undefined,
-      endDate: endDate || undefined,
+      startDate: startDate?.toISOString().split('T')[0],
+      endDate: endDate?.toISOString().split('T')[0],
     });
     onClose();
+  };
+
+  const onStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowStartDatePicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setStartDate(selectedDate);
+    }
+  };
+
+  const onEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowEndDatePicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setEndDate(selectedDate);
+    }
+  };
+
+  const formatDate = (date?: Date) => {
+    if (!date) return 'No definida';
+    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
   return (
@@ -114,54 +139,58 @@ export default function FixedExpenseModal({
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
-              <Text style={styles.modalTitle}>{initialData ? 'Editar' : 'Añadir'} Gasto Fijo</Text>
-              <StyledInput placeholder="Nombre (ej. Alquiler)" value={name} onChangeText={setName} />
-              <StyledInput placeholder="Monto" keyboardType="numeric" value={amount} onChangeText={setAmount} />
+            <Text style={styles.modalTitle}>{initialData ? 'Editar' : 'Añadir'} Gasto Fijo</Text>
+            
+            <ScrollView 
+              style={styles.scrollView} 
+              contentContainerStyle={styles.scrollViewContent}
+              showsVerticalScrollIndicator={true}
+              indicatorStyle={colors.text === '#FFFFFF' ? 'white' : 'black'}
+            >
+              <View style={styles.section}>
+                <StyledInput placeholder="Nombre (ej. Alquiler)" value={name} onChangeText={setName} />
+                
+                <StyledInput placeholder="Monto" keyboardType="numeric" value={amount} onChangeText={setAmount} />
 
-              <HorizontalPicker<(typeof frequencyOptions)[0], ExpenseFrequency>
-                label="Frecuencia"
-                data={frequencyOptions}
-                selectedValue={frequency}
-                onSelect={setFrequency}
-                keyExtractor={(item) => item.value}
-                renderItem={(item, isSelected) => (
-                  <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
-                    <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected]}>
-                      {item.label}
-                    </Text>
-                  </View>
-                )}
-              />
+                <View style={styles.currencySelector}>
+                  {(['VES', 'USD', 'USDT'] as const).map((curr) => (
+                    <TouchableOpacity
+                      key={curr}
+                      style={[styles.currencyOption, currency === curr && styles.currencyOptionSelected]}
+                      onPress={() => setCurrency(curr)}
+                    >
+                      <Text style={[styles.currencyText, currency === curr && styles.currencyTextSelected]}>
+                        {curr}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
 
-              {frequency === 'monthly' && (
-                <StyledInput
-                  placeholder="Día del Mes (1-31)"
-                  keyboardType="numeric"
-                  value={dayOfMonth}
-                  onChangeText={setDayOfMonth}
+              <View style={styles.section}>
+                <HorizontalPicker<(typeof frequencyOptions)[0], ExpenseFrequency>
+                  label="Frecuencia"
+                  data={frequencyOptions}
+                  selectedValue={frequency}
+                  onSelect={setFrequency}
+                  keyExtractor={(item) => item.value}
+                  renderItem={(item, isSelected) => (
+                    <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
+                      <Text style={[styles.categoryItemText, isSelected && styles.categoryItemTextSelected]}>
+                        {item.label}
+                      </Text>
+                    </View>
+                  )}
                 />
-              )}
 
-              <View style={styles.currencySelector}>
-                <TouchableOpacity
-                  style={[styles.currencyOption, currency === 'VES' && styles.currencyOptionSelected]}
-                  onPress={() => setCurrency('VES')}
-                >
-                  <Text style={[styles.currencyText, currency === 'VES' && styles.currencyTextSelected]}>VES</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.currencyOption, currency === 'USD' && styles.currencyOptionSelected]}
-                  onPress={() => setCurrency('USD')}
-                >
-                  <Text style={[styles.currencyText, currency === 'USD' && styles.currencyTextSelected]}>USD</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.currencyOption, currency === 'USDT' && styles.currencyOptionSelected]}
-                  onPress={() => setCurrency('USDT')}
-                >
-                  <Text style={[styles.currencyText, currency === 'USDT' && styles.currencyTextSelected]}>USDT</Text>
-                </TouchableOpacity>
+                {frequency === 'monthly' && (
+                  <StyledInput
+                    placeholder="Día del Mes (1-31)"
+                    keyboardType="numeric"
+                    value={dayOfMonth}
+                    onChangeText={setDayOfMonth}
+                  />
+                )}
               </View>
 
               <HorizontalPicker<Category, string>
@@ -172,7 +201,7 @@ export default function FixedExpenseModal({
                 keyExtractor={(item) => item.id}
                 renderItem={(item, isSelected) => (
                   <View style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}>
-                    <IconSymbol name={item.icon as any} size={14} color={isSelected ? colors.card : colors.primary} />
+                    <IconSymbol name={item.icon as any} size={14} color={isSelected ? '#FFFFFF' : colors.primary} />
                     <Text
                       style={[
                         styles.categoryItemText,
@@ -202,12 +231,67 @@ export default function FixedExpenseModal({
               />
 
               <Text style={styles.pickerLabel}>Periodo (Opcional)</Text>
-              <StyledInput placeholder="Fecha de Inicio (YYYY-MM-DD)" value={startDate} onChangeText={setStartDate} />
-              <StyledInput placeholder="Fecha de Fin (YYYY-MM-DD)" value={endDate} onChangeText={setEndDate} />
+              
+              <View style={styles.dateRow}>
+                <TouchableOpacity style={styles.dateTrigger} onPress={() => setShowStartDatePicker(true)}>
+                  <IconSymbol name="calendar" size={18} color={colors.primary} />
+                  <Text style={styles.dateTriggerText} numberOfLines={1}>
+                    Desde: {formatDate(startDate)}
+                  </Text>
+                </TouchableOpacity>
+                {startDate && (
+                  <TouchableOpacity style={styles.clearButton} onPress={() => setStartDate(undefined)}>
+                    <IconSymbol name="xmark.circle.fill" size={20} color={colors.notification} />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <View style={styles.dateRow}>
+                <TouchableOpacity style={styles.dateTrigger} onPress={() => setShowEndDatePicker(true)}>
+                  <IconSymbol name="calendar" size={18} color={colors.primary} />
+                  <Text style={styles.dateTriggerText} numberOfLines={1}>
+                    Hasta: {formatDate(endDate)}
+                  </Text>
+                </TouchableOpacity>
+                {endDate && (
+                  <TouchableOpacity style={styles.clearButton} onPress={() => setEndDate(undefined)}>
+                    <IconSymbol name="xmark.circle.fill" size={20} color={colors.notification} />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {showStartDatePicker && (
+                <DateTimePicker
+                  value={startDate || new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={onStartDateChange}
+                />
+              )}
+
+              {showEndDatePicker && (
+                <DateTimePicker
+                  value={endDate || new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={onEndDateChange}
+                />
+              )}
             </ScrollView>
+
             <View style={styles.buttonContainer}>
-              <Button title="Cancelar" onPress={onClose} color={colors.notification} />
-              <Button title={initialData ? 'Guardar' : 'Añadir'} onPress={handleSubmit} color={colors.primary} />
+              <TouchableOpacity 
+                style={{ flex: 1, backgroundColor: colors.background, padding: 14, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: colors.border }} 
+                onPress={onClose}
+              >
+                <Text style={{ color: colors.text, fontWeight: '600', fontSize: 16 }}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={{ flex: 1, backgroundColor: colors.primary, padding: 14, borderRadius: 16, alignItems: 'center' }} 
+                onPress={handleSubmit}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 16 }}>{initialData ? 'Guardar' : 'Añadir'}</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>

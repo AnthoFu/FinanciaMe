@@ -9,16 +9,19 @@
 ---
 
 - **Autor: [AnthoFu🦊](https://github.com/AnthoFu)**
+- **Última actualización: 27 de marzo de 2026**
 
 ## 🚀 Funcionalidades
 
 - **Gestión de Billeteras Multimoneda:** Crea y gestiona múltiples billeteras en diferentes monedas (VES, USD, USDT).
+- **Control de Comisiones (Nuevo):** Añade comisiones opcionales en tus gastos y transferencias entre billeteras para un control exacto de tus saldos bancarios.
 - **Tasas de Cambio en Tiempo Real:** Obtén las últimas tasas de cambio del BCV y Binance USDT para mantener tus saldos actualizados.
-- **Gestión de Transacciones:** Registra fácilmente tus ingresos y gastos. Todo tu historial en un solo lugar.
+- **Gestión de Transacciones:** Registra fácilmente tus ingresos y gastos con una interfaz intuitiva (iconos de + y - para mayor claridad).
 - **Categorías Personalizables:** Crea, edita y elimina tus propias categorías de ingresos y gastos para una clasificación detallada.
 - **Gestión de Presupuestos:** ¡No gastes de más! Define límites de gasto por categoría (mensual o anual) y visualiza tu progreso en tiempo real.
 - **Metas de Ahorro:** Define objetivos financieros (ej. "Nuevo Teléfono", "Viaje") y registra aportes desde tus billeteras para ver cómo te acercas a ellos.
 - **Gestión de Gastos Fijos:** Administra pagos recurrentes como alquiler o suscripciones y recibe notificaciones para que no se te olviden.
+- **Onboarding Interactivo:** Accede a un tutorial guiado en cualquier momento desde el menú de ajustes para aprender a usar la app.
 - **Métricas de Gastos:** Analiza tus patrones de gasto con gráficos claros, filtrando por categoría y rango de tiempo.
 - **Saldo Consolidado:** Obtén una visión clara de tu patrimonio total en diferentes monedas.
 - **Funcionamiento Offline y Persistencia Local:** Accede y gestiona todos tus datos sin necesidad de conexión a internet. Tu información se guarda de forma segura en tu dispositivo.

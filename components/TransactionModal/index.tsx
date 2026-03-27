@@ -18,6 +18,7 @@ interface TransactionModalProps {
     categoryId: string,
     type: 'income' | 'expense',
     transactionToEdit?: Transaction,
+    commission?: number,
   ) => void;
   type: 'income' | 'expense';
   wallets: Wallet[];
@@ -40,6 +41,7 @@ export default function TransactionModal({
   const styles = getStyles(colors);
   const { categories } = useCategories();
   const [amount, setAmount] = useState('');
+  const [commission, setCommission] = useState('');
   const [description, setDescription] = useState('');
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -51,6 +53,7 @@ export default function TransactionModal({
     if (isVisible) {
       if (transactionToEdit) {
         setAmount(transactionToEdit.amount.toString());
+        setCommission(transactionToEdit.commission ? transactionToEdit.commission.toString() : '');
         setDescription(transactionToEdit.description);
         setSelectedWalletId(transactionToEdit.walletId);
         setSelectedCategoryId(transactionToEdit.categoryId);
@@ -68,6 +71,7 @@ export default function TransactionModal({
 
   const handleClose = useCallback(() => {
     setAmount('');
+    setCommission('');
     setDescription('');
     // Do not reset wallet/category to provide a better UX
     onClose();
@@ -76,6 +80,7 @@ export default function TransactionModal({
   // Memoizar las funciones de manejo
   const handleSubmit = useCallback(() => {
     const numericAmount = parseFloat(amount);
+    const numericCommission = parseFloat(commission) || 0;
     if (!numericAmount || numericAmount <= 0 || !description || !selectedWalletId || !selectedCategoryId) {
       showToast('Por favor, completa todos los campos.');
       return;
@@ -87,10 +92,12 @@ export default function TransactionModal({
       selectedCategoryId,
       transactionToEdit ? transactionToEdit.type : type,
       transactionToEdit || undefined,
+      numericCommission,
     );
     handleClose();
   }, [
     amount,
+    commission,
     description,
     selectedWalletId,
     selectedCategoryId,
@@ -173,6 +180,14 @@ export default function TransactionModal({
                 value={amount}
                 onChangeText={setAmount}
               />
+              {(transactionToEdit ? transactionToEdit.type === 'expense' : type === 'expense') && (
+                <StyledInput
+                  placeholder="Comisión (Opcional)"
+                  keyboardType="numeric"
+                  value={commission}
+                  onChangeText={setCommission}
+                />
+              )}
               <StyledInput placeholder="Descripción" value={description} onChangeText={setDescription} />
             </ScrollView>
             <View style={styles.buttonContainer}>
