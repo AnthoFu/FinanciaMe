@@ -59,6 +59,8 @@ const MAPPING = {
   calendar: 'calendar-today',
   'xmark.circle.fill': 'cancel',
   xmark: 'close',
+  plus: 'add',
+  minus: 'remove',
 } as IconMapping;
 
 /**
