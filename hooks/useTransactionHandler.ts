@@ -14,9 +14,10 @@ export function useTransactionHandler() {
     categoryId: string,
     type: 'income' | 'expense',
     transactionToUpdate?: Transaction,
+    commission: number = 0,
   ): boolean => {
     // 1. Update balances first (centralized logic)
-    const result = updateBalancesForTransaction(amount, type, walletId, transactionToUpdate);
+    const result = updateBalancesForTransaction(amount, type, walletId, transactionToUpdate, commission);
 
     if (!result.success) {
       Alert.alert('Operación Fallida', result.error || 'No se pudo procesar la transacción.');
@@ -32,6 +33,7 @@ export function useTransactionHandler() {
         walletId,
         categoryId,
         type,
+        commission,
       };
       updateTransaction(updatedTransaction);
     } else {
@@ -42,13 +44,20 @@ export function useTransactionHandler() {
         type,
         walletId,
         categoryId,
+        commission,
       });
     }
 
     return true;
   };
 
-  const handleTransfer = (fromWalletId: string, toWalletId: string, fromAmount: number, toAmount: number) => {
+  const handleTransfer = (
+    fromWalletId: string,
+    toWalletId: string,
+    fromAmount: number,
+    toAmount: number,
+    commission: number = 0,
+  ) => {
     const fromWallet = wallets.find((w) => w.id === fromWalletId);
     const toWallet = wallets.find((w) => w.id === toWalletId);
 
@@ -58,7 +67,8 @@ export function useTransactionHandler() {
     }
 
     // 1. Update balances first (centralized logic)
-    const result = updateBalancesForTransfer(fromWalletId, toWalletId, fromAmount, toAmount);
+    // For transfer, commission is added to the amount deducted from the source wallet
+    const result = updateBalancesForTransfer(fromWalletId, toWalletId, fromAmount + commission, toAmount);
 
     if (!result.success) {
       Alert.alert('Transferencia Fallida', result.error || 'No se pudo procesar la transferencia.');
@@ -74,6 +84,7 @@ export function useTransactionHandler() {
       fromWalletName: fromWallet.name,
       toWalletName: toWallet.name,
       date: new Date().toISOString(),
+      commission,
     });
 
     return true;

@@ -11,7 +11,14 @@ import { HorizontalPicker } from '../ui/HorizontalPicker';
 interface TransferModalProps {
   isVisible: boolean;
   onClose: () => void;
-  onSubmit: (fromWalletId: string, toWalletId: string, fromAmount: number, toAmount: number, rate: number) => void;
+  onSubmit: (
+    fromWalletId: string,
+    toWalletId: string,
+    fromAmount: number,
+    toAmount: number,
+    rate: number,
+    commission?: number,
+  ) => void;
   showToast: (message: string) => void;
 }
 
@@ -24,6 +31,7 @@ export default function TransferModal({ isVisible, onClose, onSubmit, showToast 
   const [fromWalletId, setFromWalletId] = useState<string | null>(null);
   const [toWalletId, setToWalletId] = useState<string | null>(null);
   const [fromAmount, setFromAmount] = useState('');
+  const [commission, setCommission] = useState('');
   const [toAmount, setToAmount] = useState('');
   const [exchangeRate, setExchangeRate] = useState('');
 
@@ -36,6 +44,7 @@ export default function TransferModal({ isVisible, onClose, onSubmit, showToast 
       setFromWalletId(wallets.length > 0 ? wallets[0].id : null);
       setToWalletId(wallets.length > 1 ? wallets[1].id : null);
       setFromAmount('');
+      setCommission('');
       setToAmount('');
       setExchangeRate(averageRate ? averageRate.toString() : '1');
     }
@@ -92,6 +101,7 @@ export default function TransferModal({ isVisible, onClose, onSubmit, showToast 
 
   const handleSubmit = () => {
     const fromAmountNum = parseFloat(fromAmount);
+    const commissionNum = parseFloat(commission) || 0;
     const toAmountNum = parseFloat(toAmount);
     const rateNum = parseFloat(exchangeRate);
 
@@ -103,12 +113,12 @@ export default function TransferModal({ isVisible, onClose, onSubmit, showToast 
       showToast('Las billeteras de origen y destino no pueden ser la misma.');
       return;
     }
-    if (fromWallet && fromWallet.balance < fromAmountNum) {
-      Alert.alert('Saldo Insuficiente', 'La billetera de origen no tiene fondos suficientes.');
+    if (fromWallet && fromWallet.balance < fromAmountNum + commissionNum) {
+      Alert.alert('Saldo Insuficiente', 'La billetera de origen no tiene fondos suficientes (incluyendo comisión).');
       return;
     }
 
-    onSubmit(fromWalletId, toWalletId, fromAmountNum, toAmountNum, rateNum);
+    onSubmit(fromWalletId, toWalletId, fromAmountNum, toAmountNum, rateNum, commissionNum);
     onClose();
   };
 
@@ -157,6 +167,13 @@ export default function TransferModal({ isVisible, onClose, onSubmit, showToast 
                 keyboardType="numeric"
                 value={fromAmount}
                 onChangeText={handleFromAmountChange}
+              />
+
+              <StyledInput
+                placeholder={`Comisión (Opcional en ${fromWallet ? fromWallet.currency : '...'})`}
+                keyboardType="numeric"
+                value={commission}
+                onChangeText={setCommission}
               />
 
               {isMultiCurrency && (

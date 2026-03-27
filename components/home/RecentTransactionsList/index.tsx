@@ -63,8 +63,14 @@ export const TransactionItem = React.memo(function TransactionItem({
         </View>
         <Text style={isIncome ? styles.incomeText : styles.expenseText}>
           {isIncome ? '+' : '-'} {wallet ? getCurrencySymbol(wallet.currency) : ''}
-          {item.amount.toFixed(2)}
+          {(item.amount + (item.commission || 0)).toFixed(2)}
         </Text>
+        {item.commission ? (
+          <Text style={[styles.transactionSubText, { fontSize: 10, textAlign: 'right' }]}>
+            Com: {getCurrencySymbol(wallet?.currency as any)}
+            {item.commission.toFixed(2)}
+          </Text>
+        ) : null}
       </View>
     </View>
   );

@@ -99,8 +99,9 @@ export default function FinanciaMeScreen() {
     categoryId: string,
     type: 'income' | 'expense',
     transactionToUpdate?: Transaction,
+    commission?: number,
   ) => {
-    const success = handleSaveTransaction(amount, description, walletId, categoryId, type, transactionToUpdate);
+    const success = handleSaveTransaction(amount, description, walletId, categoryId, type, transactionToUpdate, commission);
     if (success) {
       setModalVisible(false);
       setTransactionToEdit(null);
@@ -132,9 +133,16 @@ export default function FinanciaMeScreen() {
     ]);
   };
 
-  const handleTransferSubmit = (fromWalletId: string, toWalletId: string, fromAmount: number, toAmount: number) => {
+  const handleTransferSubmit = (
+    fromWalletId: string,
+    toWalletId: string,
+    fromAmount: number,
+    toAmount: number,
+    rate: number,
+    commission?: number,
+  ) => {
     try {
-      const success = handleTransfer(fromWalletId, toWalletId, fromAmount, toAmount);
+      const success = handleTransfer(fromWalletId, toWalletId, fromAmount, toAmount, commission);
       if (success) {
         setTransferModalVisible(false);
         showToast('Transferencia realizada con éxito');

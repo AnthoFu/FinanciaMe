@@ -23,6 +23,7 @@ export interface Transaction {
   walletId: string;
   categoryId: string;
   goalId?: string;
+  commission?: number;
 }
 
 export interface SavingsGoal {
@@ -73,6 +74,7 @@ export interface WalletsContextType {
     type: 'income' | 'expense',
     walletId: string,
     originalTransaction?: Transaction,
+    commission?: number,
   ) => { success: boolean; error?: string };
   updateBalancesForTransfer: (
     fromWalletId: string,
@@ -107,6 +109,7 @@ export interface TransactionsContextType {
     fromWalletName: string;
     toWalletName: string;
     date: string;
+    commission?: number;
   }) => void;
 }
 
