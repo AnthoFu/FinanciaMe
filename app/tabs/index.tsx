@@ -34,9 +34,9 @@ export default function FinanciaMeScreen() {
   const styles = getThemedStyles(colors);
 
   // --- Data Hooks ---
-  const { wallets, setWallets, isLoading: walletsLoading, revertTransactionBalance } = useWallets();
-  const { transactions, setTransactions, deleteTransaction, isLoading: transactionsLoading } = useTransactions();
-  const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
+  const { wallets, isLoading: walletsLoading, revertTransactionBalance } = useWallets();
+  const { transactions, deleteTransaction, isLoading: transactionsLoading } = useTransactions();
+  const { isLoading: fixedExpensesLoading } = useFixedExpenses();
   const {
     bcvRate,
     usdtRate,
@@ -101,7 +101,15 @@ export default function FinanciaMeScreen() {
     transactionToUpdate?: Transaction,
     commission?: number,
   ) => {
-    const success = handleSaveTransaction(amount, description, walletId, categoryId, type, transactionToUpdate, commission);
+    const success = handleSaveTransaction(
+      amount,
+      description,
+      walletId,
+      categoryId,
+      type,
+      transactionToUpdate,
+      commission,
+    );
     if (success) {
       setModalVisible(false);
       setTransactionToEdit(null);
