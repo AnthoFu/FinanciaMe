@@ -18,6 +18,7 @@ import { Budget, ColorTheme } from '../../types';
 
 import { BudgetModal } from '../../components/BudgetModal';
 import { useBudgetSpending } from '../../hooks/useBudgetSpending';
+import Toast from '../../components/Toast';
 
 const progressBarStyles = StyleSheet.create({
   progressBarContainer: {
@@ -42,7 +43,9 @@ const ProgressBar = ({
 }) => {
   return (
     <View style={[progressBarStyles.progressBarContainer, { backgroundColor }]}>
-      <View style={[progressBarStyles.progressBar, { width: `${Math.min(progress, 1) * 100}%`, backgroundColor: color }]} />
+      <View
+        style={[progressBarStyles.progressBar, { width: `${Math.min(progress, 1) * 100}%`, backgroundColor: color }]}
+      />
     </View>
   );
 };
@@ -72,7 +75,11 @@ const BudgetItem = ({ budget, onEdit, onDelete }: { budget: Budget; onEdit: () =
           </TouchableOpacity>
         </View>
       </View>
-      <ProgressBar progress={progress} color={progress > 1 ? colors.notification : colors.primary} backgroundColor={colors.border} />
+      <ProgressBar
+        progress={progress}
+        color={progress > 1 ? colors.notification : colors.primary}
+        backgroundColor={colors.border}
+      />
     </View>
   );
 };
@@ -85,6 +92,11 @@ export default function BudgetsScreen() {
   const { budgets, deleteBudget } = useBudgets();
   const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
+  const [toast, setToast] = useState({ isVisible: false, message: '' });
+
+  const showToast = (message: string) => {
+    setToast({ isVisible: true, message });
+  };
 
   const handleEditBudget = (budget: Budget) => {
     setSelectedBudget(budget);
@@ -97,7 +109,10 @@ export default function BudgetsScreen() {
       {
         text: 'Eliminar',
         style: 'destructive',
-        onPress: () => deleteBudget(budget.id),
+        onPress: () => {
+          deleteBudget(budget.id);
+          showToast('Presupuesto eliminado con éxito');
+        },
       },
     ]);
   };
@@ -130,6 +145,11 @@ export default function BudgetsScreen() {
           setIsBudgetModalVisible(false);
         }}
         budget={selectedBudget}
+      />
+      <Toast
+        message={toast.message}
+        isVisible={toast.isVisible}
+        onHide={() => setToast({ isVisible: false, message: '' })}
       />
     </KeyboardAvoidingView>
   );

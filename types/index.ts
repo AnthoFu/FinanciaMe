@@ -1,4 +1,4 @@
-export type Currency = 'USD' | 'VES' | 'USDT';
+export type Currency = 'USD' | 'VES' | 'USDT' | 'EUR';
 
 export interface Wallet {
   id: string;

@@ -18,7 +18,7 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
 
   const [name, setName] = useState('');
   const [balance, setBalance] = useState('');
-  const [currency, setCurrency] = useState<'USD' | 'VES' | 'USDT'>('USD');
+  const [currency, setCurrency] = useState<'USD' | 'VES' | 'USDT' | 'EUR'>('USD');
 
   const isEditing = !!initialData;
 
@@ -27,7 +27,7 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
       if (initialData) {
         setName(initialData.name);
         setBalance(initialData.balance.toString());
-        setCurrency(initialData.currency);
+        setCurrency(initialData.currency as any);
       } else {
         setName('');
         setBalance('');
@@ -46,13 +46,13 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
     onSubmit({
       name,
       balance: numericBalance,
-      currency: currency,
+      currency: currency as any,
     });
     onClose();
   }, [name, balance, currency, onSubmit, onClose]);
 
   const handleCurrencyChange = useCallback(
-    (newCurrency: 'USD' | 'VES' | 'USDT') => {
+    (newCurrency: 'USD' | 'VES' | 'USDT' | 'EUR') => {
       if (!isEditing) {
         setCurrency(newCurrency);
       }
@@ -66,10 +66,10 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{isEditing ? 'Editar' : 'Añadir'} Billetera</Text>
-            
+
             <View style={styles.section}>
               <StyledInput placeholder="Nombre (ej. Efectivo)" value={name} onChangeText={setName} />
-              
+
               <StyledInput
                 placeholder="Saldo inicial"
                 keyboardType="numeric"
@@ -79,20 +79,18 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
               />
 
               <View style={styles.currencySelector}>
-                {(['VES', 'USD', 'USDT'] as const).map((curr) => (
+                {(['VES', 'USD', 'USDT', 'EUR'] as const).map((curr) => (
                   <TouchableOpacity
                     key={curr}
                     style={[
-                      styles.currencyOption, 
+                      styles.currencyOption,
                       currency === curr && styles.currencyOptionSelected,
-                      isEditing && currency !== curr && { opacity: 0.5 }
+                      isEditing && currency !== curr && { opacity: 0.5 },
                     ]}
                     onPress={() => handleCurrencyChange(curr)}
                     disabled={isEditing}
                   >
-                    <Text style={[styles.currencyText, currency === curr && styles.currencyTextSelected]}>
-                      {curr}
-                    </Text>
+                    <Text style={[styles.currencyText, currency === curr && styles.currencyTextSelected]}>{curr}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -105,19 +103,11 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
             )}
 
             <View style={styles.buttonContainer}>
-              <TouchableOpacity 
-                style={[styles.actionButton, styles.cancelButton]} 
-                onPress={onClose}
-              >
+              <TouchableOpacity style={[styles.actionButton, styles.cancelButton]} onPress={onClose}>
                 <Text style={[styles.buttonText, { color: colors.text }]}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.actionButton, styles.submitButton]} 
-                onPress={handleSubmit}
-              >
-                <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>
-                  {isEditing ? 'Guardar' : 'Añadir'}
-                </Text>
+              <TouchableOpacity style={[styles.actionButton, styles.submitButton]} onPress={handleSubmit}>
+                <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>{isEditing ? 'Guardar' : 'Añadir'}</Text>
               </TouchableOpacity>
             </View>
           </View>

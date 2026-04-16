@@ -4,6 +4,7 @@ import { useExchangeRateStore } from '../store/exchangeRateStore';
 interface ExchangeRatesContextType {
   bcvRate: number;
   usdtRate: number;
+  eurRate: number;
   averageRate: number;
   isLoading: boolean;
   isRefreshing: boolean;
@@ -26,6 +27,7 @@ export function ExchangeRatesProvider({ children }: { children: ReactNode }) {
     () => ({
       bcvRate: store.rates?.bcv ?? 0,
       usdtRate: store.rates?.usdt ?? 0,
+      eurRate: store.rates?.eur ?? 0,
       averageRate,
       isLoading: store.isLoading,
       isRefreshing: store.isRefreshing,

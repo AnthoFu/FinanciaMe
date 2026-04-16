@@ -48,14 +48,14 @@ export default function FixedExpenseModal({
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [dayOfMonth, setDayOfMonth] = useState('');
-  const [currency, setCurrency] = useState<'USD' | 'VES' | 'USDT'>('USD');
+  const [currency, setCurrency] = useState<'USD' | 'VES' | 'USDT' | 'EUR'>('USD');
   const [frequency, setFrequency] = useState<ExpenseFrequency>('monthly');
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-  
+
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  
+
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
@@ -140,20 +140,20 @@ export default function FixedExpenseModal({
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{initialData ? 'Editar' : 'Añadir'} Gasto Fijo</Text>
-            
-            <ScrollView 
-              style={styles.scrollView} 
+
+            <ScrollView
+              style={styles.scrollView}
               contentContainerStyle={styles.scrollViewContent}
               showsVerticalScrollIndicator={true}
               indicatorStyle={colors.text === '#FFFFFF' ? 'white' : 'black'}
             >
               <View style={styles.section}>
                 <StyledInput placeholder="Nombre (ej. Alquiler)" value={name} onChangeText={setName} />
-                
+
                 <StyledInput placeholder="Monto" keyboardType="numeric" value={amount} onChangeText={setAmount} />
 
                 <View style={styles.currencySelector}>
-                  {(['VES', 'USD', 'USDT'] as const).map((curr) => (
+                  {(['VES', 'USD', 'USDT', 'EUR'] as const).map((curr) => (
                     <TouchableOpacity
                       key={curr}
                       style={[styles.currencyOption, currency === curr && styles.currencyOptionSelected]}
@@ -231,7 +231,7 @@ export default function FixedExpenseModal({
               />
 
               <Text style={styles.pickerLabel}>Periodo (Opcional)</Text>
-              
+
               <View style={styles.dateRow}>
                 <TouchableOpacity style={styles.dateTrigger} onPress={() => setShowStartDatePicker(true)}>
                   <IconSymbol name="calendar" size={18} color={colors.primary} />
@@ -280,17 +280,33 @@ export default function FixedExpenseModal({
             </ScrollView>
 
             <View style={styles.buttonContainer}>
-              <TouchableOpacity 
-                style={{ flex: 1, backgroundColor: colors.background, padding: 14, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: colors.border }} 
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.background,
+                  padding: 14,
+                  borderRadius: 16,
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
                 onPress={onClose}
               >
                 <Text style={{ color: colors.text, fontWeight: '600', fontSize: 16 }}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                style={{ flex: 1, backgroundColor: colors.primary, padding: 14, borderRadius: 16, alignItems: 'center' }} 
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.primary,
+                  padding: 14,
+                  borderRadius: 16,
+                  alignItems: 'center',
+                }}
                 onPress={handleSubmit}
               >
-                <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 16 }}>{initialData ? 'Guardar' : 'Añadir'}</Text>
+                <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 16 }}>
+                  {initialData ? 'Guardar' : 'Añadir'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

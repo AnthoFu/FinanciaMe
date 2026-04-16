@@ -34,12 +34,13 @@ export default function FinanciaMeScreen() {
   const styles = getThemedStyles(colors);
 
   // --- Data Hooks ---
-  const { wallets, setWallets, isLoading: walletsLoading, revertTransactionBalance } = useWallets();
-  const { transactions, setTransactions, deleteTransaction, isLoading: transactionsLoading } = useTransactions();
-  const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
+  const { wallets, isLoading: walletsLoading, revertTransactionBalance } = useWallets();
+  const { transactions, deleteTransaction, isLoading: transactionsLoading } = useTransactions();
+  const { isLoading: fixedExpensesLoading } = useFixedExpenses();
   const {
     bcvRate,
     usdtRate,
+    eurRate,
     averageRate,
     loading: ratesLoading,
     error: ratesError,
@@ -47,7 +48,7 @@ export default function FinanciaMeScreen() {
     isRefreshing: ratesRefreshing,
     lastUpdated,
   } = useExchangeRates();
-  const balances = useFinancialSummary(wallets, bcvRate, usdtRate, averageRate, ratesLoading);
+  const balances = useFinancialSummary(wallets, bcvRate, usdtRate, eurRate, averageRate, ratesLoading);
   const { handleSaveTransaction, handleTransfer } = useTransactionHandler();
 
   // --- Fixed Expenses Logic ---
@@ -101,7 +102,15 @@ export default function FinanciaMeScreen() {
     transactionToUpdate?: Transaction,
     commission?: number,
   ) => {
-    const success = handleSaveTransaction(amount, description, walletId, categoryId, type, transactionToUpdate, commission);
+    const success = handleSaveTransaction(
+      amount,
+      description,
+      walletId,
+      categoryId,
+      type,
+      transactionToUpdate,
+      commission,
+    );
     if (success) {
       setModalVisible(false);
       setTransactionToEdit(null);
@@ -189,6 +198,7 @@ export default function FinanciaMeScreen() {
           balances={balances}
           bcvRate={bcvRate}
           usdtRate={usdtRate}
+          eurRate={eurRate}
           averageRate={averageRate}
           lastUpdated={lastUpdated}
         />

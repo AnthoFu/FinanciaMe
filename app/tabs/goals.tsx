@@ -14,6 +14,7 @@ import {
 
 import { ContributionModal } from '../../components/ContributionModal';
 import { GoalModal } from '../../components/GoalModal';
+import Toast from '../../components/Toast';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useSavingsGoals } from '../../context/SavingsGoalsContext';
 import { getThemedStyles } from '../../styles/themedStyles';
@@ -99,6 +100,11 @@ export default function GoalsScreen() {
   const [isGoalModalVisible, setIsGoalModalVisible] = useState(false);
   const [isContributionModalVisible, setIsContributionModalVisible] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null);
+  const [toast, setToast] = useState({ isVisible: false, message: '' });
+
+  const showToast = (message: string) => {
+    setToast({ isVisible: true, message });
+  };
 
   const handleOpenContributionModal = (goal: SavingsGoal) => {
     setSelectedGoal(goal);
@@ -116,7 +122,10 @@ export default function GoalsScreen() {
       {
         text: 'Eliminar',
         style: 'destructive',
-        onPress: () => deleteSavingsGoal(goal.id),
+        onPress: () => {
+          deleteSavingsGoal(goal.id);
+          showToast('Meta eliminada con éxito');
+        },
       },
     ]);
   };
@@ -147,15 +156,16 @@ export default function GoalsScreen() {
         keyExtractor={(item) => item.id}
         ListEmptyComponent={<Text style={styles.emptyText}>Aún no tienes metas de ahorro. ¡Crea una!</Text>}
       />
-      <GoalModal
-        isVisible={isGoalModalVisible}
-        onClose={() => setIsGoalModalVisible(false)}
-        goal={selectedGoal}
-      />
+      <GoalModal isVisible={isGoalModalVisible} onClose={() => setIsGoalModalVisible(false)} goal={selectedGoal} />
       <ContributionModal
         isVisible={isContributionModalVisible}
         onClose={() => setIsContributionModalVisible(false)}
         goal={selectedGoal}
+      />
+      <Toast
+        message={toast.message}
+        isVisible={toast.isVisible}
+        onHide={() => setToast({ isVisible: false, message: '' })}
       />
     </KeyboardAvoidingView>
   );
