@@ -12,6 +12,7 @@ interface SummaryCardProps {
   };
   bcvRate: number;
   usdtRate: number;
+  eurRate: number;
   averageRate: number;
   lastUpdated: number | null;
 }
@@ -20,7 +21,7 @@ const CARD_WIDTH = width * 0.7;
 const CARD_SPACING = 12;
 const SNAP_INTERVAL = CARD_WIDTH + CARD_SPACING;
 
-export function SummaryCard({ balances, bcvRate, usdtRate, averageRate, lastUpdated }: SummaryCardProps) {
+export function SummaryCard({ balances, bcvRate, usdtRate, eurRate, averageRate, lastUpdated }: SummaryCardProps) {
   const { colors } = useTheme();
   const styles = getStyles(colors);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -103,6 +104,7 @@ export function SummaryCard({ balances, bcvRate, usdtRate, averageRate, lastUpda
 
           <View style={styles.summaryRates}>
             <Text style={styles.summaryRateText}>BCV: {bcvRate.toFixed(2)}</Text>
+            <Text style={styles.summaryRateText}>EUR: {eurRate.toFixed(2)}</Text>
             <Text style={styles.summaryRateText}>USDT: {usdtRate.toFixed(2)}</Text>
             <Text style={styles.summaryRateText}>PROM: {averageRate.toFixed(2)}</Text>
           </View>

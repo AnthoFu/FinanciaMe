@@ -40,6 +40,7 @@ export default function FinanciaMeScreen() {
   const {
     bcvRate,
     usdtRate,
+    eurRate,
     averageRate,
     loading: ratesLoading,
     error: ratesError,
@@ -197,6 +198,7 @@ export default function FinanciaMeScreen() {
           balances={balances}
           bcvRate={bcvRate}
           usdtRate={usdtRate}
+          eurRate={eurRate}
           averageRate={averageRate}
           lastUpdated={lastUpdated}
         />

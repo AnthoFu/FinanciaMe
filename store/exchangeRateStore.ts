@@ -6,6 +6,7 @@ import { EXCHANGE_RATES_KEY } from '../constants/StorageKeys';
 interface ExchangeRates {
   bcv: number;
   usdt: number;
+  eur: number;
   timestamp: number;
 }
 
@@ -37,27 +38,34 @@ export const useExchangeRateStore = create<ExchangeRateState>()(
         const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
         try {
-          const [bcvResponse, paraleloResponse] = await Promise.all([
+          const [bcvResponse, paraleloResponse, eurResponse] = await Promise.all([
             fetch('https://ve.dolarapi.com/v1/dolares/oficial', { signal: controller.signal }),
             fetch('https://ve.dolarapi.com/v1/dolares/paralelo', { signal: controller.signal }),
+            fetch('https://ve.dolarapi.com/v1/euros/oficial', { signal: controller.signal }),
           ]);
 
           clearTimeout(timeoutId);
 
-          if (!bcvResponse.ok || !paraleloResponse.ok) {
+          if (!bcvResponse.ok || !paraleloResponse.ok || !eurResponse.ok) {
             throw new Error('No se pudieron obtener las tasas de cambio de ve.dolarapi.com');
           }
 
           const bcvData = await bcvResponse.json();
           const paraleloData = await paraleloResponse.json();
+          const eurData = await eurResponse.json();
 
-          if (typeof bcvData.promedio !== 'number' || typeof paraleloData.promedio !== 'number') {
+          if (
+            typeof bcvData.promedio !== 'number' ||
+            typeof paraleloData.promedio !== 'number' ||
+            typeof eurData.promedio !== 'number'
+          ) {
             throw new Error('La estructura de la respuesta de la API es inesperada');
           }
 
           const newRates: ExchangeRates = {
             bcv: bcvData.promedio,
             usdt: paraleloData.promedio,
+            eur: eurData.promedio,
             timestamp: Date.now(),
           };
 
