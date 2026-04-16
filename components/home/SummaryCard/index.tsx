@@ -16,19 +16,30 @@ interface SummaryCardProps {
   averageRate: number;
   lastUpdated: number | null;
 }
+
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.7;
 const CARD_SPACING = 12;
 const SNAP_INTERVAL = CARD_WIDTH + CARD_SPACING;
 
-export function SummaryCard({ balances, bcvRate, usdtRate, eurRate, averageRate, lastUpdated }: SummaryCardProps) {
+export function SummaryCard({
+  balances,
+  bcvRate = 0,
+  usdtRate = 0,
+  eurRate = 0,
+  averageRate = 0,
+  lastUpdated,
+}: SummaryCardProps) {
   const { colors } = useTheme();
   const styles = getStyles(colors);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const formatLastUpdated = (timestamp: number | null) => {
-    // ... rest of method
+  const safeFormat = (value: number | undefined | null) => {
+    if (value === undefined || value === null || isNaN(value) || !isFinite(value)) return '0.00';
+    return value.toFixed(2);
+  };
 
+  const formatLastUpdated = (timestamp: number | null) => {
     if (!timestamp) return 'Nunca';
     const date = new Date(timestamp);
     const now = new Date();
@@ -96,17 +107,15 @@ export function SummaryCard({ balances, bcvRate, usdtRate, eurRate, averageRate,
               </View>
             )}
           </View>
-          <Text style={styles.summaryCardBalance}>$ {balances.consolidatedBcv.toFixed(2)}</Text>
+          <Text style={styles.summaryCardBalance}>$ {safeFormat(balances.consolidatedBcv)}</Text>
           <Text style={styles.summaryCardTitle}>SALDO TOTAL (REF. PROMEDIO)</Text>
           <Text style={[styles.summaryCardBalance, { fontSize: 24, marginVertical: 4 }]}>
-            $ {balances.consolidatedAverage.toFixed(2)}
+            $ {safeFormat(balances.consolidatedAverage)}
           </Text>
 
           <View style={styles.summaryRates}>
-            <Text style={styles.summaryRateText}>BCV: {bcvRate.toFixed(2)}</Text>
-            <Text style={styles.summaryRateText}>EUR: {eurRate.toFixed(2)}</Text>
-            <Text style={styles.summaryRateText}>USDT: {usdtRate.toFixed(2)}</Text>
-            <Text style={styles.summaryRateText}>PROM: {averageRate.toFixed(2)}</Text>
+            <Text style={styles.summaryRateText}>BCV: {safeFormat(bcvRate)}</Text>
+            <Text style={styles.summaryRateText}>PROM: {safeFormat(averageRate)}</Text>
           </View>
         </View>
 
@@ -114,13 +123,13 @@ export function SummaryCard({ balances, bcvRate, usdtRate, eurRate, averageRate,
         <View style={[styles.summaryCard, styles.cardVES]}>
           <Text style={styles.summaryCardTitle}>TOTAL BOLÍVARES (VES)</Text>
           <View style={styles.currencyCardContent}>
-            <Text style={styles.summaryCardBalance}>Bs. {balances.byCurrency.VES.toFixed(2)}</Text>
+            <Text style={styles.summaryCardBalance}>Bs. {safeFormat(balances.byCurrency.VES)}</Text>
             <Text style={[styles.summaryCardTitle, { opacity: 0.8 }]}>
-              ≈ $ {(balances.byCurrency.VES / averageRate).toFixed(2)}
+              ≈ $ {safeFormat(averageRate > 0 ? balances.byCurrency.VES / averageRate : 0)}
             </Text>
           </View>
-          <View style={{ marginTop: 'auto' }}>
-            <Text style={[styles.summaryRateText, { opacity: 0.7 }]}>Suma de todas tus billeteras en VES</Text>
+          <View style={styles.summaryRates}>
+            <Text style={styles.summaryRateText}>EUR BCV: {safeFormat(eurRate)}</Text>
           </View>
         </View>
 
@@ -128,10 +137,10 @@ export function SummaryCard({ balances, bcvRate, usdtRate, eurRate, averageRate,
         <View style={[styles.summaryCard, styles.cardUSD]}>
           <Text style={styles.summaryCardTitle}>TOTAL DÓLARES (USD)</Text>
           <View style={styles.currencyCardContent}>
-            <Text style={styles.summaryCardBalance}>$ {balances.byCurrency.USD.toFixed(2)}</Text>
+            <Text style={styles.summaryCardBalance}>$ {safeFormat(balances.byCurrency.USD)}</Text>
           </View>
-          <View style={{ marginTop: 'auto' }}>
-            <Text style={[styles.summaryRateText, { opacity: 0.7 }]}>Efectivo y cuentas en Dólares</Text>
+          <View style={styles.summaryRates}>
+            <Text style={styles.summaryRateText}>PROM: {safeFormat(averageRate)}</Text>
           </View>
         </View>
 
@@ -139,13 +148,13 @@ export function SummaryCard({ balances, bcvRate, usdtRate, eurRate, averageRate,
         <View style={[styles.summaryCard, styles.cardUSDT]}>
           <Text style={styles.summaryCardTitle}>TOTAL CRIPTO (USDT)</Text>
           <View style={styles.currencyCardContent}>
-            <Text style={styles.summaryCardBalance}>{balances.byCurrency.USDT.toFixed(2)} USDT</Text>
+            <Text style={styles.summaryCardBalance}>{safeFormat(balances.byCurrency.USDT)} USDT</Text>
             <Text style={[styles.summaryCardTitle, { opacity: 0.8 }]}>
-              ≈ $ {(balances.byCurrency.USDT * (usdtRate / averageRate)).toFixed(2)}
+              ≈ $ {safeFormat(averageRate > 0 ? (balances.byCurrency.USDT * usdtRate) / averageRate : 0)}
             </Text>
           </View>
-          <View style={{ marginTop: 'auto' }}>
-            <Text style={[styles.summaryRateText, { opacity: 0.7 }]}>Billeteras y exchanges Crypto</Text>
+          <View style={styles.summaryRates}>
+            <Text style={styles.summaryRateText}>USDT: {safeFormat(usdtRate)}</Text>
           </View>
         </View>
       </ScrollView>
