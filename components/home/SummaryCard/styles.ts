@@ -43,6 +43,9 @@ export const getStyles = (colors: ColorTheme) =>
     cardUSDT: {
       backgroundColor: '#FFB300',
     },
+    cardEUR: {
+      backgroundColor: '#0055A4', // Azul Euro
+    },
     summaryCardTitle: {
       color: 'white',
       fontSize: 11,
@@ -90,7 +93,7 @@ export const getStyles = (colors: ColorTheme) =>
     },
     paginationDotActive: {
       width: 14,
-      backgroundColor: '#FF6F00',
+      backgroundColor: '#0055A4', // Color de paginación activa igual al Euro o principal
       opacity: 1,
     },
   });

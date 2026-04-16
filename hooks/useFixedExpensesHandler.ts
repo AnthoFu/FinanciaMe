@@ -11,7 +11,7 @@ export function useFixedExpensesHandler() {
   const { wallets, updateBalancesForTransaction } = useWallets();
   const { addTransaction, isLoading: transactionsLoading } = useTransactions();
   const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
-  const { bcvRate, usdtRate, averageRate, loading: ratesLoading } = useExchangeRates();
+  const { bcvRate, usdtRate, eurRate, averageRate, loading: ratesLoading } = useExchangeRates();
 
   const isWithinDateRange = useCallback((expense: FixedExpense, date: Date): boolean => {
     const start = expense.startDate ? new Date(expense.startDate) : null;
@@ -23,7 +23,7 @@ export function useFixedExpensesHandler() {
 
   const handlePayDueExpenses = useCallback(
     async (dueExpenses: FixedExpense[]) => {
-      if (!bcvRate || !usdtRate || !averageRate) return;
+      if (!bcvRate || !usdtRate || !eurRate || !averageRate) return;
 
       const nowString = new Date().toISOString();
       const paidExpensesIds: string[] = [];
@@ -39,8 +39,17 @@ export function useFixedExpensesHandler() {
 
         let expenseCostInWalletCurrency = expense.amount;
         if (expense.currency !== wallet.currency) {
-          if (expense.currency === 'USD' && wallet.currency === 'VES') expenseCostInWalletCurrency *= bcvRate;
-          else if (expense.currency === 'VES' && wallet.currency === 'USD') expenseCostInWalletCurrency /= bcvRate;
+          // 1. Convertir de moneda del gasto a VES
+          let amountInVES = expense.amount;
+          if (expense.currency === 'USD') amountInVES = expense.amount * bcvRate;
+          else if (expense.currency === 'USDT') amountInVES = expense.amount * usdtRate;
+          else if (expense.currency === 'EUR') amountInVES = expense.amount * eurRate;
+
+          // 2. Convertir de VES a moneda de la billetera
+          if (wallet.currency === 'USD') expenseCostInWalletCurrency = amountInVES / bcvRate;
+          else if (wallet.currency === 'USDT') expenseCostInWalletCurrency = amountInVES / usdtRate;
+          else if (wallet.currency === 'EUR') expenseCostInWalletCurrency = amountInVES / eurRate;
+          else expenseCostInWalletCurrency = amountInVES; // VES
         }
 
         // Use centralized balance update logic
@@ -78,7 +87,7 @@ export function useFixedExpensesHandler() {
       if (failedExpenses.length > 0) summaryMessage += `\n\nPagos fallidos: ${failedExpenses.join('; ')}.`;
       if (summaryMessage) Alert.alert('Resumen de Pagos', summaryMessage);
     },
-    [bcvRate, usdtRate, averageRate, wallets, updateBalancesForTransaction, addTransaction, setExpenses],
+    [bcvRate, usdtRate, eurRate, averageRate, wallets, updateBalancesForTransaction, addTransaction, setExpenses],
   );
 
   const promptToPayDueExpenses = useCallback(
@@ -142,14 +151,7 @@ export function useFixedExpensesHandler() {
     if (dueExpenses.length > 0) {
       promptToPayDueExpenses(dueExpenses);
     }
-  }, [
-    fixedExpensesLoading,
-    transactionsLoading,
-    ratesLoading,
-    expenses,
-    isWithinDateRange,
-    promptToPayDueExpenses,
-  ]);
+  }, [fixedExpensesLoading, transactionsLoading, ratesLoading, expenses, isWithinDateRange, promptToPayDueExpenses]);
 
   return { checkDueFixedExpenses };
 }

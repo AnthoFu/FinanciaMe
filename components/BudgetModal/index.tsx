@@ -16,10 +16,10 @@ interface BudgetModalProps {
   budget?: Budget | null;
 }
 
-const currencyOptions: Currency[] = ['USD', 'VES', 'USDT'];
+const currencyOptions: Currency[] = ['USD', 'VES', 'USDT', 'EUR'];
 const periodOptions: { label: string; value: 'mensual' | 'anual' }[] = [
   { label: 'Mensual', value: 'mensual' },
-  { label: 'Anual', value: 'anual' }
+  { label: 'Anual', value: 'anual' },
 ];
 
 export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
@@ -89,24 +89,13 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.title}>
-              {budget ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}
-            </Text>
+            <Text style={styles.title}>{budget ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}</Text>
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.section}>
-                <StyledInput
-                  placeholder="Nombre (ej. Mercado)"
-                  value={name}
-                  onChangeText={setName}
-                />
+                <StyledInput placeholder="Nombre (ej. Mercado)" value={name} onChangeText={setName} />
 
-                <StyledInput
-                  placeholder="Monto"
-                  value={amount}
-                  onChangeText={setAmount}
-                  keyboardType="numeric"
-                />
+                <StyledInput placeholder="Monto" value={amount} onChangeText={setAmount} keyboardType="numeric" />
 
                 <View style={styles.currencySelector}>
                   {currencyOptions.map((curr) => (
@@ -157,16 +146,10 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
               />
 
               <View style={styles.buttonContainer}>
-                <TouchableOpacity 
-                  style={[styles.actionButton, styles.cancelButton]} 
-                  onPress={handleClose}
-                >
+                <TouchableOpacity style={[styles.actionButton, styles.cancelButton]} onPress={handleClose}>
                   <Text style={[styles.buttonText, { color: colors.text }]}>Cancelar</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.actionButton, styles.submitButton]} 
-                  onPress={handleSave}
-                >
+                <TouchableOpacity style={[styles.actionButton, styles.submitButton]} onPress={handleSave}>
                   <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>Guardar</Text>
                 </TouchableOpacity>
               </View>

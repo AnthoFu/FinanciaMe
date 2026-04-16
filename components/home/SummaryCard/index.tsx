@@ -8,7 +8,7 @@ interface SummaryCardProps {
   balances: {
     consolidatedBcv: number;
     consolidatedAverage: number;
-    byCurrency: { VES: number; USD: number; USDT: number };
+    byCurrency: { VES: number; USD: number; USDT: number; EUR: number };
   };
   bcvRate: number;
   usdtRate: number;
@@ -68,7 +68,7 @@ export function SummaryCard({
   const renderPagination = () => {
     return (
       <View style={styles.pagination}>
-        {[0, 1, 2, 3].map((i) => (
+        {[0, 1, 2, 3, 4].map((i) => (
           <View key={i} style={[styles.paginationDot, activeIndex === i && styles.paginationDotActive]} />
         ))}
       </View>
@@ -155,6 +155,20 @@ export function SummaryCard({
           </View>
           <View style={styles.summaryRates}>
             <Text style={styles.summaryRateText}>USDT: {safeFormat(usdtRate)}</Text>
+          </View>
+        </View>
+
+        {/* Card 5: EUR Summary */}
+        <View style={[styles.summaryCard, styles.cardEUR]}>
+          <Text style={styles.summaryCardTitle}>TOTAL EUROS (EUR)</Text>
+          <View style={styles.currencyCardContent}>
+            <Text style={styles.summaryCardBalance}>€ {safeFormat(balances.byCurrency.EUR)}</Text>
+            <Text style={[styles.summaryCardTitle, { opacity: 0.8 }]}>
+              ≈ $ {safeFormat(bcvRate > 0 ? (balances.byCurrency.EUR * eurRate) / bcvRate : 0)}
+            </Text>
+          </View>
+          <View style={styles.summaryRates}>
+            <Text style={styles.summaryRateText}>EUR BCV: {safeFormat(eurRate)}</Text>
           </View>
         </View>
       </ScrollView>

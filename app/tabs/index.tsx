@@ -48,7 +48,7 @@ export default function FinanciaMeScreen() {
     isRefreshing: ratesRefreshing,
     lastUpdated,
   } = useExchangeRates();
-  const balances = useFinancialSummary(wallets, bcvRate, usdtRate, averageRate, ratesLoading);
+  const balances = useFinancialSummary(wallets, bcvRate, usdtRate, eurRate, averageRate, ratesLoading);
   const { handleSaveTransaction, handleTransfer } = useTransactionHandler();
 
   // --- Fixed Expenses Logic ---
