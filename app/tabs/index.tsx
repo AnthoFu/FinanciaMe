@@ -28,10 +28,12 @@ import { useFixedExpensesHandler } from '../../hooks/useFixedExpensesHandler';
 import { useTransactionHandler } from '../../hooks/useTransactionHandler';
 import { getThemedStyles } from '../../styles/themedStyles';
 import { Transaction } from '../../types';
+import { usePrivacyStore } from '@/store/privacyStore';
 
 export default function FinanciaMeScreen() {
   const { colors } = useTheme();
   const styles = getThemedStyles(colors);
+  const { isBalancesHidden, toggleBalancesHidden } = usePrivacyStore();
 
   // --- Data Hooks ---
   const { wallets, isLoading: walletsLoading, revertTransactionBalance } = useWallets();
@@ -217,7 +219,10 @@ export default function FinanciaMeScreen() {
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>FinanciaMe</Text>
-        <View style={{ flexDirection: 'row', gap: 15 }}>
+        <View style={{ flexDirection: 'row', gap: 15, alignItems: 'center' }}>
+          <TouchableOpacity onPress={toggleBalancesHidden}>
+            <IconSymbol name={isBalancesHidden ? 'eye.slash.fill' : 'eye.fill'} size={24} color={colors.text} />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => setTransferModalVisible(true)}>
             <IconSymbol name="arrow.left.arrow.right.circle.fill" size={24} color={colors.text} />
           </TouchableOpacity>
