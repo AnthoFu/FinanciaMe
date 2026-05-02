@@ -1,8 +1,17 @@
 import { useTheme } from '@/hooks/useTheme';
 import React, { useState } from 'react';
-import { View, Text, ScrollView, NativeScrollEvent, NativeSyntheticEvent, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Dimensions,
+  TouchableOpacity,
+} from 'react-native';
 import { getStyles } from './styles';
 import { IconSymbol } from '../../ui/IconSymbol';
+import { usePrivacyStore } from '@/store/privacyStore';
 
 interface SummaryCardProps {
   balances: {
@@ -33,8 +42,10 @@ export function SummaryCard({
   const { colors } = useTheme();
   const styles = getStyles(colors);
   const [activeIndex, setActiveIndex] = useState(0);
+  const { isBalancesHidden, toggleBalancesHidden } = usePrivacyStore();
 
   const safeFormat = (value: number | undefined | null) => {
+    if (isBalancesHidden) return '***';
     if (value === undefined || value === null || isNaN(value) || !isFinite(value)) return '0.00';
     return value.toFixed(2);
   };

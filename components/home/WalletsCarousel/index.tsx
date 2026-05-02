@@ -4,6 +4,7 @@ import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { ColorTheme, Wallet } from '../../../types';
 import { IconSymbol } from '../../ui/IconSymbol';
 import { getStyles } from './styles';
+import { usePrivacyStore } from '@/store/privacyStore';
 
 // Helper to get currency symbol
 const getCurrencySymbol = (currency: 'USD' | 'VES' | 'USDT') => {
@@ -19,9 +20,16 @@ interface WalletItemProps {
   onOpenModal: (type: 'income' | 'expense', walletId: string) => void;
   colors: ColorTheme;
   styles: Styles;
+  isBalancesHidden: boolean;
 }
 
-const WalletItem = React.memo(function WalletItem({ item, onOpenModal, colors, styles }: WalletItemProps) {
+const WalletItem = React.memo(function WalletItem({
+  item,
+  onOpenModal,
+  colors,
+  styles,
+  isBalancesHidden,
+}: WalletItemProps) {
   const handleExpensePress = useCallback(() => {
     onOpenModal('expense', item.id);
   }, [onOpenModal, item.id]);
@@ -38,7 +46,7 @@ const WalletItem = React.memo(function WalletItem({ item, onOpenModal, colors, s
       </View>
       <Text style={styles.walletCardBalance}>
         {getCurrencySymbol(item.currency)}
-        {item.balance.toFixed(2)}
+        {isBalancesHidden ? '***' : item.balance.toFixed(2)}
       </Text>
       <View style={styles.walletCardActions}>
         <TouchableOpacity style={[styles.walletButton, styles.expenseButton]} onPress={handleExpensePress}>
@@ -60,6 +68,7 @@ interface WalletsCarouselProps {
 export function WalletsCarousel({ wallets, onOpenModal }: WalletsCarouselProps) {
   const { colors } = useTheme();
   const styles = getStyles(colors);
+  const { isBalancesHidden } = usePrivacyStore();
 
   // Memoizar el keyExtractor
   const keyExtractor = useCallback((item: Wallet) => item.id, []);
@@ -67,9 +76,15 @@ export function WalletsCarousel({ wallets, onOpenModal }: WalletsCarouselProps) 
   // Memoizar el renderItem
   const renderItem = useCallback(
     ({ item }: { item: Wallet }) => (
-      <WalletItem item={item} onOpenModal={onOpenModal} colors={colors} styles={styles} />
+      <WalletItem
+        item={item}
+        onOpenModal={onOpenModal}
+        colors={colors}
+        styles={styles}
+        isBalancesHidden={isBalancesHidden}
+      />
     ),
-    [onOpenModal, colors, styles],
+    [onOpenModal, colors, styles, isBalancesHidden],
   );
 
   // Memoizar el componente de lista vacía

@@ -96,4 +96,13 @@ export const getStyles = (colors: ColorTheme) =>
       backgroundColor: '#0055A4', // Color de paginación activa igual al Euro o principal
       opacity: 1,
     },
+    privacyToggleButton: {
+      position: 'absolute',
+      top: 15,
+      right: 15,
+      zIndex: 10,
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      padding: 8,
+      borderRadius: 20,
+    },
   });

@@ -62,6 +62,10 @@ const MAPPING = {
   plus: 'add',
   minus: 'remove',
   'questionmark.circle.fill': 'help-outline',
+  'eye.fill': 'visibility',
+  'eye.slash.fill': 'visibility-off',
+  'clock.fill': 'access-time',
+  'exclamationmark.triangle.fill': 'warning',
 } as unknown as IconMapping;
 
 /**

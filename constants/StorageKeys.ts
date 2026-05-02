@@ -8,3 +8,4 @@ export const BUDGETS_KEY = 'budgets';
 export const ONBOARDING_COMPLETED_KEY = 'onboardingCompleted';
 export const NOTIFICATION_SETTINGS_KEY = 'notificationSettings';
 export const THEME_KEY = 'theme';
+export const PRIVACY_SETTINGS_KEY = 'privacySettings';

@@ -7,6 +7,7 @@ import WalletModal from '../../components/WalletModal';
 import { useWallets } from '../../context/WalletsContext';
 import { getThemedStyles } from '../../styles/themedStyles';
 import { Wallet, ColorTheme } from '../../types';
+import { usePrivacyStore } from '@/store/privacyStore';
 
 export default function WalletsScreen() {
   const { colors } = useTheme();
@@ -17,6 +18,7 @@ export default function WalletsScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
   const [toast, setToast] = useState({ isVisible: false, message: '' });
+  const { isBalancesHidden } = usePrivacyStore();
 
   const showToast = useCallback((message: string) => {
     setToast({ isVisible: true, message });
@@ -102,7 +104,7 @@ export default function WalletsScreen() {
               <View style={styles.itemDetails}>
                 <Text style={styles.itemName}>{item.name}</Text>
                 <Text style={styles.itemBalance}>
-                  {getCurrencySymbol(item.currency)} {item.balance.toFixed(2)}
+                  {getCurrencySymbol(item.currency)} {isBalancesHidden ? '***' : item.balance.toFixed(2)}
                 </Text>
               </View>
               <View style={styles.actionButtons}>
