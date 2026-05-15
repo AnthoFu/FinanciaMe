@@ -9,7 +9,8 @@ import { getThemedStyles } from '@/styles/themedStyles';
 import { ColorTheme, Transaction } from '@/types';
 import { Stack } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, SectionList, StyleSheet, Alert } from 'react-native';
+import { View, Text, SectionList, StyleSheet, Alert, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function AllTransactionsScreen() {
   const { colors } = useTheme();
@@ -19,11 +20,15 @@ export default function AllTransactionsScreen() {
 
   const { transactions, updateTransaction, deleteTransaction } = useTransactions();
   const { wallets } = useWallets();
-  const { getCategoryById } = useCategories();
+  const { categories, getCategoryById } = useCategories();
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [toast, setToast] = useState({ isVisible: false, message: '' });
+
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all'>('all');
 
   const showToast = useCallback((message: string) => {
     setToast({ isVisible: true, message });
@@ -56,14 +61,22 @@ export default function AllTransactionsScreen() {
       if (editingTransaction) {
         updateTransaction({ ...editingTransaction, ...transactionData });
         showToast('Movimiento actualizado con éxito');
+        setModalVisible(false);
       }
-      // No se crean nuevos desde aquí, solo se editan.
     },
     [editingTransaction, updateTransaction, showToast],
   );
 
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((t) => {
+      const matchesSearch = t.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategoryId === 'all' || t.categoryId === selectedCategoryId;
+      return matchesSearch && matchesCategory;
+    });
+  }, [transactions, searchQuery, selectedCategoryId]);
+
   const sections = useMemo(() => {
-    const sortedTransactions = [...transactions].sort(
+    const sortedTransactions = [...filteredTransactions].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
     const grouped = sortedTransactions.reduce<Record<string, Transaction[]>>((acc, item) => {
@@ -79,11 +92,57 @@ export default function AllTransactionsScreen() {
       title: date,
       data,
     }));
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   return (
     <View style={globalStyles.container}>
       <Stack.Screen options={{ title: 'Todos los Movimientos' }} />
+
+      <View style={styles.headerFilters}>
+        <View style={styles.searchContainer}>
+          <IconSymbol name="magnifyingglass" size={20} color={colors.text} style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscar por descripción..."
+            placeholderTextColor={colors.text + '80'}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery !== '' && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <IconSymbol name="xmark.circle.fill" size={20} color={colors.text} style={styles.clearIcon} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesFilter}>
+          <TouchableOpacity
+            style={[styles.categoryChip, selectedCategoryId === 'all' && styles.categoryChipSelected]}
+            onPress={() => setSelectedCategoryId('all')}
+          >
+            <Text style={[styles.categoryChipText, selectedCategoryId === 'all' && styles.categoryChipTextSelected]}>
+              Todos
+            </Text>
+          </TouchableOpacity>
+          {categories.map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={[styles.categoryChip, selectedCategoryId === cat.id && styles.categoryChipSelected]}
+              onPress={() => setSelectedCategoryId(cat.id)}
+            >
+              <IconSymbol
+                name={cat.icon as any}
+                size={16}
+                color={selectedCategoryId === cat.id ? 'white' : colors.text}
+                style={styles.categoryChipIcon}
+              />
+              <Text style={[styles.categoryChipText, selectedCategoryId === cat.id && styles.categoryChipTextSelected]}>
+                {cat.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       <SectionList
         sections={sections}
@@ -110,20 +169,26 @@ export default function AllTransactionsScreen() {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
-              timeZone: 'UTC', // Asegura que la fecha no cambie por la zona horaria
+              timeZone: 'UTC',
             })}
           </Text>
         )}
-        ListEmptyComponent={<Text style={styles.emptyText}>No hay movimientos para mostrar.</Text>}
+        ListEmptyComponent={<Text style={styles.emptyText}>No hay movimientos que coincidan con la búsqueda.</Text>}
         stickySectionHeadersEnabled={false}
       />
 
       {editingTransaction && (
         <TransactionModal
           isVisible={isModalVisible}
-          onClose={() => setModalVisible(false)}
+          onClose={() => {
+            setModalVisible(false);
+            setEditingTransaction(null);
+          }}
           onSubmit={handleSubmit}
-          initialData={editingTransaction}
+          type={editingTransaction.type}
+          wallets={wallets}
+          showToast={showToast}
+          transactionToEdit={editingTransaction}
         />
       )}
       <Toast
@@ -141,6 +206,65 @@ const getStyles = (colors: ColorTheme) =>
       flex: 1,
       width: '100%',
       paddingHorizontal: 16,
+    },
+    headerFilters: {
+      paddingHorizontal: 16,
+      paddingBottom: 8,
+      backgroundColor: colors.background,
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      marginBottom: 12,
+      height: 44,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    searchIcon: {
+      marginRight: 8,
+      opacity: 0.6,
+    },
+    searchInput: {
+      flex: 1,
+      color: colors.text,
+      fontSize: 16,
+    },
+    clearIcon: {
+      marginLeft: 8,
+      opacity: 0.4,
+    },
+    categoriesFilter: {
+      paddingVertical: 4,
+      gap: 8,
+    },
+    categoryChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.card,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    categoryChipSelected: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    categoryChipIcon: {
+      fontSize: 14,
+      marginRight: 4,
+    },
+    categoryChipText: {
+      color: colors.text,
+      fontSize: 14,
+    },
+    categoryChipTextSelected: {
+      color: 'white',
+      fontWeight: 'bold',
     },
     sectionHeader: {
       fontSize: 16,
