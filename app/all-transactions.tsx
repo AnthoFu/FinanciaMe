@@ -57,9 +57,9 @@ export default function AllTransactionsScreen() {
   );
 
   const handleSubmit = useCallback(
-    (transactionData: Omit<Transaction, 'id'>) => {
+    (transactionData: Omit<Transaction, 'id'>, date?: string) => {
       if (editingTransaction) {
-        updateTransaction({ ...editingTransaction, ...transactionData });
+        updateTransaction({ ...editingTransaction, ...transactionData, date: date || editingTransaction.date });
         showToast('Movimiento actualizado con éxito');
         setModalVisible(false);
       }

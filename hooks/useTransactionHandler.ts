@@ -15,6 +15,7 @@ export function useTransactionHandler() {
     type: 'income' | 'expense',
     transactionToUpdate?: Transaction,
     commission: number = 0,
+    date?: string,
   ): boolean => {
     // 1. Update balances first (centralized logic)
     const result = updateBalancesForTransaction(amount, type, walletId, transactionToUpdate, commission);
@@ -34,13 +35,14 @@ export function useTransactionHandler() {
         categoryId,
         type,
         commission,
+        date: date || transactionToUpdate.date,
       };
       updateTransaction(updatedTransaction);
     } else {
       addTransaction({
         amount,
         description,
-        date: new Date().toISOString(),
+        date: date || new Date().toISOString(),
         type,
         walletId,
         categoryId,

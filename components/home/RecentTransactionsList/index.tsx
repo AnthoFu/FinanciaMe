@@ -90,7 +90,7 @@ export function RecentTransactionsList({ transactions, wallets, onEdit, onDelete
 
   // Memoizar las transacciones recientes para evitar recalcular en cada render
   const recentTransactions = useMemo(() => {
-    return transactions.slice(0, 10);
+    return [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
   }, [transactions]);
 
   // Memoizar el keyExtractor para evitar recrear la función
