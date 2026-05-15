@@ -103,6 +103,7 @@ export default function FinanciaMeScreen() {
     type: 'income' | 'expense',
     transactionToUpdate?: Transaction,
     commission?: number,
+    date?: string,
   ) => {
     const success = handleSaveTransaction(
       amount,
@@ -112,6 +113,7 @@ export default function FinanciaMeScreen() {
       type,
       transactionToUpdate,
       commission,
+      date,
     );
     if (success) {
       setModalVisible(false);

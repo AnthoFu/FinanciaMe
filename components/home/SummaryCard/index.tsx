@@ -140,7 +140,8 @@ export function SummaryCard({
             </Text>
           </View>
           <View style={styles.summaryRates}>
-            <Text style={styles.summaryRateText}>EUR BCV: {safeFormat(eurRate)}</Text>
+            <Text style={styles.summaryRateText}>BCV: {safeFormat(bcvRate)}</Text>
+            <Text style={styles.summaryRateText}>PROM: {safeFormat(averageRate)}</Text>
           </View>
         </View>
 

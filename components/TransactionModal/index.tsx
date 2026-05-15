@@ -1,6 +1,17 @@
 import { useTheme } from '@/hooks/useTheme';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Keyboard, Modal, ScrollView, Text, TouchableWithoutFeedback, View } from 'react-native';
+import {
+  Button,
+  Keyboard,
+  Modal,
+  ScrollView,
+  Text,
+  TouchableWithoutFeedback,
+  View,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useCategories } from '../../context/CategoriesContext';
 import { Category, Transaction, Wallet } from '../../types';
 import { HorizontalPicker } from '../ui/HorizontalPicker';
@@ -19,6 +30,7 @@ interface TransactionModalProps {
     type: 'income' | 'expense',
     transactionToEdit?: Transaction,
     commission?: number,
+    date?: string,
   ) => void;
   type: 'income' | 'expense';
   wallets: Wallet[];
@@ -45,6 +57,8 @@ export default function TransactionModal({
   const [description, setDescription] = useState('');
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const incomeCategories = useMemo(() => categories.filter((c) => c.type === 'income'), [categories]);
   const expenseCategories = useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
@@ -57,6 +71,7 @@ export default function TransactionModal({
         setDescription(transactionToEdit.description);
         setSelectedWalletId(transactionToEdit.walletId);
         setSelectedCategoryId(transactionToEdit.categoryId);
+        setDate(new Date(transactionToEdit.date));
       } else {
         setSelectedWalletId(initialWalletId || (wallets.length > 0 ? wallets[0].id : null));
         const currentCats = type === 'expense' ? expenseCategories : incomeCategories;
@@ -65,6 +80,7 @@ export default function TransactionModal({
         } else {
           setSelectedCategoryId(null);
         }
+        setDate(new Date());
       }
     }
   }, [isVisible, initialWalletId, wallets, type, expenseCategories, incomeCategories, transactionToEdit]);
@@ -73,11 +89,16 @@ export default function TransactionModal({
     setAmount('');
     setCommission('');
     setDescription('');
-    // Do not reset wallet/category to provide a better UX
+    setShowDatePicker(false);
     onClose();
   }, [onClose]);
 
-  // Memoizar las funciones de manejo
+  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    const currentDate = selectedDate || date;
+    setShowDatePicker(Platform.OS === 'ios');
+    setDate(currentDate);
+  };
+
   const handleSubmit = useCallback(() => {
     const numericAmount = parseFloat(amount);
     const numericCommission = parseFloat(commission) || 0;
@@ -93,6 +114,7 @@ export default function TransactionModal({
       transactionToEdit ? transactionToEdit.type : type,
       transactionToEdit || undefined,
       numericCommission,
+      date.toISOString(),
     );
     handleClose();
   }, [
@@ -104,11 +126,11 @@ export default function TransactionModal({
     onSubmit,
     transactionToEdit,
     type,
+    date,
     showToast,
     handleClose,
   ]);
 
-  // Memoizar cálculos costosos
   const selectedWallet = useMemo(() => wallets.find((w) => w.id === selectedWalletId), [wallets, selectedWalletId]);
 
   const placeholderText = useMemo(
@@ -173,6 +195,24 @@ export default function TransactionModal({
                   </View>
                 )}
               />
+
+              <Text style={styles.fieldLabel}>Fecha</Text>
+              <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowDatePicker(true)}>
+                <IconSymbol name="calendar" size={20} color={colors.primary} />
+                <Text style={styles.datePickerButtonText}>
+                  {date.toLocaleDateString(undefined, { day: '2-digit', month: 'long', year: 'numeric' })}
+                </Text>
+              </TouchableOpacity>
+
+              {showDatePicker && (
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onDateChange}
+                  maximumDate={new Date()}
+                />
+              )}
 
               <StyledInput
                 placeholder={placeholderText}

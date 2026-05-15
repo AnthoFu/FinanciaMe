@@ -54,4 +54,26 @@ export const getStyles = (colors: ColorTheme) =>
       color: colors.card, // Contrasting color
       fontWeight: 'bold',
     },
+    fieldLabel: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginTop: 15,
+      marginBottom: 5,
+    },
+    datePickerButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.background,
+      padding: 12,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginBottom: 10,
+    },
+    datePickerButtonText: {
+      color: colors.text,
+      fontSize: 16,
+      marginLeft: 10,
+    },
   });
