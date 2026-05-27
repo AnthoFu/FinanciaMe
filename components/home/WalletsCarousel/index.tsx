@@ -7,8 +7,8 @@ import { getStyles } from './styles';
 import { usePrivacyStore } from '@/store/privacyStore';
 
 // Helper to get currency symbol
-const getCurrencySymbol = (currency: 'USD' | 'VES' | 'USDT') => {
-  const symbols = { USD: '$ ', VES: 'Bs. ', USDT: 'USDT ' };
+const getCurrencySymbol = (currency: 'USD' | 'VES' | 'USDT' | 'EUR') => {
+  const symbols = { USD: '$ ', VES: 'Bs. ', USDT: 'USDT ', EUR: '€ ' };
   return symbols[currency] || '';
 };
 

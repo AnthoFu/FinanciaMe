@@ -9,8 +9,8 @@ import { getStyles } from './styles';
 export { getStyles } from './styles';
 
 // Helper to get currency symbol
-export const getCurrencySymbol = (currency: 'USD' | 'VES' | 'USDT') => {
-  const symbols = { USD: '$ ', VES: 'Bs. ', USDT: 'USDT ' };
+export const getCurrencySymbol = (currency: 'USD' | 'VES' | 'USDT' | 'EUR') => {
+  const symbols = { USD: '$ ', VES: 'Bs. ', USDT: 'USDT ', EUR: '€ ' };
   return symbols[currency] || '';
 };
 
