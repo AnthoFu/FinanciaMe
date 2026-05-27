@@ -117,7 +117,7 @@ export default function WalletsScreen() {
               </View>
             </View>
           ),
-          [handleEdit, handleDelete, getCurrencySymbol, styles, colors],
+          [handleEdit, handleDelete, getCurrencySymbol, styles, colors, isBalancesHidden],
         )}
         ListEmptyComponent={useMemo(
           () => (

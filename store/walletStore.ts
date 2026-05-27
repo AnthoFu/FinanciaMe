@@ -8,7 +8,7 @@ import { createMigratingStorage } from './persist-migration';
 interface WalletState {
   wallets: Wallet[];
   isLoading: boolean;
-  addWallet: (walletData: Omit<Wallet, 'id'>) => void;
+  addWallet: (walletData: Omit<Wallet, 'id'>) => string;
   updateWallet: (walletData: Wallet) => void;
   deleteWallet: (walletId: string) => void;
   getWalletById: (id: string) => Wallet | undefined;
@@ -41,11 +41,13 @@ export const useWalletStore = create<WalletState>()(
       setWallets: (wallets) => set({ wallets }),
 
       addWallet: (walletData) => {
+        const id = uuidv4();
         const newWallet: Wallet = {
-          id: uuidv4(),
+          id,
           ...walletData,
         };
         set((state) => ({ wallets: [...state.wallets, newWallet] }));
+        return id;
       },
 
       updateWallet: (walletData) => {

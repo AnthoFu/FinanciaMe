@@ -5,6 +5,7 @@ export interface Wallet {
   name: string;
   balance: number;
   currency: Currency;
+  isSavings?: boolean;
 }
 
 export interface Category {
@@ -33,6 +34,7 @@ export interface SavingsGoal {
   currency: Currency;
   creationDate: string;
   targetDate?: string;
+  linkedWalletId?: string;
 }
 
 export interface Budget {
