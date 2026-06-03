@@ -8,6 +8,7 @@ import { useSavingsGoalStore } from '../store/savingsGoalStore';
 interface SavingsGoalsContextType {
   savingsGoals: SavingsGoal[];
   addSavingsGoal: (goal: Omit<SavingsGoal, 'id' | 'creationDate'>) => void;
+  createSavingsGoalWithWallet: (goalData: Omit<SavingsGoal, 'id' | 'creationDate' | 'linkedWalletId'>) => Promise<void>;
   updateSavingsGoal: (goal: SavingsGoal) => void;
   deleteSavingsGoal: (goalId: string) => void;
   addContribution: (
@@ -27,7 +28,7 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
   const store = useSavingsGoalStore();
   const { transactions, addTransaction } = useTransactions();
   const { categories, addCategory } = useCategories();
-  const { updateBalancesForTransaction } = useWallets();
+  const { updateBalancesForTransaction, addWallet, wallets, updateBalancesForTransfer } = useWallets();
 
   const getContributionsForGoal = useCallback(
     (goalId: string) => {
@@ -39,9 +40,37 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
   const getGoalProgress = useCallback(
     (goalId: string) => {
       const contributions = getContributionsForGoal(goalId);
-      return contributions.reduce((total, contribution) => total + contribution.amount, 0);
+      return contributions.reduce((total, contribution) => {
+        // Si es un ahorro vía transferencia, solo contamos el ingreso (transfer-in)
+        // en la billetera de meta para evitar duplicar (transfer-out + transfer-in)
+        if (contribution.categoryId === 'transfer-in') {
+          return total + contribution.amount;
+        }
+        // Si es un ahorro vía gasto (método antiguo sin billetera), contamos el monto
+        if (contribution.type === 'expense' && contribution.categoryId !== 'transfer-out') {
+          return total + contribution.amount;
+        }
+        return total;
+      }, 0);
     },
     [getContributionsForGoal],
+  );
+
+  const createSavingsGoalWithWallet = useCallback(
+    async (goalData: Omit<SavingsGoal, 'id' | 'creationDate' | 'linkedWalletId'>) => {
+      const walletId = addWallet({
+        name: `${goalData.name} (Ahorro)`,
+        balance: 0,
+        currency: goalData.currency,
+        isSavings: true,
+      });
+
+      store.addSavingsGoal({
+        ...goalData,
+        linkedWalletId: walletId,
+      });
+    },
+    [addWallet, store],
   );
 
   const addContribution = useCallback(
@@ -51,6 +80,48 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
       amount: number,
       description?: string,
     ): Promise<{ success: boolean; message: string }> => {
+      if (goal.linkedWalletId) {
+        // NEW LOGIC: Use Transfer
+        const fromWallet = wallets.find((w) => w.id === walletId);
+        const toWallet = wallets.find((w) => w.id === goal.linkedWalletId);
+
+        if (!fromWallet || !toWallet) {
+          return { success: false, message: 'Billetera no encontrada.' };
+        }
+
+        const result = updateBalancesForTransfer(walletId, goal.linkedWalletId, amount, amount);
+        if (!result.success) {
+          return { success: false, message: result.error || 'Error al realizar la transferencia de ahorro.' };
+        }
+
+        const date = new Date().toISOString();
+
+        // We create the transactions manually instead of using addTransfer
+        // to ensure they are tagged with goalId
+        addTransaction({
+          amount,
+          description: `Ahorro para "${goal.name}"${description ? `: ${description}` : ''}`,
+          type: 'expense',
+          date,
+          walletId,
+          categoryId: 'transfer-out',
+          goalId: goal.id,
+        });
+
+        addTransaction({
+          amount,
+          description: `Ahorro recibido para "${goal.name}"${description ? `: ${description}` : ''}`,
+          type: 'income',
+          date,
+          walletId: goal.linkedWalletId,
+          categoryId: 'transfer-in',
+          goalId: goal.id,
+        });
+
+        return { success: true, message: 'Ahorro transferido con éxito.' };
+      }
+
+      // OLD LOGIC: Use Expense (Fallback for goals without linked wallets)
       const result = updateBalancesForTransaction(amount, 'expense', walletId);
 
       if (!result.success) {
@@ -78,13 +149,14 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
 
       return { success: true, message: 'Ahorro añadido con éxito.' };
     },
-    [updateBalancesForTransaction, categories, addCategory, addTransaction],
+    [updateBalancesForTransaction, categories, addCategory, addTransaction, wallets, updateBalancesForTransfer],
   );
 
   const value = useMemo(
     () => ({
       savingsGoals: store.savingsGoals,
       addSavingsGoal: store.addSavingsGoal,
+      createSavingsGoalWithWallet,
       updateSavingsGoal: store.updateSavingsGoal,
       deleteSavingsGoal: store.deleteSavingsGoal,
       addContribution,
@@ -92,7 +164,7 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
       getGoalProgress,
       isLoading: store.isLoading,
     }),
-    [store, addContribution, getContributionsForGoal, getGoalProgress],
+    [store, addContribution, getContributionsForGoal, getGoalProgress, createSavingsGoalWithWallet],
   );
 
   return <SavingsGoalsContext.Provider value={value}>{children}</SavingsGoalsContext.Provider>;

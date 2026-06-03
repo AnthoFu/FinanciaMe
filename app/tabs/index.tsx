@@ -50,7 +50,7 @@ export default function FinanciaMeScreen() {
     isRefreshing: ratesRefreshing,
     lastUpdated,
   } = useExchangeRates();
-  const balances = useFinancialSummary(wallets, bcvRate, usdtRate, eurRate, averageRate, ratesLoading);
+  const summary = useFinancialSummary(wallets, bcvRate, usdtRate, eurRate, averageRate, ratesLoading);
   const { handleSaveTransaction, handleTransfer } = useTransactionHandler();
 
   // --- Fixed Expenses Logic ---
@@ -199,14 +199,15 @@ export default function FinanciaMeScreen() {
         }
       >
         <SummaryCard
-          balances={balances}
+          balances={summary.regular}
+          savings={summary.savings}
           bcvRate={bcvRate}
           usdtRate={usdtRate}
           eurRate={eurRate}
           averageRate={averageRate}
           lastUpdated={lastUpdated}
         />
-        <WalletsCarousel wallets={wallets} onOpenModal={handleOpenModal} />
+        <WalletsCarousel wallets={wallets.filter((w) => !w.isSavings)} onOpenModal={handleOpenModal} />
         <RecentTransactionsList
           transactions={transactions}
           wallets={wallets}

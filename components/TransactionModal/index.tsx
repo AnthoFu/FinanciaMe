@@ -63,6 +63,8 @@ export default function TransactionModal({
   const incomeCategories = useMemo(() => categories.filter((c) => c.type === 'income'), [categories]);
   const expenseCategories = useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
 
+  const filteredWallets = useMemo(() => wallets.filter((w) => !w.isSavings), [wallets]);
+
   useEffect(() => {
     if (isVisible) {
       if (transactionToEdit) {
@@ -73,7 +75,7 @@ export default function TransactionModal({
         setSelectedCategoryId(transactionToEdit.categoryId);
         setDate(new Date(transactionToEdit.date));
       } else {
-        setSelectedWalletId(initialWalletId || (wallets.length > 0 ? wallets[0].id : null));
+        setSelectedWalletId(initialWalletId || (filteredWallets.length > 0 ? filteredWallets[0].id : null));
         const currentCats = type === 'expense' ? expenseCategories : incomeCategories;
         if (currentCats.length > 0) {
           setSelectedCategoryId(currentCats[0].id);
@@ -83,7 +85,7 @@ export default function TransactionModal({
         setDate(new Date());
       }
     }
-  }, [isVisible, initialWalletId, wallets, type, expenseCategories, incomeCategories, transactionToEdit]);
+  }, [isVisible, initialWalletId, filteredWallets, type, expenseCategories, incomeCategories, transactionToEdit]);
 
   const handleClose = useCallback(() => {
     setAmount('');
@@ -165,7 +167,7 @@ export default function TransactionModal({
 
               <HorizontalPicker<Wallet, string>
                 label="Billetera"
-                data={wallets}
+                data={filteredWallets}
                 selectedValue={selectedWalletId}
                 onSelect={setSelectedWalletId}
                 keyExtractor={(item) => item.id}

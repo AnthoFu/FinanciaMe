@@ -1,6 +1,6 @@
 import { useTheme } from '@/hooks/useTheme';
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native';
+import { Modal, View, Text, TouchableWithoutFeedback, Keyboard, TouchableOpacity, Switch } from 'react-native';
 
 import { useSavingsGoals } from '../../context/SavingsGoalsContext';
 import { Currency, SavingsGoal } from '../../types';
@@ -19,7 +19,8 @@ export function GoalModal({ isVisible, onClose, goal }: GoalModalProps) {
   const [name, setName] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
   const [currency, setCurrency] = useState<Currency>('USD');
-  const { addSavingsGoal, updateSavingsGoal } = useSavingsGoals();
+  const [createWallet, setCreateWallet] = useState(true);
+  const { addSavingsGoal, updateSavingsGoal, createSavingsGoalWithWallet } = useSavingsGoals();
   const { colors } = useTheme();
   const styles = getStyles(colors);
 
@@ -29,10 +30,12 @@ export function GoalModal({ isVisible, onClose, goal }: GoalModalProps) {
         setName(goal.name);
         setTargetAmount(goal.targetAmount.toString());
         setCurrency(goal.currency);
+        setCreateWallet(false); // Can't retroactively create a wallet easily here for now
       } else {
         setName('');
         setTargetAmount('');
         setCurrency('USD');
+        setCreateWallet(true);
       }
     }
   }, [goal, isVisible]);
@@ -41,7 +44,7 @@ export function GoalModal({ isVisible, onClose, goal }: GoalModalProps) {
     onClose();
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const amount = parseFloat(targetAmount);
     if (name.trim() && amount > 0) {
       if (goal) {
@@ -52,11 +55,19 @@ export function GoalModal({ isVisible, onClose, goal }: GoalModalProps) {
           currency,
         });
       } else {
-        addSavingsGoal({
-          name: name.trim(),
-          targetAmount: amount,
-          currency,
-        });
+        if (createWallet) {
+          await createSavingsGoalWithWallet({
+            name: name.trim(),
+            targetAmount: amount,
+            currency,
+          });
+        } else {
+          addSavingsGoal({
+            name: name.trim(),
+            targetAmount: amount,
+            currency,
+          });
+        }
       }
       handleClose();
     } else {
@@ -92,6 +103,26 @@ export function GoalModal({ isVisible, onClose, goal }: GoalModalProps) {
                   </TouchableOpacity>
                 ))}
               </View>
+
+              {!goal && (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginTop: 15,
+                    paddingHorizontal: 5,
+                  }}
+                >
+                  <Text style={{ color: colors.text, fontSize: 14, fontWeight: '600' }}>Crear billetera dedicada</Text>
+                  <Switch
+                    value={createWallet}
+                    onValueChange={setCreateWallet}
+                    trackColor={{ false: colors.border, true: colors.primary }}
+                    thumbColor="#FFFFFF"
+                  />
+                </View>
+              )}
             </View>
 
             <View style={styles.buttonContainer}>

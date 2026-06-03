@@ -44,7 +44,8 @@ export function ContributionModal({ isVisible, onClose, goal }: ContributionModa
 
   useEffect(() => {
     if (goal) {
-      const filteredWallets = wallets.filter((w) => w.currency === goal.currency);
+      // Filtrar billeteras por moneda Y excluir la billetera vinculada de la meta (si existe)
+      const filteredWallets = wallets.filter((w) => w.currency === goal.currency && w.id !== goal.linkedWalletId);
       setWalletsForCurrency(filteredWallets);
       if (filteredWallets.length > 0) {
         setSelectedWalletId(filteredWallets[0].id);
