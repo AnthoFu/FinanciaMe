@@ -1,5 +1,6 @@
 import { TransactionItem, getStyles as getTransactionItemStyles } from '@/components/home/RecentTransactionsList';
 import TransactionModal from '@/components/TransactionModal';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 import { useCategories } from '@/context/CategoriesContext';
 import { useTransactions } from '@/context/TransactionsContext';
 import { useWallets } from '@/context/WalletsContext';
@@ -9,7 +10,7 @@ import { getThemedStyles } from '@/styles/themedStyles';
 import { ColorTheme, Transaction } from '@/types';
 import { Stack } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, SectionList, StyleSheet, Alert, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, SectionList, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function AllTransactionsScreen() {
@@ -25,6 +26,8 @@ export default function AllTransactionsScreen() {
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,22 +38,18 @@ export default function AllTransactionsScreen() {
     setModalVisible(true);
   }, []);
 
-  const handleDelete = useCallback(
-    (transaction: Transaction) => {
-      Alert.alert('Eliminar Movimiento', '¿Estás seguro de que quieres eliminar este movimiento?', [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: () => {
-            deleteTransaction(transaction.id);
-            showToast({ message: 'Movimiento eliminado con éxito', type: 'success' });
-          },
-        },
-      ]);
-    },
-    [deleteTransaction, showToast],
-  );
+  const handleDelete = useCallback((transaction: Transaction) => {
+    setTransactionToDelete(transaction);
+    setDeleteModalVisible(true);
+  }, []);
+
+  const confirmDelete = useCallback(() => {
+    if (transactionToDelete) {
+      deleteTransaction(transactionToDelete.id);
+      showToast({ message: 'Movimiento eliminado con éxito', type: 'success' });
+      setTransactionToDelete(null);
+    }
+  }, [deleteTransaction, showToast, transactionToDelete]);
 
   const handleSubmit = useCallback(
     (transactionData: Omit<Transaction, 'id'>, date?: string) => {
@@ -186,6 +185,19 @@ export default function AllTransactionsScreen() {
           transactionToEdit={editingTransaction}
         />
       )}
+
+      <ConfirmationModal
+        isVisible={isDeleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setTransactionToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Eliminar Movimiento"
+        message="¿Estás seguro de que quieres eliminar este movimiento?"
+        confirmText="Eliminar"
+        type="destructive"
+      />
     </View>
   );
 }

@@ -1,9 +1,10 @@
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/hooks/useToast';
 import React, { useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FixedExpenseModal from '../../components/FixedExpenseModal';
 import { NotificationSettingsModal } from '../../components/NotificationSettingsModal';
+import { ConfirmationModal } from '../../components/ui/ConfirmationModal';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useCategories } from '../../context/CategoriesContext';
 import { useFixedExpenses } from '../../context/FixedExpensesContext';
@@ -46,10 +47,16 @@ export default function FixedExpensesScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isNotificationSettingsVisible, setNotificationSettingsVisible] = useState(false);
   const [editingExpense, setEditingExpense] = useState<FixedExpense | null>(null);
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [expenseToDeleteId, setExpenseToDeleteId] = useState<string | null>(null);
 
   const handleAddNew = () => {
     if (wallets.length === 0) {
-      Alert.alert('No hay billeteras', 'Debes crear al menos una billetera antes de añadir un gasto fijo.');
+      showToast({
+        message: 'Debes crear al menos una billetera antes de añadir un gasto fijo.',
+        type: 'error',
+        position: 'top',
+      });
       return;
     }
     setEditingExpense(null);
@@ -62,17 +69,16 @@ export default function FixedExpensesScreen() {
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert('Eliminar Gasto Fijo', '¿Estás seguro de que quieres eliminar este gasto fijo?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: () => {
-          deleteFixedExpense(id);
-          showToast({ message: 'Gasto fijo eliminado con éxito', type: 'success' });
-        },
-      },
-    ]);
+    setExpenseToDeleteId(id);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDeleteExpense = () => {
+    if (expenseToDeleteId) {
+      deleteFixedExpense(expenseToDeleteId);
+      showToast({ message: 'Gasto fijo eliminado con éxito', type: 'success' });
+      setExpenseToDeleteId(null);
+    }
   };
 
   const handleSubmit = async (expenseData: Omit<FixedExpense, 'id' | 'lastPaid'>) => {
@@ -161,6 +167,18 @@ export default function FixedExpensesScreen() {
         onClose={() => setNotificationSettingsVisible(false)}
         settings={notificationSettings}
         onSave={handleNotificationSettingsSave}
+      />
+      <ConfirmationModal
+        isVisible={isDeleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setExpenseToDeleteId(null);
+        }}
+        onConfirm={confirmDeleteExpense}
+        title="Eliminar Gasto Fijo"
+        message="¿Estás seguro de que quieres eliminar este gasto fijo?"
+        confirmText="Eliminar"
+        type="destructive"
       />
     </View>
   );

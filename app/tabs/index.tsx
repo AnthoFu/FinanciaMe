@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
@@ -17,6 +16,7 @@ import { SummaryCard } from '../../components/home/SummaryCard';
 import { WalletsCarousel } from '../../components/home/WalletsCarousel';
 import TransactionModal from '../../components/TransactionModal';
 import TransferModal from '../../components/TransferModal';
+import { ConfirmationModal } from '../../components/ui/ConfirmationModal';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useFixedExpenses } from '../../context/FixedExpensesContext';
 import { useTransactions } from '../../context/TransactionsContext';
@@ -55,7 +55,7 @@ export default function FinanciaMeScreen() {
   const { handleSaveTransaction, handleTransfer } = useTransactionHandler();
 
   // --- Fixed Expenses Logic ---
-  const { checkDueFixedExpenses } = useFixedExpensesHandler();
+  const { checkDueFixedExpenses, handlePayDueExpenses } = useFixedExpensesHandler();
 
   // --- Local State ---
   const [loading, setLoading] = useState(true);
@@ -65,6 +65,10 @@ export default function FinanciaMeScreen() {
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
   const [selectedWalletIdForModal, setSelectedWalletIdForModal] = useState<string | null>(null);
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
+  const [isDueExpensesModalVisible, setDueExpensesModalVisible] = useState(false);
+  const [dueExpensesToPay, setDueExpensesToPay] = useState<FixedExpense[]>([]);
 
   const router = useRouter();
 
@@ -76,7 +80,10 @@ export default function FinanciaMeScreen() {
 
   useEffect(() => {
     if (!loading) {
-      checkDueFixedExpenses();
+      checkDueFixedExpenses((dueExpenses) => {
+        setDueExpensesToPay(dueExpenses);
+        setDueExpensesModalVisible(true);
+      });
     }
   }, [loading, checkDueFixedExpenses]);
 
@@ -127,22 +134,20 @@ export default function FinanciaMeScreen() {
   };
 
   const handleDeleteTransaction = (transaction: Transaction) => {
-    Alert.alert('Eliminar Movimiento', '¿Estás seguro de que quieres eliminar este movimiento?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: () => {
-          const result = revertTransactionBalance(transaction);
-          if (result.success) {
-            deleteTransaction(transaction.id);
-            showToast({ message: 'Movimiento eliminado', type: 'success' });
-          } else {
-            Alert.alert('Error', result.error || 'No se pudo eliminar el movimiento.');
-          }
-        },
-      },
-    ]);
+    setTransactionToDelete(transaction);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDeleteTransaction = () => {
+    if (!transactionToDelete) return;
+    const result = revertTransactionBalance(transactionToDelete);
+    if (result.success) {
+      deleteTransaction(transactionToDelete.id);
+      showToast({ message: 'Movimiento eliminado', type: 'success' });
+    } else {
+      showToast({ message: result.error || 'No se pudo eliminar el movimiento.', type: 'error' });
+    }
+    setTransactionToDelete(null);
   };
 
   const handleTransferSubmit = (
@@ -250,6 +255,32 @@ export default function FinanciaMeScreen() {
         isVisible={isTransferModalVisible}
         onClose={() => setTransferModalVisible(false)}
         onSubmit={handleTransferSubmit}
+      />
+      <ConfirmationModal
+        isVisible={isDeleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setTransactionToDelete(null);
+        }}
+        onConfirm={confirmDeleteTransaction}
+        title="Eliminar Movimiento"
+        message="¿Estás seguro de que quieres eliminar este movimiento? Esta acción revertirá el saldo de tu billetera."
+        confirmText="Eliminar"
+        type="destructive"
+      />
+      <ConfirmationModal
+        isVisible={isDueExpensesModalVisible}
+        onClose={() => {
+          setDueExpensesModalVisible(false);
+          setDueExpensesToPay([]);
+        }}
+        onConfirm={() => handlePayDueExpenses(dueExpensesToPay)}
+        title="Gastos Fijos Pendientes"
+        message={`Tienes pagos pendientes para: ${dueExpensesToPay.map((e) => e.name).join(', ')}. ¿Deseas pagarlos ahora?`}
+        confirmText="Pagar Ahora"
+        cancelText="Más Tarde"
+        type="info"
+        icon="creditcard.fill"
       />
     </KeyboardAvoidingView>
   );

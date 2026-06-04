@@ -1,11 +1,12 @@
-import { Alert } from 'react-native';
 import { useTransactions } from '../context/TransactionsContext';
 import { useWallets } from '../context/WalletsContext';
 import { Transaction } from '../types';
+import { useToast } from './useToast';
 
 export function useTransactionHandler() {
   const { wallets, updateBalancesForTransaction, updateBalancesForTransfer } = useWallets();
   const { addTransaction, updateTransaction, addTransfer } = useTransactions();
+  const { showToast } = useToast();
 
   const handleSaveTransaction = (
     amount: number,
@@ -21,7 +22,7 @@ export function useTransactionHandler() {
     const result = updateBalancesForTransaction(amount, type, walletId, transactionToUpdate, commission);
 
     if (!result.success) {
-      Alert.alert('Operación Fallida', result.error || 'No se pudo procesar la transacción.');
+      showToast({ message: result.error || 'No se pudo procesar la transacción.', type: 'error' });
       return false;
     }
 
@@ -64,7 +65,7 @@ export function useTransactionHandler() {
     const toWallet = wallets.find((w) => w.id === toWalletId);
 
     if (!fromWallet || !toWallet) {
-      Alert.alert('Error', 'No se encontraron las billeteras.');
+      showToast({ message: 'No se encontraron las billeteras.', type: 'error' });
       return false;
     }
 
@@ -73,7 +74,7 @@ export function useTransactionHandler() {
     const result = updateBalancesForTransfer(fromWalletId, toWalletId, fromAmount + commission, toAmount);
 
     if (!result.success) {
-      Alert.alert('Transferencia Fallida', result.error || 'No se pudo procesar la transferencia.');
+      showToast({ message: result.error || 'No se pudo procesar la transferencia.', type: 'error' });
       return false;
     }
 

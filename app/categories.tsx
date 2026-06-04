@@ -1,24 +1,17 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useMemo, useState } from 'react';
-import {
-  View,
-  Text,
-  SectionList,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Modal,
-  ScrollView,
-  Alert,
-} from 'react-native';
+import { View, Text, SectionList, TextInput, TouchableOpacity, StyleSheet, Modal, ScrollView } from 'react-native';
 import { CATEGORY_ICONS } from '../constants/Icons';
 import { useCategories } from '../context/CategoriesContext';
 import { IconSymbol } from '../components/ui/IconSymbol';
+import { ConfirmationModal } from '../components/ui/ConfirmationModal';
 
 import { ColorTheme } from '../types';
 
 export default function CategoriesScreen() {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = getStyles(colors);
 
   const { categories, addCategory, removeCategory } = useCategories();
@@ -26,10 +19,12 @@ export default function CategoriesScreen() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState(CATEGORY_ICONS[0]);
   const [selectedType, setSelectedType] = useState<'income' | 'expense'>('expense');
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [categoryToDeleteId, setCategoryToDeleteId] = useState<string | null>(null);
 
   const handleAddCategory = () => {
     if (newCategoryName.trim() === '') {
-      Alert.alert('Error', 'El nombre de la categoría no puede estar vacío.');
+      showToast({ message: 'El nombre de la categoría no puede estar vacío.', type: 'error', position: 'top' });
       return;
     }
     addCategory(newCategoryName, selectedIcon, selectedType);
@@ -38,14 +33,15 @@ export default function CategoriesScreen() {
   };
 
   const handleRemoveCategory = (categoryId: string) => {
-    Alert.alert(
-      'Eliminar Categoría',
-      '¿Estás seguro de que quieres eliminar esta categoría? Esta acción no se puede deshacer.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Eliminar', style: 'destructive', onPress: () => removeCategory(categoryId) },
-      ],
-    );
+    setCategoryToDeleteId(categoryId);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmRemoveCategory = () => {
+    if (categoryToDeleteId) {
+      removeCategory(categoryToDeleteId);
+      setCategoryToDeleteId(null);
+    }
   };
 
   const sections = useMemo(() => {
@@ -147,6 +143,18 @@ export default function CategoriesScreen() {
           </View>
         </View>
       </Modal>
+      <ConfirmationModal
+        isVisible={isDeleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setCategoryToDeleteId(null);
+        }}
+        onConfirm={confirmRemoveCategory}
+        title="Eliminar Categoría"
+        message="¿Estás seguro de que quieres eliminar esta categoría? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        type="destructive"
+      />
     </View>
   );
 }

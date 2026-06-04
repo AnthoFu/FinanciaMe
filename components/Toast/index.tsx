@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Animated, Text, TouchableOpacity, View, StyleSheet, Modal } from 'react-native';
 import { styles } from './styles';
 
 export type ToastType = 'info' | 'success' | 'error';
@@ -63,25 +63,25 @@ export default function Toast({
   const positionStyle = styles[position] || styles.bottom;
 
   return (
-    <View style={localStyles.container} pointerEvents="box-none">
-      <Animated.View style={[styles.container, typeStyle, positionStyle, { opacity: fadeAnim }]} pointerEvents="auto">
-        <Text style={styles.message}>{message}</Text>
-        {duration === null && (
-          <TouchableOpacity onPress={hide} style={styles.closeButton}>
-            <Text style={styles.closeText}>✕</Text>
-          </TouchableOpacity>
-        )}
-      </Animated.View>
-    </View>
+    <Modal transparent visible={isVisible} animationType="none" onRequestClose={hide}>
+      <View style={localStyles.overlay} pointerEvents="box-none">
+        <Animated.View style={[styles.container, typeStyle, positionStyle, { opacity: fadeAnim }]} pointerEvents="auto">
+          <Text style={styles.message}>{message}</Text>
+          {duration === null && (
+            <TouchableOpacity onPress={hide} style={styles.closeButton}>
+              <Text style={styles.closeText}>✕</Text>
+            </TouchableOpacity>
+          )}
+        </Animated.View>
+      </View>
+    </Modal>
   );
 }
 
 const localStyles = StyleSheet.create({
-  container: {
+  overlay: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 99999,
-    elevation: 99999,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: 'transparent',
+    zIndex: 999999,
   },
 });

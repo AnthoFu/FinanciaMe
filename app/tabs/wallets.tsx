@@ -1,7 +1,8 @@
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/hooks/useToast';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ConfirmationModal } from '../../components/ui/ConfirmationModal';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import WalletModal from '../../components/WalletModal';
 import { useWallets } from '../../context/WalletsContext';
@@ -18,6 +19,8 @@ export default function WalletsScreen() {
   const { wallets, addWallet, updateWallet, deleteWallet } = useWallets();
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [walletToDeleteId, setWalletToDeleteId] = useState<string | null>(null);
   const { isBalancesHidden } = usePrivacyStore();
 
   // Memoizar la función getCurrencySymbol para evitar recrearla
@@ -49,26 +52,18 @@ export default function WalletsScreen() {
     setModalVisible(true);
   }, []);
 
-  const handleDelete = useCallback(
-    (id: string) => {
-      Alert.alert(
-        'Eliminar Billetera',
-        '¿Estás seguro? Esta acción no se puede deshacer y borrará la billetera permanentemente.',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Eliminar',
-            style: 'destructive',
-            onPress: () => {
-              deleteWallet(id);
-              showToast({ message: 'Billetera eliminada con éxito', type: 'success' });
-            },
-          },
-        ],
-      );
-    },
-    [deleteWallet, showToast],
-  );
+  const handleDelete = useCallback((id: string) => {
+    setWalletToDeleteId(id);
+    setDeleteModalVisible(true);
+  }, []);
+
+  const confirmDeleteWallet = useCallback(() => {
+    if (walletToDeleteId) {
+      deleteWallet(walletToDeleteId);
+      showToast({ message: 'Billetera eliminada con éxito', type: 'success' });
+      setWalletToDeleteId(null);
+    }
+  }, [deleteWallet, showToast, walletToDeleteId]);
 
   // Memoizar la función handleSubmit
   const handleSubmit = useCallback(
@@ -132,6 +127,18 @@ export default function WalletsScreen() {
         onClose={() => setModalVisible(false)}
         onSubmit={handleSubmit}
         initialData={editingWallet}
+      />
+      <ConfirmationModal
+        isVisible={isDeleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setWalletToDeleteId(null);
+        }}
+        onConfirm={confirmDeleteWallet}
+        title="Eliminar Billetera"
+        message="¿Estás seguro? Esta acción no se puede deshacer y borrará la billetera permanentemente."
+        confirmText="Eliminar"
+        type="destructive"
       />
     </View>
   );

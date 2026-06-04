@@ -10,11 +10,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 
 import { ContributionModal } from '../../components/ContributionModal';
 import { GoalModal } from '../../components/GoalModal';
+import { ConfirmationModal } from '../../components/ui/ConfirmationModal';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useSavingsGoals } from '../../context/SavingsGoalsContext';
 import { getThemedStyles } from '../../styles/themedStyles';
@@ -101,6 +101,8 @@ export default function GoalsScreen() {
   const [isGoalModalVisible, setIsGoalModalVisible] = useState(false);
   const [isContributionModalVisible, setIsContributionModalVisible] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null);
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [goalToDelete, setGoalToDelete] = useState<SavingsGoal | null>(null);
 
   const handleOpenContributionModal = (goal: SavingsGoal) => {
     setSelectedGoal(goal);
@@ -113,17 +115,16 @@ export default function GoalsScreen() {
   };
 
   const handleDeleteGoal = (goal: SavingsGoal) => {
-    Alert.alert('Eliminar Meta', `¿Estás seguro de que quieres eliminar la meta "${goal.name}"?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: () => {
-          deleteSavingsGoal(goal.id);
-          showToast({ message: 'Meta eliminada con éxito', type: 'success' });
-        },
-      },
-    ]);
+    setGoalToDelete(goal);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDeleteGoal = () => {
+    if (goalToDelete) {
+      deleteSavingsGoal(goalToDelete.id);
+      showToast({ message: 'Meta eliminada con éxito', type: 'success' });
+      setGoalToDelete(null);
+    }
   };
 
   const handleAddNewGoal = () => {
@@ -157,6 +158,18 @@ export default function GoalsScreen() {
         isVisible={isContributionModalVisible}
         onClose={() => setIsContributionModalVisible(false)}
         goal={selectedGoal}
+      />
+      <ConfirmationModal
+        isVisible={isDeleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setGoalToDelete(null);
+        }}
+        onConfirm={confirmDeleteGoal}
+        title="Eliminar Meta"
+        message={`¿Estás seguro de que quieres eliminar la meta "${goalToDelete?.name}"?`}
+        confirmText="Eliminar"
+        type="destructive"
       />
     </KeyboardAvoidingView>
   );

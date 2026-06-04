@@ -105,7 +105,7 @@ export default function TransactionModal({
     const numericAmount = parseFloat(amount);
     const numericCommission = parseFloat(commission) || 0;
     if (!numericAmount || numericAmount <= 0 || !description || !selectedWalletId || !selectedCategoryId) {
-      showToast({ message: 'Por favor, completa todos los campos.', type: 'error' });
+      showToast({ message: 'Por favor, completa todos los campos.', type: 'error', position: 'top' });
       return;
     }
     onSubmit(

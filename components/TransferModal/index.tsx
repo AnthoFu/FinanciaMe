@@ -1,7 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/hooks/useToast';
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView, Alert } from 'react-native';
+import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
 import { Wallet } from '../../types';
 import { useWallets } from '../../context/WalletsContext';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
@@ -115,7 +115,11 @@ export default function TransferModal({ isVisible, onClose, onSubmit }: Transfer
       return;
     }
     if (fromWallet && fromWallet.balance < fromAmountNum + commissionNum) {
-      Alert.alert('Saldo Insuficiente', 'La billetera de origen no tiene fondos suficientes (incluyendo comisión).');
+      showToast({
+        message: 'La billetera de origen no tiene fondos suficientes (incluyendo comisión).',
+        type: 'error',
+        position: 'top',
+      });
       return;
     }
 
