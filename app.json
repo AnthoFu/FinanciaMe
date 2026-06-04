@@ -2,7 +2,7 @@
   "expo": {
     "name": "FinanciaMe",
     "slug": "FinanciaMe",
-    "version": "1.15.5",
+    "version": "1.16.0",
     "orientation": "portrait",
     "icon": "./assets/images/AnthoFu-Icon.png",
     "scheme": "financiame",
