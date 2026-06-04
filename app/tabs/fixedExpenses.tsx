@@ -1,9 +1,9 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FixedExpenseModal from '../../components/FixedExpenseModal';
 import { NotificationSettingsModal } from '../../components/NotificationSettingsModal';
-import Toast from '../../components/Toast';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useCategories } from '../../context/CategoriesContext';
 import { useFixedExpenses } from '../../context/FixedExpensesContext';
@@ -35,6 +35,7 @@ const formatFrequency = (expense: FixedExpense): string => {
 
 export default function FixedExpensesScreen() {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = getStyles(colors);
   const globalStyles = getThemedStyles(colors);
 
@@ -45,11 +46,6 @@ export default function FixedExpensesScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isNotificationSettingsVisible, setNotificationSettingsVisible] = useState(false);
   const [editingExpense, setEditingExpense] = useState<FixedExpense | null>(null);
-  const [toast, setToast] = useState({ isVisible: false, message: '' });
-
-  const showToast = (message: string) => {
-    setToast({ isVisible: true, message });
-  };
 
   const handleAddNew = () => {
     if (wallets.length === 0) {
@@ -73,7 +69,7 @@ export default function FixedExpensesScreen() {
         style: 'destructive',
         onPress: () => {
           deleteFixedExpense(id);
-          showToast('Gasto fijo eliminado con éxito');
+          showToast({ message: 'Gasto fijo eliminado con éxito', type: 'success' });
         },
       },
     ]);
@@ -87,18 +83,18 @@ export default function FixedExpensesScreen() {
       } else {
         await addFixedExpense(expenseData);
       }
-      showToast(isEditing ? 'Gasto fijo actualizado' : 'Gasto fijo creado con éxito');
+      showToast({ message: isEditing ? 'Gasto fijo actualizado' : 'Gasto fijo creado con éxito', type: 'success' });
     } catch {
-      showToast('Error al guardar el gasto fijo');
+      showToast({ message: 'Error al guardar el gasto fijo', type: 'error' });
     }
   };
 
   const handleNotificationSettingsSave = async (settings: typeof notificationSettings) => {
     try {
       await saveNotificationSettings(settings);
-      showToast('Configuración de notificaciones guardada');
+      showToast({ message: 'Configuración de notificaciones guardada', type: 'success' });
     } catch {
-      showToast('Error al guardar la configuración');
+      showToast({ message: 'Error al guardar la configuración', type: 'error' });
     }
   };
 
@@ -165,11 +161,6 @@ export default function FixedExpensesScreen() {
         onClose={() => setNotificationSettingsVisible(false)}
         settings={notificationSettings}
         onSave={handleNotificationSettingsSave}
-      />
-      <Toast
-        message={toast.message}
-        isVisible={toast.isVisible}
-        onHide={() => setToast({ isVisible: false, message: '' })}
       />
     </View>
   );

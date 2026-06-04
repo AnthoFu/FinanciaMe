@@ -1,4 +1,5 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useState } from 'react';
 import {
   View,
@@ -14,7 +15,6 @@ import {
 
 import { ContributionModal } from '../../components/ContributionModal';
 import { GoalModal } from '../../components/GoalModal';
-import Toast from '../../components/Toast';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useSavingsGoals } from '../../context/SavingsGoalsContext';
 import { getThemedStyles } from '../../styles/themedStyles';
@@ -93,6 +93,7 @@ const GoalItem = ({
 
 export default function GoalsScreen() {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const globalStyles = getThemedStyles(colors);
   const styles = getStyles(colors);
 
@@ -100,11 +101,6 @@ export default function GoalsScreen() {
   const [isGoalModalVisible, setIsGoalModalVisible] = useState(false);
   const [isContributionModalVisible, setIsContributionModalVisible] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null);
-  const [toast, setToast] = useState({ isVisible: false, message: '' });
-
-  const showToast = (message: string) => {
-    setToast({ isVisible: true, message });
-  };
 
   const handleOpenContributionModal = (goal: SavingsGoal) => {
     setSelectedGoal(goal);
@@ -124,7 +120,7 @@ export default function GoalsScreen() {
         style: 'destructive',
         onPress: () => {
           deleteSavingsGoal(goal.id);
-          showToast('Meta eliminada con éxito');
+          showToast({ message: 'Meta eliminada con éxito', type: 'success' });
         },
       },
     ]);
@@ -161,11 +157,6 @@ export default function GoalsScreen() {
         isVisible={isContributionModalVisible}
         onClose={() => setIsContributionModalVisible(false)}
         goal={selectedGoal}
-      />
-      <Toast
-        message={toast.message}
-        isVisible={toast.isVisible}
-        onHide={() => setToast({ isVisible: false, message: '' })}
       />
     </KeyboardAvoidingView>
   );

@@ -1,7 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Toast from '../../components/Toast';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import WalletModal from '../../components/WalletModal';
 import { useWallets } from '../../context/WalletsContext';
@@ -11,18 +11,14 @@ import { usePrivacyStore } from '@/store/privacyStore';
 
 export default function WalletsScreen() {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = getStyles(colors);
   const globalStyles = getThemedStyles(colors);
 
   const { wallets, addWallet, updateWallet, deleteWallet } = useWallets();
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
-  const [toast, setToast] = useState({ isVisible: false, message: '' });
   const { isBalancesHidden } = usePrivacyStore();
-
-  const showToast = useCallback((message: string) => {
-    setToast({ isVisible: true, message });
-  }, []);
 
   // Memoizar la función getCurrencySymbol para evitar recrearla
   const getCurrencySymbol = useMemo(() => {
@@ -65,7 +61,7 @@ export default function WalletsScreen() {
             style: 'destructive',
             onPress: () => {
               deleteWallet(id);
-              showToast('Billetera eliminada con éxito');
+              showToast({ message: 'Billetera eliminada con éxito', type: 'success' });
             },
           },
         ],
@@ -83,7 +79,10 @@ export default function WalletsScreen() {
       } else {
         addWallet(walletData);
       }
-      showToast(isEditing ? 'Billetera actualizada con éxito' : 'Billetera creada con éxito');
+      showToast({
+        message: isEditing ? 'Billetera actualizada con éxito' : 'Billetera creada con éxito',
+        type: 'success',
+      });
     },
     [editingWallet, updateWallet, addWallet, showToast],
   );
@@ -133,11 +132,6 @@ export default function WalletsScreen() {
         onClose={() => setModalVisible(false)}
         onSubmit={handleSubmit}
         initialData={editingWallet}
-      />
-      <Toast
-        message={toast.message}
-        isVisible={toast.isVisible}
-        onHide={() => setToast({ isVisible: false, message: '' })}
       />
     </View>
   );

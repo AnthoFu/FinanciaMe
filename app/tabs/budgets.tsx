@@ -1,4 +1,5 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useState } from 'react';
 import {
   View,
@@ -18,7 +19,6 @@ import { Budget, ColorTheme } from '../../types';
 
 import { BudgetModal } from '../../components/BudgetModal';
 import { useBudgetSpending } from '../../hooks/useBudgetSpending';
-import Toast from '../../components/Toast';
 
 const progressBarStyles = StyleSheet.create({
   progressBarContainer: {
@@ -86,17 +86,13 @@ const BudgetItem = ({ budget, onEdit, onDelete }: { budget: Budget; onEdit: () =
 
 export default function BudgetsScreen() {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const globalStyles = getThemedStyles(colors);
   const styles = getStyles(colors);
 
   const { budgets, deleteBudget } = useBudgets();
   const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
-  const [toast, setToast] = useState({ isVisible: false, message: '' });
-
-  const showToast = (message: string) => {
-    setToast({ isVisible: true, message });
-  };
 
   const handleEditBudget = (budget: Budget) => {
     setSelectedBudget(budget);
@@ -111,7 +107,7 @@ export default function BudgetsScreen() {
         style: 'destructive',
         onPress: () => {
           deleteBudget(budget.id);
-          showToast('Presupuesto eliminado con éxito');
+          showToast({ message: 'Presupuesto eliminado con éxito', type: 'success' });
         },
       },
     ]);
@@ -145,11 +141,6 @@ export default function BudgetsScreen() {
           setIsBudgetModalVisible(false);
         }}
         budget={selectedBudget}
-      />
-      <Toast
-        message={toast.message}
-        isVisible={toast.isVisible}
-        onHide={() => setToast({ isVisible: false, message: '' })}
       />
     </KeyboardAvoidingView>
   );

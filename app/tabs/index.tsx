@@ -15,7 +15,6 @@ import {
 import { RecentTransactionsList } from '../../components/home/RecentTransactionsList';
 import { SummaryCard } from '../../components/home/SummaryCard';
 import { WalletsCarousel } from '../../components/home/WalletsCarousel';
-import Toast from '../../components/Toast';
 import TransactionModal from '../../components/TransactionModal';
 import TransferModal from '../../components/TransferModal';
 import { IconSymbol } from '../../components/ui/IconSymbol';
@@ -25,6 +24,7 @@ import { useWallets } from '../../context/WalletsContext';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
 import { useFinancialSummary } from '../../hooks/useFinancialSummary';
 import { useFixedExpensesHandler } from '../../hooks/useFixedExpensesHandler';
+import { useToast } from '@/hooks/useToast';
 import { useTransactionHandler } from '../../hooks/useTransactionHandler';
 import { getThemedStyles } from '../../styles/themedStyles';
 import { Transaction } from '../../types';
@@ -32,6 +32,7 @@ import { usePrivacyStore } from '@/store/privacyStore';
 
 export default function FinanciaMeScreen() {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = getThemedStyles(colors);
   const { isBalancesHidden, toggleBalancesHidden } = usePrivacyStore();
 
@@ -63,10 +64,8 @@ export default function FinanciaMeScreen() {
   const [isTransferModalVisible, setTransferModalVisible] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
   const [selectedWalletIdForModal, setSelectedWalletIdForModal] = useState<string | null>(null);
-  const [toast, setToast] = useState({ isVisible: false, message: '' });
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
 
-  const showToast = (message: string) => setToast({ isVisible: true, message });
   const router = useRouter();
 
   // --- Effects ---
@@ -118,7 +117,7 @@ export default function FinanciaMeScreen() {
     if (success) {
       setModalVisible(false);
       setTransactionToEdit(null);
-      showToast(transactionToUpdate ? 'Movimiento actualizado' : 'Movimiento añadido');
+      showToast({ message: transactionToUpdate ? 'Movimiento actualizado' : 'Movimiento añadido', type: 'success' });
     }
   };
 
@@ -137,7 +136,7 @@ export default function FinanciaMeScreen() {
           const result = revertTransactionBalance(transaction);
           if (result.success) {
             deleteTransaction(transaction.id);
-            showToast('Movimiento eliminado');
+            showToast({ message: 'Movimiento eliminado', type: 'success' });
           } else {
             Alert.alert('Error', result.error || 'No se pudo eliminar el movimiento.');
           }
@@ -158,11 +157,11 @@ export default function FinanciaMeScreen() {
       const success = handleTransfer(fromWalletId, toWalletId, fromAmount, toAmount, commission);
       if (success) {
         setTransferModalVisible(false);
-        showToast('Transferencia realizada con éxito');
+        showToast({ message: 'Transferencia realizada con éxito', type: 'success' });
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Ocurrió un error desconocido';
-      showToast(errorMessage);
+      showToast({ message: errorMessage, type: 'error' });
     }
   };
 
@@ -244,7 +243,6 @@ export default function FinanciaMeScreen() {
         onSubmit={handleSubmitTransaction}
         type={transactionType}
         wallets={wallets}
-        showToast={showToast}
         initialWalletId={selectedWalletIdForModal}
         transactionToEdit={transactionToEdit}
       />
@@ -252,12 +250,6 @@ export default function FinanciaMeScreen() {
         isVisible={isTransferModalVisible}
         onClose={() => setTransferModalVisible(false)}
         onSubmit={handleTransferSubmit}
-        showToast={showToast}
-      />
-      <Toast
-        isVisible={toast.isVisible}
-        message={toast.message}
-        onHide={() => setToast({ isVisible: false, message: '' })}
       />
     </KeyboardAvoidingView>
   );

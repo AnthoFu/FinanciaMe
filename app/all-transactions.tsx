@@ -1,10 +1,10 @@
 import { TransactionItem, getStyles as getTransactionItemStyles } from '@/components/home/RecentTransactionsList';
 import TransactionModal from '@/components/TransactionModal';
-import Toast from '@/components/Toast';
 import { useCategories } from '@/context/CategoriesContext';
 import { useTransactions } from '@/context/TransactionsContext';
 import { useWallets } from '@/context/WalletsContext';
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import { getThemedStyles } from '@/styles/themedStyles';
 import { ColorTheme, Transaction } from '@/types';
 import { Stack } from 'expo-router';
@@ -21,18 +21,14 @@ export default function AllTransactionsScreen() {
   const { transactions, updateTransaction, deleteTransaction } = useTransactions();
   const { wallets } = useWallets();
   const { categories, getCategoryById } = useCategories();
+  const { showToast } = useToast();
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [toast, setToast] = useState({ isVisible: false, message: '' });
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all'>('all');
-
-  const showToast = useCallback((message: string) => {
-    setToast({ isVisible: true, message });
-  }, []);
 
   const handleEdit = useCallback((transaction: Transaction) => {
     setEditingTransaction(transaction);
@@ -48,7 +44,7 @@ export default function AllTransactionsScreen() {
           style: 'destructive',
           onPress: () => {
             deleteTransaction(transaction.id);
-            showToast('Movimiento eliminado con éxito');
+            showToast({ message: 'Movimiento eliminado con éxito', type: 'success' });
           },
         },
       ]);
@@ -60,7 +56,7 @@ export default function AllTransactionsScreen() {
     (transactionData: Omit<Transaction, 'id'>, date?: string) => {
       if (editingTransaction) {
         updateTransaction({ ...editingTransaction, ...transactionData, date: date || editingTransaction.date });
-        showToast('Movimiento actualizado con éxito');
+        showToast({ message: 'Movimiento actualizado con éxito', type: 'success' });
         setModalVisible(false);
       }
     },
@@ -187,15 +183,9 @@ export default function AllTransactionsScreen() {
           onSubmit={handleSubmit}
           type={editingTransaction.type}
           wallets={wallets}
-          showToast={showToast}
           transactionToEdit={editingTransaction}
         />
       )}
-      <Toast
-        message={toast.message}
-        isVisible={toast.isVisible}
-        onHide={() => setToast({ isVisible: false, message: '' })}
-      />
     </View>
   );
 }
