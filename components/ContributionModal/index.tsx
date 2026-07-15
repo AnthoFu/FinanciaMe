@@ -1,6 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
+import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard } from 'react-native';
 
 import { useSavingsGoals } from '../../context/SavingsGoalsContext';
 import { useWallets } from '../../context/WalletsContext';
@@ -38,6 +39,7 @@ export function ContributionModal({ isVisible, onClose, goal }: ContributionModa
   const { wallets } = useWallets();
   const { addContribution } = useSavingsGoals();
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = getStyles(colors);
 
   const [walletsForCurrency, setWalletsForCurrency] = useState<Wallet[]>([]);
@@ -65,17 +67,17 @@ export function ContributionModal({ isVisible, onClose, goal }: ContributionModa
 
     const contributionAmount = parseFloat(amount);
     if (isNaN(contributionAmount) || contributionAmount <= 0) {
-      Alert.alert('Error', 'Por favor, introduce un monto válido.');
+      showToast({ message: 'Por favor, introduce un monto válido.', type: 'error', position: 'top' });
       return;
     }
 
     const result = await addContribution(goal, selectedWalletId, contributionAmount);
 
     if (result.success) {
-      Alert.alert('Éxito', result.message);
+      showToast({ message: result.message, type: 'success' });
       handleClose();
     } else {
-      Alert.alert('Error', result.message);
+      showToast({ message: result.message, type: 'error' });
     }
   };
 

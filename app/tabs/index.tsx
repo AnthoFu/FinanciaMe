@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
@@ -15,9 +14,9 @@ import {
 import { RecentTransactionsList } from '../../components/home/RecentTransactionsList';
 import { SummaryCard } from '../../components/home/SummaryCard';
 import { WalletsCarousel } from '../../components/home/WalletsCarousel';
-import Toast from '../../components/Toast';
 import TransactionModal from '../../components/TransactionModal';
 import TransferModal from '../../components/TransferModal';
+import { ConfirmationModal } from '../../components/ui/ConfirmationModal';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useFixedExpenses } from '../../context/FixedExpensesContext';
 import { useTransactions } from '../../context/TransactionsContext';
@@ -25,6 +24,7 @@ import { useWallets } from '../../context/WalletsContext';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
 import { useFinancialSummary } from '../../hooks/useFinancialSummary';
 import { useFixedExpensesHandler } from '../../hooks/useFixedExpensesHandler';
+import { useToast } from '@/hooks/useToast';
 import { useTransactionHandler } from '../../hooks/useTransactionHandler';
 import { getThemedStyles } from '../../styles/themedStyles';
 import { Transaction } from '../../types';
@@ -32,6 +32,7 @@ import { usePrivacyStore } from '@/store/privacyStore';
 
 export default function FinanciaMeScreen() {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = getThemedStyles(colors);
   const { isBalancesHidden, toggleBalancesHidden } = usePrivacyStore();
 
@@ -54,7 +55,7 @@ export default function FinanciaMeScreen() {
   const { handleSaveTransaction, handleTransfer } = useTransactionHandler();
 
   // --- Fixed Expenses Logic ---
-  const { checkDueFixedExpenses } = useFixedExpensesHandler();
+  const { checkDueFixedExpenses, handlePayDueExpenses } = useFixedExpensesHandler();
 
   // --- Local State ---
   const [loading, setLoading] = useState(true);
@@ -63,10 +64,12 @@ export default function FinanciaMeScreen() {
   const [isTransferModalVisible, setTransferModalVisible] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
   const [selectedWalletIdForModal, setSelectedWalletIdForModal] = useState<string | null>(null);
-  const [toast, setToast] = useState({ isVisible: false, message: '' });
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
+  const [isDueExpensesModalVisible, setDueExpensesModalVisible] = useState(false);
+  const [dueExpensesToPay, setDueExpensesToPay] = useState<FixedExpense[]>([]);
 
-  const showToast = (message: string) => setToast({ isVisible: true, message });
   const router = useRouter();
 
   // --- Effects ---
@@ -77,7 +80,10 @@ export default function FinanciaMeScreen() {
 
   useEffect(() => {
     if (!loading) {
-      checkDueFixedExpenses();
+      checkDueFixedExpenses((dueExpenses) => {
+        setDueExpensesToPay(dueExpenses);
+        setDueExpensesModalVisible(true);
+      });
     }
   }, [loading, checkDueFixedExpenses]);
 
@@ -118,7 +124,7 @@ export default function FinanciaMeScreen() {
     if (success) {
       setModalVisible(false);
       setTransactionToEdit(null);
-      showToast(transactionToUpdate ? 'Movimiento actualizado' : 'Movimiento añadido');
+      showToast({ message: transactionToUpdate ? 'Movimiento actualizado' : 'Movimiento añadido', type: 'success' });
     }
   };
 
@@ -128,22 +134,20 @@ export default function FinanciaMeScreen() {
   };
 
   const handleDeleteTransaction = (transaction: Transaction) => {
-    Alert.alert('Eliminar Movimiento', '¿Estás seguro de que quieres eliminar este movimiento?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: () => {
-          const result = revertTransactionBalance(transaction);
-          if (result.success) {
-            deleteTransaction(transaction.id);
-            showToast('Movimiento eliminado');
-          } else {
-            Alert.alert('Error', result.error || 'No se pudo eliminar el movimiento.');
-          }
-        },
-      },
-    ]);
+    setTransactionToDelete(transaction);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDeleteTransaction = () => {
+    if (!transactionToDelete) return;
+    const result = revertTransactionBalance(transactionToDelete);
+    if (result.success) {
+      deleteTransaction(transactionToDelete.id);
+      showToast({ message: 'Movimiento eliminado', type: 'success' });
+    } else {
+      showToast({ message: result.error || 'No se pudo eliminar el movimiento.', type: 'error' });
+    }
+    setTransactionToDelete(null);
   };
 
   const handleTransferSubmit = (
@@ -158,11 +162,11 @@ export default function FinanciaMeScreen() {
       const success = handleTransfer(fromWalletId, toWalletId, fromAmount, toAmount, commission);
       if (success) {
         setTransferModalVisible(false);
-        showToast('Transferencia realizada con éxito');
+        showToast({ message: 'Transferencia realizada con éxito', type: 'success' });
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Ocurrió un error desconocido';
-      showToast(errorMessage);
+      showToast({ message: errorMessage, type: 'error' });
     }
   };
 
@@ -244,7 +248,6 @@ export default function FinanciaMeScreen() {
         onSubmit={handleSubmitTransaction}
         type={transactionType}
         wallets={wallets}
-        showToast={showToast}
         initialWalletId={selectedWalletIdForModal}
         transactionToEdit={transactionToEdit}
       />
@@ -252,12 +255,32 @@ export default function FinanciaMeScreen() {
         isVisible={isTransferModalVisible}
         onClose={() => setTransferModalVisible(false)}
         onSubmit={handleTransferSubmit}
-        showToast={showToast}
       />
-      <Toast
-        isVisible={toast.isVisible}
-        message={toast.message}
-        onHide={() => setToast({ isVisible: false, message: '' })}
+      <ConfirmationModal
+        isVisible={isDeleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setTransactionToDelete(null);
+        }}
+        onConfirm={confirmDeleteTransaction}
+        title="Eliminar Movimiento"
+        message="¿Estás seguro de que quieres eliminar este movimiento? Esta acción revertirá el saldo de tu billetera."
+        confirmText="Eliminar"
+        type="destructive"
+      />
+      <ConfirmationModal
+        isVisible={isDueExpensesModalVisible}
+        onClose={() => {
+          setDueExpensesModalVisible(false);
+          setDueExpensesToPay([]);
+        }}
+        onConfirm={() => handlePayDueExpenses(dueExpensesToPay)}
+        title="Gastos Fijos Pendientes"
+        message={`Tienes pagos pendientes para: ${dueExpensesToPay.map((e) => e.name).join(', ')}. ¿Deseas pagarlos ahora?`}
+        confirmText="Pagar Ahora"
+        cancelText="Más Tarde"
+        type="info"
+        icon="creditcard.fill"
       />
     </KeyboardAvoidingView>
   );

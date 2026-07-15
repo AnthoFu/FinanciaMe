@@ -1,6 +1,6 @@
 import { useTheme } from '@/hooks/useTheme';
 import React, { useState } from 'react';
-import { Alert, Modal, SafeAreaView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, SafeAreaView, StyleSheet, Switch, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import { IconSymbol } from '../ui/IconSymbol';
 
 interface NotificationSettingsModalProps {
@@ -36,16 +36,7 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
     setLocalSettings((prev) => ({ ...prev, reminderTime: time }));
   };
 
-  const showTimePicker = () => {
-    Alert.alert('Seleccionar Hora', 'Elige la hora para los recordatorios:', [
-      { text: '08:00', onPress: () => handleTimeChange('08:00') },
-      { text: '09:00', onPress: () => handleTimeChange('09:00') },
-      { text: '10:00', onPress: () => handleTimeChange('10:00') },
-      { text: '12:00', onPress: () => handleTimeChange('12:00') },
-      { text: '18:00', onPress: () => handleTimeChange('18:00') },
-      { text: 'Cancelar', style: 'cancel' },
-    ]);
-  };
+  const times = ['08:00', '09:00', '10:00', '12:00', '15:00', '18:00', '20:00'];
 
   // Los estilos se definen aquí para poder usar `colors` del tema
   const styles = StyleSheet.create({
@@ -78,6 +69,9 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
       padding: 20,
     },
     settingRow: {
+      marginBottom: 32,
+    },
+    settingRowInline: {
       marginBottom: 24,
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -100,15 +94,17 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
     },
     optionsContainer: {
       flexDirection: 'row',
-      gap: 12,
+      gap: 10,
     },
     optionButton: {
       paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 8,
+      paddingVertical: 10,
+      borderRadius: 12,
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.card,
+      minWidth: 60,
+      alignItems: 'center',
     },
     optionButtonSelected: {
       backgroundColor: colors.primary,
@@ -122,27 +118,12 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
       color: '#FFFFFF',
       fontWeight: '600',
     },
-    timeButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.card,
-    },
-    timeText: {
-      fontSize: 16,
-      color: colors.text,
-    },
     infoContainer: {
       flexDirection: 'row',
       alignItems: 'flex-start',
       backgroundColor: colors.card,
       padding: 16,
-      borderRadius: 8,
+      borderRadius: 12,
       marginTop: 20,
     },
     infoText: {
@@ -161,12 +142,14 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
     },
     button: {
       flex: 1,
-      paddingVertical: 12,
-      borderRadius: 8,
+      paddingVertical: 14,
+      borderRadius: 16,
       alignItems: 'center',
     },
     cancelButton: {
       backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
     },
     saveButton: {
       backgroundColor: colors.primary,
@@ -184,19 +167,19 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
   });
 
   return (
-    <Modal visible={isVisible} animationType="slide" presentationStyle="pageSheet">
+    <Modal visible={isVisible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <IconSymbol name="xmark" size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.title}>Configuración de Notificaciones</Text>
+          <Text style={styles.title}>Configuración</Text>
           <View style={styles.placeholder} />
         </View>
 
-        <View style={styles.content}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Habilitar notificaciones */}
-          <View style={styles.settingRow}>
+          <View style={styles.settingRowInline}>
             <View style={styles.settingInfo}>
               <Text style={styles.settingTitle}>Notificaciones</Text>
               <Text style={styles.settingDescription}>Recibe recordatorios de gastos fijos</Text>
@@ -215,19 +198,21 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
               <Text style={styles.settingTitle}>Recordar con anticipación</Text>
               <Text style={styles.settingDescription}>Días antes del vencimiento (0 = el mismo día)</Text>
             </View>
-            <View style={styles.optionsContainer}>
-              {[0, 1, 2, 3, 7].map((days) => (
-                <TouchableOpacity
-                  key={days}
-                  style={[styles.optionButton, localSettings.reminderDays === days && styles.optionButtonSelected]}
-                  onPress={() => handleReminderDaysChange(days)}
-                >
-                  <Text style={[styles.optionText, localSettings.reminderDays === days && styles.optionTextSelected]}>
-                    {days === 0 ? 'Hoy' : days}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }}>
+              <View style={styles.optionsContainer}>
+                {[0, 1, 2, 3, 7].map((days) => (
+                  <TouchableOpacity
+                    key={days}
+                    style={[styles.optionButton, localSettings.reminderDays === days && styles.optionButtonSelected]}
+                    onPress={() => handleReminderDaysChange(days)}
+                  >
+                    <Text style={[styles.optionText, localSettings.reminderDays === days && styles.optionTextSelected]}>
+                      {days === 0 ? 'Hoy' : `${days} d`}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
           </View>
 
           {/* Hora del recordatorio */}
@@ -236,20 +221,31 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
               <Text style={styles.settingTitle}>Hora del recordatorio</Text>
               <Text style={styles.settingDescription}>Cuándo recibir las notificaciones</Text>
             </View>
-            <TouchableOpacity style={styles.timeButton} onPress={showTimePicker}>
-              <Text style={styles.timeText}>{localSettings.reminderTime}</Text>
-              <IconSymbol name="chevron.right" size={16} color={colors.text} />
-            </TouchableOpacity>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }}>
+              <View style={styles.optionsContainer}>
+                {times.map((time) => (
+                  <TouchableOpacity
+                    key={time}
+                    style={[styles.optionButton, localSettings.reminderTime === time && styles.optionButtonSelected]}
+                    onPress={() => handleTimeChange(time)}
+                  >
+                    <Text style={[styles.optionText, localSettings.reminderTime === time && styles.optionTextSelected]}>
+                      {time}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
           </View>
 
           {/* Información adicional */}
           <View style={styles.infoContainer}>
-            <IconSymbol name="info.circle" size={20} color={colors.primary} />
+            <IconSymbol name="info.circle.fill" size={20} color={colors.primary} />
             <Text style={styles.infoText}>
               Las notificaciones te ayudarán a no olvidar tus gastos fijos y mantener un mejor control de tus finanzas.
             </Text>
           </View>
-        </View>
+        </ScrollView>
 
         <View style={styles.footer}>
           <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={onClose}>

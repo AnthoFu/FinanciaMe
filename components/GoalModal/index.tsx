@@ -1,4 +1,5 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableWithoutFeedback, Keyboard, TouchableOpacity, Switch } from 'react-native';
 
@@ -22,6 +23,7 @@ export function GoalModal({ isVisible, onClose, goal }: GoalModalProps) {
   const [createWallet, setCreateWallet] = useState(true);
   const { addSavingsGoal, updateSavingsGoal, createSavingsGoalWithWallet } = useSavingsGoals();
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = getStyles(colors);
 
   useEffect(() => {
@@ -54,6 +56,7 @@ export function GoalModal({ isVisible, onClose, goal }: GoalModalProps) {
           targetAmount: amount,
           currency,
         });
+        showToast({ message: 'Meta actualizada con éxito', type: 'success' });
       } else {
         if (createWallet) {
           await createSavingsGoalWithWallet({
@@ -68,10 +71,15 @@ export function GoalModal({ isVisible, onClose, goal }: GoalModalProps) {
             currency,
           });
         }
+        showToast({ message: 'Meta creada con éxito', type: 'success' });
       }
       handleClose();
     } else {
-      alert('Por favor, introduce un nombre válido y un monto mayor a cero.');
+      showToast({
+        message: 'Por favor, introduce un nombre válido y un monto mayor a cero.',
+        type: 'error',
+        position: 'top',
+      });
     }
   };
 

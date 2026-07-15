@@ -1,9 +1,10 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FixedExpenseModal from '../../components/FixedExpenseModal';
 import { NotificationSettingsModal } from '../../components/NotificationSettingsModal';
-import Toast from '../../components/Toast';
+import { ConfirmationModal } from '../../components/ui/ConfirmationModal';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useCategories } from '../../context/CategoriesContext';
 import { useFixedExpenses } from '../../context/FixedExpensesContext';
@@ -35,6 +36,7 @@ const formatFrequency = (expense: FixedExpense): string => {
 
 export default function FixedExpensesScreen() {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = getStyles(colors);
   const globalStyles = getThemedStyles(colors);
 
@@ -45,15 +47,16 @@ export default function FixedExpensesScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isNotificationSettingsVisible, setNotificationSettingsVisible] = useState(false);
   const [editingExpense, setEditingExpense] = useState<FixedExpense | null>(null);
-  const [toast, setToast] = useState({ isVisible: false, message: '' });
-
-  const showToast = (message: string) => {
-    setToast({ isVisible: true, message });
-  };
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [expenseToDeleteId, setExpenseToDeleteId] = useState<string | null>(null);
 
   const handleAddNew = () => {
     if (wallets.length === 0) {
-      Alert.alert('No hay billeteras', 'Debes crear al menos una billetera antes de añadir un gasto fijo.');
+      showToast({
+        message: 'Debes crear al menos una billetera antes de añadir un gasto fijo.',
+        type: 'error',
+        position: 'top',
+      });
       return;
     }
     setEditingExpense(null);
@@ -66,17 +69,16 @@ export default function FixedExpensesScreen() {
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert('Eliminar Gasto Fijo', '¿Estás seguro de que quieres eliminar este gasto fijo?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: () => {
-          deleteFixedExpense(id);
-          showToast('Gasto fijo eliminado con éxito');
-        },
-      },
-    ]);
+    setExpenseToDeleteId(id);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDeleteExpense = () => {
+    if (expenseToDeleteId) {
+      deleteFixedExpense(expenseToDeleteId);
+      showToast({ message: 'Gasto fijo eliminado con éxito', type: 'success' });
+      setExpenseToDeleteId(null);
+    }
   };
 
   const handleSubmit = async (expenseData: Omit<FixedExpense, 'id' | 'lastPaid'>) => {
@@ -87,18 +89,18 @@ export default function FixedExpensesScreen() {
       } else {
         await addFixedExpense(expenseData);
       }
-      showToast(isEditing ? 'Gasto fijo actualizado' : 'Gasto fijo creado con éxito');
+      showToast({ message: isEditing ? 'Gasto fijo actualizado' : 'Gasto fijo creado con éxito', type: 'success' });
     } catch {
-      showToast('Error al guardar el gasto fijo');
+      showToast({ message: 'Error al guardar el gasto fijo', type: 'error' });
     }
   };
 
   const handleNotificationSettingsSave = async (settings: typeof notificationSettings) => {
     try {
       await saveNotificationSettings(settings);
-      showToast('Configuración de notificaciones guardada');
+      showToast({ message: 'Configuración de notificaciones guardada', type: 'success' });
     } catch {
-      showToast('Error al guardar la configuración');
+      showToast({ message: 'Error al guardar la configuración', type: 'error' });
     }
   };
 
@@ -166,10 +168,17 @@ export default function FixedExpensesScreen() {
         settings={notificationSettings}
         onSave={handleNotificationSettingsSave}
       />
-      <Toast
-        message={toast.message}
-        isVisible={toast.isVisible}
-        onHide={() => setToast({ isVisible: false, message: '' })}
+      <ConfirmationModal
+        isVisible={isDeleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setExpenseToDeleteId(null);
+        }}
+        onConfirm={confirmDeleteExpense}
+        title="Eliminar Gasto Fijo"
+        message="¿Estás seguro de que quieres eliminar este gasto fijo?"
+        confirmText="Eliminar"
+        type="destructive"
       />
     </View>
   );

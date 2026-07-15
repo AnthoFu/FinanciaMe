@@ -1,6 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView, Alert } from 'react-native';
+import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
 import { Wallet } from '../../types';
 import { useWallets } from '../../context/WalletsContext';
 import { useExchangeRates } from '../../hooks/useExchangeRates';
@@ -19,11 +20,11 @@ interface TransferModalProps {
     rate: number,
     commission?: number,
   ) => void;
-  showToast: (message: string) => void;
 }
 
-export default function TransferModal({ isVisible, onClose, onSubmit, showToast }: TransferModalProps) {
+export default function TransferModal({ isVisible, onClose, onSubmit }: TransferModalProps) {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = getStyles(colors);
   const { wallets } = useWallets();
   const { averageRate } = useExchangeRates();
@@ -106,15 +107,19 @@ export default function TransferModal({ isVisible, onClose, onSubmit, showToast 
     const rateNum = parseFloat(exchangeRate);
 
     if (!fromWalletId || !toWalletId || !fromAmountNum || !toAmountNum || !rateNum) {
-      showToast('Por favor, completa todos los campos.');
+      showToast({ message: 'Por favor, completa todos los campos.', type: 'error' });
       return;
     }
     if (fromWalletId === toWalletId) {
-      showToast('Las billeteras de origen y destino no pueden ser la misma.');
+      showToast({ message: 'Las billeteras de origen y destino no pueden ser la misma.', type: 'error' });
       return;
     }
     if (fromWallet && fromWallet.balance < fromAmountNum + commissionNum) {
-      Alert.alert('Saldo Insuficiente', 'La billetera de origen no tiene fondos suficientes (incluyendo comisión).');
+      showToast({
+        message: 'La billetera de origen no tiene fondos suficientes (incluyendo comisión).',
+        type: 'error',
+        position: 'top',
+      });
       return;
     }
 

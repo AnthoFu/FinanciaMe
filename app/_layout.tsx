@@ -1,5 +1,6 @@
 import { MenuProvider } from 'react-native-popup-menu';
 import 'react-native-get-random-values';
+import { RootSiblingParent } from 'react-native-root-siblings';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useTheme } from '@/hooks/useTheme';
 import { useFonts } from 'expo-font';
@@ -19,6 +20,7 @@ import { SavingsGoalsProvider } from '../context/SavingsGoalsContext';
 import { TransactionsProvider } from '../context/TransactionsContext';
 import { WalletsProvider } from '../context/WalletsContext';
 import { AppThemeProvider, useAppTheme } from '../context/ThemeContext';
+import { ToastProvider } from '../context/ToastContext';
 
 // Create custom themes
 const CustomDefaultTheme = {
@@ -109,27 +111,31 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <MenuProvider>
-        <AppThemeProvider>
-          <OnboardingProvider>
-            <ExchangeRatesProvider>
-              <CategoriesProvider>
-                <FixedExpensesProvider>
-                  <TransactionsProvider>
-                    <WalletsProvider>
-                      <SavingsGoalsProvider>
-                        <BudgetsProvider>
-                          <RootLayoutNav />
-                        </BudgetsProvider>
-                      </SavingsGoalsProvider>
-                    </WalletsProvider>
-                  </TransactionsProvider>
-                </FixedExpensesProvider>
-              </CategoriesProvider>
-            </ExchangeRatesProvider>
-          </OnboardingProvider>
-        </AppThemeProvider>
-      </MenuProvider>
+      <RootSiblingParent>
+        <MenuProvider>
+          <AppThemeProvider>
+            <ToastProvider>
+              <OnboardingProvider>
+                <ExchangeRatesProvider>
+                  <CategoriesProvider>
+                    <FixedExpensesProvider>
+                      <TransactionsProvider>
+                        <WalletsProvider>
+                          <SavingsGoalsProvider>
+                            <BudgetsProvider>
+                              <RootLayoutNav />
+                            </BudgetsProvider>
+                          </SavingsGoalsProvider>
+                        </WalletsProvider>
+                      </TransactionsProvider>
+                    </FixedExpensesProvider>
+                  </CategoriesProvider>
+                </ExchangeRatesProvider>
+              </OnboardingProvider>
+            </ToastProvider>
+          </AppThemeProvider>
+        </MenuProvider>
+      </RootSiblingParent>
     </GestureHandlerRootView>
   );
 }

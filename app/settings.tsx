@@ -39,7 +39,6 @@ export default function SettingsScreen() {
       icon: 'questionmark.circle.fill',
       action: resetOnboarding,
     },
-    // Add other settings items here in the future
   ];
 
   const renderItem = ({ item }: { item: MenuItem }) => (

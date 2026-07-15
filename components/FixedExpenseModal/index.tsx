@@ -1,4 +1,5 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Modal,
@@ -42,6 +43,7 @@ export default function FixedExpenseModal({
   initialData,
 }: FixedExpenseModalProps) {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = getStyles(colors);
   const { categories } = useCategories();
 
@@ -92,12 +94,12 @@ export default function FixedExpenseModal({
     const numericDay = parseInt(dayOfMonth, 10);
 
     if (!name || !numericAmount || !selectedWalletId || !selectedCategoryId) {
-      alert('Por favor, completa los campos obligatorios.');
+      showToast({ message: 'Por favor, completa los campos obligatorios.', type: 'error', position: 'top' });
       return;
     }
 
     if (frequency === 'monthly' && (!numericDay || numericDay < 1 || numericDay > 31)) {
-      alert('Por favor, introduce un día del mes válido (1-31).');
+      showToast({ message: 'Por favor, introduce un día del mes válido (1-31).', type: 'error', position: 'top' });
       return;
     }
 

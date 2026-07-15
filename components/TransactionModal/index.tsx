@@ -1,4 +1,5 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Button,
@@ -34,7 +35,6 @@ interface TransactionModalProps {
   ) => void;
   type: 'income' | 'expense';
   wallets: Wallet[];
-  showToast: (message: string) => void;
   initialWalletId?: string | null;
   transactionToEdit?: Transaction | null;
 }
@@ -45,11 +45,11 @@ export default function TransactionModal({
   onSubmit,
   type,
   wallets,
-  showToast,
   initialWalletId,
   transactionToEdit,
 }: TransactionModalProps) {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = getStyles(colors);
   const { categories } = useCategories();
   const [amount, setAmount] = useState('');
@@ -105,7 +105,7 @@ export default function TransactionModal({
     const numericAmount = parseFloat(amount);
     const numericCommission = parseFloat(commission) || 0;
     if (!numericAmount || numericAmount <= 0 || !description || !selectedWalletId || !selectedCategoryId) {
-      showToast('Por favor, completa todos los campos.');
+      showToast({ message: 'Por favor, completa todos los campos.', type: 'error', position: 'top' });
       return;
     }
     onSubmit(

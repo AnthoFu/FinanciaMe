@@ -1,4 +1,5 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useState } from 'react';
 import {
   View,
@@ -9,12 +10,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 
 import { ContributionModal } from '../../components/ContributionModal';
 import { GoalModal } from '../../components/GoalModal';
-import Toast from '../../components/Toast';
+import { ConfirmationModal } from '../../components/ui/ConfirmationModal';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useSavingsGoals } from '../../context/SavingsGoalsContext';
 import { getThemedStyles } from '../../styles/themedStyles';
@@ -93,6 +93,7 @@ const GoalItem = ({
 
 export default function GoalsScreen() {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const globalStyles = getThemedStyles(colors);
   const styles = getStyles(colors);
 
@@ -100,11 +101,8 @@ export default function GoalsScreen() {
   const [isGoalModalVisible, setIsGoalModalVisible] = useState(false);
   const [isContributionModalVisible, setIsContributionModalVisible] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null);
-  const [toast, setToast] = useState({ isVisible: false, message: '' });
-
-  const showToast = (message: string) => {
-    setToast({ isVisible: true, message });
-  };
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [goalToDelete, setGoalToDelete] = useState<SavingsGoal | null>(null);
 
   const handleOpenContributionModal = (goal: SavingsGoal) => {
     setSelectedGoal(goal);
@@ -117,17 +115,16 @@ export default function GoalsScreen() {
   };
 
   const handleDeleteGoal = (goal: SavingsGoal) => {
-    Alert.alert('Eliminar Meta', `¿Estás seguro de que quieres eliminar la meta "${goal.name}"?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: () => {
-          deleteSavingsGoal(goal.id);
-          showToast('Meta eliminada con éxito');
-        },
-      },
-    ]);
+    setGoalToDelete(goal);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDeleteGoal = () => {
+    if (goalToDelete) {
+      deleteSavingsGoal(goalToDelete.id);
+      showToast({ message: 'Meta eliminada con éxito', type: 'success' });
+      setGoalToDelete(null);
+    }
   };
 
   const handleAddNewGoal = () => {
@@ -162,10 +159,17 @@ export default function GoalsScreen() {
         onClose={() => setIsContributionModalVisible(false)}
         goal={selectedGoal}
       />
-      <Toast
-        message={toast.message}
-        isVisible={toast.isVisible}
-        onHide={() => setToast({ isVisible: false, message: '' })}
+      <ConfirmationModal
+        isVisible={isDeleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setGoalToDelete(null);
+        }}
+        onConfirm={confirmDeleteGoal}
+        title="Eliminar Meta"
+        message={`¿Estás seguro de que quieres eliminar la meta "${goalToDelete?.name}"?`}
+        confirmText="Eliminar"
+        type="destructive"
       />
     </KeyboardAvoidingView>
   );

@@ -1,17 +1,18 @@
 import { useCallback } from 'react';
-import { Alert } from 'react-native';
 import { v4 as uuidv4 } from 'uuid';
 import { FixedExpense } from '../types';
 import { useWallets } from '../context/WalletsContext';
 import { useTransactions } from '../context/TransactionsContext';
 import { useFixedExpenses } from '../context/FixedExpensesContext';
 import { useExchangeRates } from './useExchangeRates';
+import { useToast } from './useToast';
 
 export function useFixedExpensesHandler() {
   const { wallets, updateBalancesForTransaction } = useWallets();
   const { addTransaction, isLoading: transactionsLoading } = useTransactions();
   const { expenses, setExpenses, isLoading: fixedExpensesLoading } = useFixedExpenses();
   const { bcvRate, usdtRate, eurRate, averageRate, loading: ratesLoading } = useExchangeRates();
+  const { showToast } = useToast();
 
   const isWithinDateRange = useCallback((expense: FixedExpense, date: Date): boolean => {
     const start = expense.startDate ? new Date(expense.startDate) : null;
@@ -85,73 +86,83 @@ export function useFixedExpensesHandler() {
               .join(', ')}.`
           : '';
       if (failedExpenses.length > 0) summaryMessage += `\n\nPagos fallidos: ${failedExpenses.join('; ')}.`;
-      if (summaryMessage) Alert.alert('Resumen de Pagos', summaryMessage);
+      if (summaryMessage) {
+        showToast({
+          message: summaryMessage,
+          type: failedExpenses.length > 0 ? 'error' : 'success',
+          duration: 5000,
+        });
+      }
     },
-    [bcvRate, usdtRate, eurRate, averageRate, wallets, updateBalancesForTransaction, addTransaction, setExpenses],
+    [
+      bcvRate,
+      usdtRate,
+      eurRate,
+      averageRate,
+      wallets,
+      updateBalancesForTransaction,
+      addTransaction,
+      setExpenses,
+      showToast,
+    ],
   );
 
-  const promptToPayDueExpenses = useCallback(
-    (dueExpenses: FixedExpense[]) => {
-      const expenseNames = dueExpenses.map((e) => e.name).join(', ');
-      Alert.alert('Gastos Fijos Pendientes', `Tienes pagos pendientes para: ${expenseNames}. ¿Deseas pagarlos ahora?`, [
-        { text: 'Más Tarde', style: 'cancel' },
-        { text: 'Pagar Ahora', onPress: () => handlePayDueExpenses(dueExpenses) },
-      ]);
-    },
-    [handlePayDueExpenses],
-  );
+  const checkDueFixedExpenses = useCallback(
+    async (onDueExpensesFound?: (dueExpenses: FixedExpense[]) => void) => {
+      // Avoid checking if data is still loading
+      if (fixedExpensesLoading || transactionsLoading || ratesLoading) return;
 
-  const checkDueFixedExpenses = useCallback(async () => {
-    // Avoid checking if data is still loading
-    if (fixedExpensesLoading || transactionsLoading || ratesLoading) return;
+      const now = new Date();
+      const dueExpenses = expenses.filter((exp) => {
+        if (!exp.startDate || !isWithinDateRange(exp, now)) {
+          return false;
+        }
 
-    const now = new Date();
-    const dueExpenses = expenses.filter((exp) => {
-      if (!exp.startDate || !isWithinDateRange(exp, now)) {
+        const lastPaid = exp.lastPaid ? new Date(exp.lastPaid) : null;
+        const startDate = new Date(exp.startDate);
+        let currentDueDate = new Date(startDate);
+
+        while (true) {
+          let nextDueDate = new Date(currentDueDate);
+          switch (exp.frequency) {
+            case 'daily':
+              nextDueDate.setDate(nextDueDate.getDate() + 1);
+              break;
+            case 'weekly':
+              nextDueDate.setDate(nextDueDate.getDate() + 7);
+              break;
+            case 'biweekly':
+              nextDueDate.setDate(nextDueDate.getDate() + 14);
+              break;
+            case 'yearly':
+              nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+              break;
+            case 'monthly':
+              if (typeof exp.dayOfMonth !== 'number') return false;
+              nextDueDate.setMonth(nextDueDate.getMonth() + 1, exp.dayOfMonth);
+              break;
+          }
+          if (nextDueDate > now) {
+            break;
+          }
+          currentDueDate = nextDueDate;
+        }
+
+        if (!lastPaid || lastPaid < currentDueDate) {
+          return true;
+        }
+
         return false;
-      }
+      });
 
-      const lastPaid = exp.lastPaid ? new Date(exp.lastPaid) : null;
-      const startDate = new Date(exp.startDate);
-      let currentDueDate = new Date(startDate);
-
-      while (true) {
-        let nextDueDate = new Date(currentDueDate);
-        switch (exp.frequency) {
-          case 'daily':
-            nextDueDate.setDate(nextDueDate.getDate() + 1);
-            break;
-          case 'weekly':
-            nextDueDate.setDate(nextDueDate.getDate() + 7);
-            break;
-          case 'biweekly':
-            nextDueDate.setDate(nextDueDate.getDate() + 14);
-            break;
-          case 'yearly':
-            nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
-            break;
-          case 'monthly':
-            if (typeof exp.dayOfMonth !== 'number') return false;
-            nextDueDate.setMonth(nextDueDate.getMonth() + 1, exp.dayOfMonth);
-            break;
+      if (dueExpenses.length > 0) {
+        if (onDueExpensesFound) {
+          onDueExpensesFound(dueExpenses);
         }
-        if (nextDueDate > now) {
-          break;
-        }
-        currentDueDate = nextDueDate;
       }
+    },
+    [fixedExpensesLoading, transactionsLoading, ratesLoading, expenses, isWithinDateRange, handlePayDueExpenses],
+  );
 
-      if (!lastPaid || lastPaid < currentDueDate) {
-        return true;
-      }
-
-      return false;
-    });
-
-    if (dueExpenses.length > 0) {
-      promptToPayDueExpenses(dueExpenses);
-    }
-  }, [fixedExpensesLoading, transactionsLoading, ratesLoading, expenses, isWithinDateRange, promptToPayDueExpenses]);
-
-  return { checkDueFixedExpenses };
+  return { checkDueFixedExpenses, handlePayDueExpenses };
 }

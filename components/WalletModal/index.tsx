@@ -1,4 +1,5 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Keyboard, Modal, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { Wallet } from '../../types';
@@ -14,6 +15,7 @@ interface WalletModalProps {
 
 export default function WalletModal({ isVisible, onClose, onSubmit, initialData }: WalletModalProps) {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = getStyles(colors);
 
   const [name, setName] = useState('');
@@ -39,7 +41,7 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
   const handleSubmit = useCallback(() => {
     const numericBalance = parseFloat(balance);
     if (!name || isNaN(numericBalance)) {
-      alert('Por favor, ingresa un nombre y un saldo válidos.');
+      showToast({ message: 'Por favor, ingresa un nombre y un saldo válidos.', type: 'error', position: 'top' });
       return;
     }
 

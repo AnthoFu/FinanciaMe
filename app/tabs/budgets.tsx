@@ -1,15 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useBudgets } from '../../context/BudgetsContext';
@@ -18,7 +10,7 @@ import { Budget, ColorTheme } from '../../types';
 
 import { BudgetModal } from '../../components/BudgetModal';
 import { useBudgetSpending } from '../../hooks/useBudgetSpending';
-import Toast from '../../components/Toast';
+import { ConfirmationModal } from '../../components/ui/ConfirmationModal';
 
 const progressBarStyles = StyleSheet.create({
   progressBarContainer: {
@@ -86,17 +78,15 @@ const BudgetItem = ({ budget, onEdit, onDelete }: { budget: Budget; onEdit: () =
 
 export default function BudgetsScreen() {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const globalStyles = getThemedStyles(colors);
   const styles = getStyles(colors);
 
   const { budgets, deleteBudget } = useBudgets();
   const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
-  const [toast, setToast] = useState({ isVisible: false, message: '' });
-
-  const showToast = (message: string) => {
-    setToast({ isVisible: true, message });
-  };
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [budgetToDelete, setBudgetToDelete] = useState<Budget | null>(null);
 
   const handleEditBudget = (budget: Budget) => {
     setSelectedBudget(budget);
@@ -104,17 +94,16 @@ export default function BudgetsScreen() {
   };
 
   const handleDeleteBudget = (budget: Budget) => {
-    Alert.alert('Eliminar Presupuesto', `¿Estás seguro de que quieres eliminar el presupuesto "${budget.name}"?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: () => {
-          deleteBudget(budget.id);
-          showToast('Presupuesto eliminado con éxito');
-        },
-      },
-    ]);
+    setBudgetToDelete(budget);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDeleteBudget = () => {
+    if (budgetToDelete) {
+      deleteBudget(budgetToDelete.id);
+      showToast({ message: 'Presupuesto eliminado con éxito', type: 'success' });
+      setBudgetToDelete(null);
+    }
   };
 
   const handleAddNewBudget = () => {
@@ -146,10 +135,17 @@ export default function BudgetsScreen() {
         }}
         budget={selectedBudget}
       />
-      <Toast
-        message={toast.message}
-        isVisible={toast.isVisible}
-        onHide={() => setToast({ isVisible: false, message: '' })}
+      <ConfirmationModal
+        isVisible={isDeleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setBudgetToDelete(null);
+        }}
+        onConfirm={confirmDeleteBudget}
+        title="Eliminar Presupuesto"
+        message={`¿Estás seguro de que quieres eliminar el presupuesto "${budgetToDelete?.name}"?`}
+        confirmText="Eliminar"
+        type="destructive"
       />
     </KeyboardAvoidingView>
   );

@@ -1,4 +1,5 @@
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
 import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity } from 'react-native';
 
@@ -34,6 +35,7 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
   const expenseCategories = React.useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
 
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = getStyles(colors);
 
   useEffect(() => {
@@ -75,12 +77,18 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
 
       if (budget) {
         updateBudget({ ...budget, ...budgetData });
+        showToast({ message: 'Presupuesto actualizado con éxito', type: 'success' });
       } else {
         addBudget(budgetData as Omit<Budget, 'id' | 'creationDate'>);
+        showToast({ message: 'Presupuesto creado con éxito', type: 'success' });
       }
       handleClose();
     } else {
-      alert('Por favor, completa todos los campos.');
+      showToast({
+        message: 'Por favor, completa todos los campos con valores válidos.',
+        type: 'error',
+        position: 'top',
+      });
     }
   };
 
