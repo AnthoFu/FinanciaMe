@@ -130,7 +130,14 @@ export default function TransferModal({ isVisible, onClose, onSubmit }: Transfer
   const isMultiCurrency = fromWallet && toWallet && fromWallet.currency !== toWallet.currency;
 
   return (
-    <Modal visible={isVisible} animationType="slide" transparent={true} onRequestClose={onClose}>
+    <Modal
+      visible={isVisible}
+      animationType="slide"
+      transparent={true}
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={onClose}
+    >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>

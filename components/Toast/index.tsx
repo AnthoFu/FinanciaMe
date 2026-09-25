@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Text, TouchableOpacity, View, StyleSheet, Modal } from 'react-native';
+import React, { useEffect } from 'react';
+import { Animated, Modal, Text, TouchableOpacity, TouchableWithoutFeedback, View, StyleSheet } from 'react-native';
 import { styles } from './styles';
 
 export type ToastType = 'info' | 'success' | 'error';
@@ -63,17 +63,28 @@ export default function Toast({
   const positionStyle = styles[position] || styles.bottom;
 
   return (
-    <Modal transparent visible={isVisible} animationType="none" onRequestClose={hide}>
-      <View style={localStyles.overlay} pointerEvents="box-none">
-        <Animated.View style={[styles.container, typeStyle, positionStyle, { opacity: fadeAnim }]} pointerEvents="auto">
-          <Text style={styles.message}>{message}</Text>
-          {duration === null && (
-            <TouchableOpacity onPress={hide} style={styles.closeButton}>
-              <Text style={styles.closeText}>✕</Text>
-            </TouchableOpacity>
-          )}
-        </Animated.View>
-      </View>
+    <Modal
+      transparent
+      visible={isVisible}
+      animationType="none"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={hide}
+    >
+      <TouchableWithoutFeedback onPress={hide}>
+        <View style={localStyles.overlay}>
+          <TouchableWithoutFeedback>
+            <Animated.View style={[styles.container, typeStyle, positionStyle, { opacity: fadeAnim }]}>
+              <Text style={styles.message}>{message}</Text>
+              {duration === null && (
+                <TouchableOpacity onPress={hide} style={styles.closeButton}>
+                  <Text style={styles.closeText}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </Animated.View>
+          </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 }

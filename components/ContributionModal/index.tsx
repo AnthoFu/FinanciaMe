@@ -82,7 +82,14 @@ export function ContributionModal({ isVisible, onClose, goal }: ContributionModa
   };
 
   return (
-    <Modal visible={isVisible} transparent animationType="fade" onRequestClose={handleClose}>
+    <Modal
+      visible={isVisible}
+      transparent
+      animationType="fade"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={handleClose}
+    >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>

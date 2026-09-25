@@ -63,7 +63,14 @@ export default function WalletModal({ isVisible, onClose, onSubmit, initialData 
   );
 
   return (
-    <Modal visible={isVisible} animationType="slide" transparent={true} onRequestClose={onClose}>
+    <Modal
+      visible={isVisible}
+      animationType="slide"
+      transparent={true}
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={onClose}
+    >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>

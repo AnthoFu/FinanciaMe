@@ -213,7 +213,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
   };
 
   return (
-    <Modal visible={isVisible} transparent animationType="fade" statusBarTranslucent>
+    <Modal visible={isVisible} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent>
       <View style={styles.overlay}>
         <SafeAreaView style={styles.container}>
           <Animated.View

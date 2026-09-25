@@ -158,7 +158,14 @@ export default function TransactionModal({
   );
 
   return (
-    <Modal visible={isVisible} animationType="slide" transparent={true} onRequestClose={handleClose}>
+    <Modal
+      visible={isVisible}
+      animationType="slide"
+      transparent={true}
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={handleClose}
+    >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>

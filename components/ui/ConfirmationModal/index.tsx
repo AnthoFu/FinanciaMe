@@ -35,7 +35,14 @@ export const ConfirmationModal = ({
   const iconColor = type === 'destructive' ? colors.notification : colors.primary;
 
   return (
-    <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={isVisible}
+      transparent
+      animationType="fade"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={onClose}
+    >
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.modalContainer}>
           <TouchableWithoutFeedback>

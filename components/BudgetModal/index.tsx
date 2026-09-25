@@ -93,7 +93,14 @@ export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
   };
 
   return (
-    <Modal visible={isVisible} transparent animationType="fade" onRequestClose={handleClose}>
+    <Modal
+      visible={isVisible}
+      transparent
+      animationType="fade"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={handleClose}
+    >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
