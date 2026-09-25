@@ -1,7 +1,8 @@
 import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Animated, Modal, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Modal, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '../ui/IconSymbol';
 import { getOnboardingStyles } from './styles';
 import { TabSpotlight } from './TabSpotlight';
@@ -29,7 +30,6 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
   const [fadeAnim] = useState(new Animated.Value(0));
   const [contentTranslateY] = useState(new Animated.Value(20));
   const [spotlightAnim] = useState(new Animated.Value(0));
-  const [highlightedTab, setHighlightedTab] = useState<string | null>(null);
 
   const tutorialSteps: TutorialStep[] = useMemo(
     () => [
@@ -129,22 +129,23 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
     }
   }, [isVisible, fadeAnim, contentTranslateY]);
 
+  const currentStepData = tutorialSteps[currentStep];
+  const highlightedTab = isVisible && currentStepData?.highlightTab ? currentStepData.highlightTab : null;
+
   // Manejar cambios de paso con animaciones
   useEffect(() => {
     if (!isVisible) return;
 
-    const currentStepData = tutorialSteps[currentStep];
-
     // Navegar si es necesario
     if (currentStepData.navigateTo) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         router.push(currentStepData.navigateTo as any);
       }, 100);
+      return () => clearTimeout(timer);
     }
 
     // Manejar Spotlight
     if (currentStepData.highlightTab) {
-      setHighlightedTab(currentStepData.highlightTab);
       Animated.spring(spotlightAnim, {
         toValue: 1,
         tension: 40,
@@ -156,9 +157,9 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
         toValue: 0,
         duration: 200,
         useNativeDriver: true,
-      }).start(() => setHighlightedTab(null));
+      }).start();
     }
-  }, [currentStep, isVisible, router, spotlightAnim, tutorialSteps]);
+  }, [currentStepData, isVisible, router, spotlightAnim]);
 
   const handleNext = () => {
     if (currentStep < tutorialSteps.length - 1) {

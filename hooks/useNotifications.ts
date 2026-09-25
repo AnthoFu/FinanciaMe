@@ -1,7 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
-import { SchedulableTriggerInputTypes } from 'expo-notifications';
 import { useEffect, useState, useCallback } from 'react';
 import { Platform } from 'react-native';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
@@ -11,10 +9,13 @@ import { FixedExpense } from '../types';
 // Detectar si estamos en Expo Go
 const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
-// Configurar el comportamiento de las notificaciones solo si NO estamos en Expo Go
+let Notifications: typeof import('expo-notifications') | null = null;
 if (!isExpoGo) {
   try {
-    Notifications.setNotificationHandler({
+    // expo-notifications remote push functionality is not supported in Expo Go on Android
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    Notifications = require('expo-notifications');
+    Notifications?.setNotificationHandler({
       handleNotification: async () => ({
         shouldShowAlert: true,
         shouldPlaySound: true,
@@ -24,7 +25,7 @@ if (!isExpoGo) {
       }),
     });
   } catch (error) {
-    console.log('Notifications handler setup failed:', error);
+    console.warn('Notifications setup failed:', error);
   }
 }
 
@@ -45,7 +46,7 @@ export const useNotifications = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const requestPermissions = useCallback(async () => {
-    if (isExpoGo) return; // No intentar en Expo Go
+    if (isExpoGo || !Notifications) return; // No intentar en Expo Go
 
     try {
       if (Device.isDevice) {
@@ -76,23 +77,31 @@ export const useNotifications = () => {
     }
   }, []);
 
-  const loadNotificationSettings = useCallback(async () => {
-    try {
-      const settings = await AsyncStorage.getItem(NOTIFICATION_SETTINGS_KEY);
-      if (settings) {
-        setNotificationSettings(JSON.parse(settings));
-      }
-    } catch (error) {
-      console.error('Error loading notification settings:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    loadNotificationSettings();
-    requestPermissions();
-  }, [loadNotificationSettings, requestPermissions]);
+    let isMounted = true;
+
+    const loadSettings = async () => {
+      try {
+        const settings = await AsyncStorage.getItem(NOTIFICATION_SETTINGS_KEY);
+        if (settings && isMounted) {
+          setNotificationSettings(JSON.parse(settings));
+        }
+      } catch (error) {
+        console.error('Error loading notification settings:', error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+      await requestPermissions();
+    };
+
+    loadSettings();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [requestPermissions]);
 
   const saveNotificationSettings = async (settings: NotificationSettings) => {
     try {
@@ -110,7 +119,7 @@ export const useNotifications = () => {
 
     if (expense.frequency === 'monthly' && expense.dayOfMonth) {
       nextDate = new Date(today.getFullYear(), today.getMonth(), expense.dayOfMonth, hours, minutes, 0, 0);
-      
+
       // Ajustar por días de anticipación
       nextDate.setDate(nextDate.getDate() - reminderDays);
 
@@ -123,7 +132,7 @@ export const useNotifications = () => {
       // Para otras frecuencias, usamos startDate o el día de hoy como base
       const baseDate = expense.startDate ? new Date(expense.startDate) : new Date();
       baseDate.setHours(hours, minutes, 0, 0);
-      
+
       nextDate = new Date(baseDate);
       nextDate.setDate(nextDate.getDate() - reminderDays);
 
@@ -151,42 +160,45 @@ export const useNotifications = () => {
     return nextDate;
   };
 
-  const scheduleFixedExpenseReminder = async (expense: FixedExpense) => {
-    if (isExpoGo || !notificationSettings.enabled) return;
+  const scheduleFixedExpenseReminder = useCallback(
+    async (expense: FixedExpense) => {
+      if (isExpoGo || !Notifications || !notificationSettings.enabled) return;
 
-    try {
-      const reminderDate = calculateNextOccurrence(
-        expense, 
-        notificationSettings.reminderDays, 
-        notificationSettings.reminderTime
-      );
+      try {
+        const reminderDate = calculateNextOccurrence(
+          expense,
+          notificationSettings.reminderDays,
+          notificationSettings.reminderTime,
+        );
 
-      if (!reminderDate) return;
+        if (!reminderDate) return;
 
-      const notificationId = `fixed_expense_${expense.id}`;
+        const notificationId = `fixed_expense_${expense.id}`;
 
-      await Notifications.scheduleNotificationAsync({
-        identifier: notificationId,
-        content: {
-          title: '💳 Recordatorio de Gasto Fijo',
-          body: `No olvides pagar "${expense.name}" - ${expense.amount} ${expense.currency}`,
-          data: {
-            type: 'fixed_expense_reminder',
-            expenseId: expense.id,
+        await Notifications.scheduleNotificationAsync({
+          identifier: notificationId,
+          content: {
+            title: '💳 Recordatorio de Gasto Fijo',
+            body: `No olvides pagar "${expense.name}" - ${expense.amount} ${expense.currency}`,
+            data: {
+              type: 'fixed_expense_reminder',
+              expenseId: expense.id,
+            },
           },
-        },
-        trigger: {
-          type: SchedulableTriggerInputTypes.DATE,
-          date: reminderDate,
-        } as any,
-      });
-    } catch (error) {
-      console.log('Error scheduling notification:', error);
-    }
-  };
+          trigger: {
+            type: 'date',
+            date: reminderDate,
+          } as any,
+        });
+      } catch (error) {
+        console.log('Error scheduling notification:', error);
+      }
+    },
+    [notificationSettings.enabled, notificationSettings.reminderDays, notificationSettings.reminderTime],
+  );
 
   const cancelFixedExpenseReminder = async (expenseId: string) => {
-    if (isExpoGo) return;
+    if (isExpoGo || !Notifications) return;
     try {
       const notificationId = `fixed_expense_${expenseId}`;
       await Notifications.cancelScheduledNotificationAsync(notificationId);
@@ -197,7 +209,7 @@ export const useNotifications = () => {
 
   const scheduleAllFixedExpenseReminders = useCallback(
     async (expenses: FixedExpense[]) => {
-      if (isExpoGo || !notificationSettings.enabled) return;
+      if (isExpoGo || !Notifications || !notificationSettings.enabled) return;
 
       try {
         const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
@@ -218,11 +230,11 @@ export const useNotifications = () => {
         console.log('Error scheduling all notifications:', error);
       }
     },
-    [notificationSettings.enabled, notificationSettings.reminderDays, notificationSettings.reminderTime],
+    [notificationSettings.enabled, scheduleFixedExpenseReminder],
   );
 
   const sendImmediateNotification = async (title: string, body: string, data?: Record<string, unknown>) => {
-    if (isExpoGo) return;
+    if (isExpoGo || !Notifications) return;
     try {
       await Notifications.scheduleNotificationAsync({
         content: { title, body, data },

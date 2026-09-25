@@ -1,6 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
 import React, { useState } from 'react';
-import { Modal, SafeAreaView, StyleSheet, Switch, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { Modal, StyleSheet, Switch, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '../ui/IconSymbol';
 
 interface NotificationSettingsModalProps {

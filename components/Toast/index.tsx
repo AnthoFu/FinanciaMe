@@ -22,7 +22,17 @@ export default function Toast({
   duration = 2000,
   onHide,
 }: ToastProps) {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [fadeAnim] = React.useState(() => new Animated.Value(0));
+
+  const hide = React.useCallback(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      onHide();
+    });
+  }, [fadeAnim, onHide]);
 
   useEffect(() => {
     if (isVisible) {
@@ -43,17 +53,7 @@ export default function Toast({
     } else {
       fadeAnim.setValue(0);
     }
-  }, [isVisible, duration, fadeAnim]);
-
-  const hide = () => {
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      onHide();
-    });
-  };
+  }, [isVisible, duration, fadeAnim, hide]);
 
   if (!isVisible) {
     return null;
@@ -80,7 +80,7 @@ export default function Toast({
 
 const localStyles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'transparent',
     zIndex: 999999,
   },

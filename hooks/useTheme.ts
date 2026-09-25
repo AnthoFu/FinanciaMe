@@ -1,8 +1,15 @@
 // hooks/useTheme.ts
-import { useTheme as useNativeTheme } from '@react-navigation/native';
+import { useAppTheme } from '@/context/ThemeContext';
+import { Colors } from '@/constants/Colors';
 import { ColorTheme } from '../types';
 
 export const useTheme = () => {
-  const theme = useNativeTheme();
-  return theme as unknown as { colors: ColorTheme };
+  const { colorScheme } = useAppTheme();
+  const activeScheme = colorScheme === 'dark' ? 'dark' : 'light';
+  const colors = Colors[activeScheme] as ColorTheme;
+
+  return {
+    dark: activeScheme === 'dark',
+    colors,
+  };
 };

@@ -147,7 +147,7 @@ export default function FixedExpensesScreen() {
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.itemAmount}>
-                  {{ USD: '$', VES: 'Bs.', USDT: 'USDT' }[item.currency]} {item.amount.toFixed(2)}
+                  {{ USD: '$', VES: 'Bs.', USDT: 'USDT', EUR: '€' }[item.currency]} {item.amount.toFixed(2)}
                 </Text>
               </View>
             </View>

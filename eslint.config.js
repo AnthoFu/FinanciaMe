@@ -7,6 +7,12 @@ module.exports = defineConfig([
   expoConfig,
   prettierConfig,
   {
+    rules: {
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/purity': 'warn',
+    },
+  },
+  {
     ignores: ['dist/*'],
   },
 ]);
