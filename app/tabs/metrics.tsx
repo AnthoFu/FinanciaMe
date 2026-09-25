@@ -27,6 +27,34 @@ const CHART_COLORS = [
   '#FF595E',
 ];
 
+const toRgba = (color: string, opacity = 1): string => {
+  if (!color) return `rgba(10, 132, 255, ${opacity})`;
+
+  const rgbMatch = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (rgbMatch) {
+    const [, r, g, b] = rgbMatch;
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+
+  let hex = color.replace('#', '');
+  if (hex.length === 3) {
+    hex = hex
+      .split('')
+      .map((c) => c + c)
+      .join('');
+  }
+  if (hex.length >= 6) {
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+  }
+
+  return `rgba(10, 132, 255, ${opacity})`;
+};
+
 export default function MetricsScreen() {
   const { colors } = useTheme();
   const styles = getStyles(colors);
@@ -261,13 +289,8 @@ export default function MetricsScreen() {
                   backgroundGradientFrom: colors.card,
                   backgroundGradientTo: colors.card,
                   decimalPlaces: 0,
-                  color: (opacity = 1) =>
-                    `rgba(${parseInt(colors.primary.slice(1, 3), 16)}, ${parseInt(colors.primary.slice(3, 5), 16)}, ${parseInt(colors.primary.slice(5, 7), 16)}, ${opacity})`,
-                  labelColor: (opacity = 1) =>
-                    colors.text +
-                    Math.round(opacity * 255)
-                      .toString(16)
-                      .padStart(2, '0'),
+                  color: (opacity = 1) => toRgba(colors.primary, opacity),
+                  labelColor: (opacity = 1) => toRgba(colors.text, opacity),
                   style: { borderRadius: 16 },
                   propsForDots: { r: '4', strokeWidth: '2', stroke: colors.primary },
                 }}
