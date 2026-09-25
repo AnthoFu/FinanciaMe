@@ -196,7 +196,6 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ isVisibl
     onSkip();
   };
 
-  const currentStepData = tutorialSteps[currentStep];
   const isLastStep = currentStep === tutorialSteps.length - 1;
   const isFirstStep = currentStep === 0;
 
