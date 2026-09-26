@@ -3,114 +3,187 @@ import { ColorTheme } from '../../types';
 
 export const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
-    modalContainer: {
+    safeArea: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    },
-    modalContent: {
-      width: '94%',
-      maxHeight: '85%',
-      padding: 20,
-      backgroundColor: colors.card,
-      borderRadius: 24,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 5,
-    },
-    title: { 
-      fontSize: 22, 
-      fontWeight: '700', 
-      marginBottom: 20, 
-      textAlign: 'center', 
-      color: colors.text 
-    },
-    section: {
-      marginBottom: 16,
-      width: '100%',
-    },
-    currencySelector: {
-      flexDirection: 'row',
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
-      overflow: 'hidden',
-      height: 46,
-      width: '100%',
-      marginTop: 8,
       backgroundColor: colors.background,
     },
-    currencyOption: { 
-      flex: 1, 
-      alignItems: 'center', 
+    keyboardAvoid: {
+      flex: 1,
+    },
+    topBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    closeBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.card,
+      alignItems: 'center',
       justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
     },
-    currencyOptionSelected: { 
-      backgroundColor: colors.primary,
+    topBarTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: colors.text,
     },
-    currencyText: { 
-      fontSize: 14, 
-      color: colors.text, 
-      fontWeight: '500' 
+    topBarRight: {
+      width: 40,
     },
-    currencyTextSelected: { 
-      color: '#FFFFFF', 
-      fontWeight: 'bold' 
+    scrollView: {
+      flex: 1,
     },
-    pickerLabel: {
-      fontSize: 16,
+    scrollContent: {
+      padding: 20,
+      paddingBottom: 40,
+    },
+    // Hero Amount Card
+    heroAmountCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      paddingVertical: 20,
+      paddingHorizontal: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    heroAmountLabel: {
+      fontSize: 13,
       fontWeight: '600',
       color: colors.text,
-      marginTop: 8,
-      marginBottom: 10,
+      opacity: 0.6,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: 8,
     },
-    pickerItem: {
+    heroAmountRow: {
       flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 10,
-      paddingHorizontal: 16,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
-      marginRight: 8,
-      backgroundColor: colors.background,
-    },
-    pickerItemSelected: { 
-      backgroundColor: colors.primary,
-      borderColor: colors.primary,
-    },
-    pickerItemText: { color: colors.text, fontSize: 14 },
-    pickerItemTextSelected: { color: '#FFFFFF', fontWeight: '600' },
-    buttonContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      width: '100%',
-      marginTop: 24,
-      paddingTop: 16,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-      gap: 12,
-    },
-    actionButton: {
-      flex: 1,
-      padding: 14,
-      borderRadius: 16,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    cancelButton: {
-      backgroundColor: colors.background,
-      borderWidth: 1,
+    heroCurrencyBadge: {
+      fontSize: 26,
+      fontWeight: 'bold',
+      color: colors.primary,
+      marginRight: 8,
+    },
+    heroAmountInput: {
+      fontSize: 36,
+      fontWeight: 'bold',
+      color: colors.text,
+      minWidth: 120,
+      textAlign: 'center',
+      padding: 0,
+    },
+    // Section General
+    section: {
+      marginBottom: 22,
+    },
+    sectionLabel: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: 10,
+    },
+    // Chips (Currency & Period)
+    chipSelector: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    chip: {
+      flex: 1,
+      paddingVertical: 12,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.card,
+      borderWidth: 1.5,
       borderColor: colors.border,
     },
-    submitButton: {
+    chipSelected: {
+      backgroundColor: colors.primary + '15',
+      borderColor: colors.primary,
+    },
+    chipText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    chipTextSelected: {
+      color: colors.primary,
+      fontWeight: 'bold',
+    },
+    // Category 3-Column Grid
+    categoryGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 10,
+      justifyContent: 'flex-start',
+    },
+    categoryItem: {
+      width: '31%',
+      aspectRatio: 1.15,
+      borderRadius: 14,
+      backgroundColor: colors.card,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 6,
+    },
+    categoryItemSelected: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + '12',
+    },
+    categoryIconCircle: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 6,
+      backgroundColor: colors.background,
+    },
+    categoryIconCircleSelected: {
       backgroundColor: colors.primary,
     },
-    buttonText: {
-      fontSize: 16,
+    categoryName: {
+      fontSize: 12,
       fontWeight: '600',
-    }
+      color: colors.text,
+      textAlign: 'center',
+    },
+    categoryNameSelected: {
+      color: colors.primary,
+      fontWeight: 'bold',
+    },
+    // Footer Action Button
+    footerContainer: {
+      paddingHorizontal: 20,
+      paddingVertical: 14,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      backgroundColor: colors.background,
+    },
+    submitButton: {
+      height: 52,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.primary,
+    },
+    submitButtonText: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#FFFFFF',
+    },
   });

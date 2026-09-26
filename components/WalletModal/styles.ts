@@ -3,99 +3,162 @@ import { ColorTheme } from '../../types';
 
 export const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
-    modalContainer: {
+    safeArea: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    },
-    modalContent: {
-      width: '90%',
-      padding: 24,
-      backgroundColor: colors.card,
-      borderRadius: 24,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 5,
-    },
-    modalTitle: { 
-      fontSize: 22, 
-      fontWeight: '700', 
-      marginBottom: 24, 
-      textAlign: 'center', 
-      color: colors.text 
-    },
-    section: {
-      marginBottom: 16,
-      width: '100%',
-    },
-    currencySelector: {
-      flexDirection: 'row',
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
-      overflow: 'hidden',
-      height: 46,
-      width: '100%',
-      marginTop: 8,
       backgroundColor: colors.background,
     },
-    currencyOption: { 
-      flex: 1, 
-      alignItems: 'center', 
+    keyboardAvoid: {
+      flex: 1,
+    },
+    topBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    closeBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    topBarTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: colors.text,
+    },
+    topBarRight: {
+      width: 40,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      padding: 20,
+      paddingBottom: 40,
+    },
+    // Hero Amount Card (Saldo)
+    heroAmountCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      paddingVertical: 20,
+      paddingHorizontal: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    heroAmountLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: colors.text,
+      opacity: 0.6,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: 8,
+    },
+    heroAmountRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
       justifyContent: 'center',
     },
-    currencyOptionSelected: { 
-      backgroundColor: colors.primary,
+    heroCurrencyBadge: {
+      fontSize: 26,
+      fontWeight: 'bold',
+      color: colors.primary,
+      marginRight: 8,
     },
-    currencyText: { 
-      fontSize: 14, 
-      color: colors.text, 
-      fontWeight: '500' 
+    heroAmountInput: {
+      fontSize: 36,
+      fontWeight: 'bold',
+      color: colors.text,
+      minWidth: 120,
+      textAlign: 'center',
+      padding: 0,
     },
-    currencyTextSelected: { 
-      color: '#FFFFFF', 
-      fontWeight: 'bold' 
+    // Section General
+    section: {
+      marginBottom: 22,
+    },
+    sectionLabel: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: 10,
+    },
+    // Currency Chips
+    chipSelector: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    chip: {
+      flex: 1,
+      paddingVertical: 12,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.card,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+    },
+    chipSelected: {
+      backgroundColor: colors.primary + '15',
+      borderColor: colors.primary,
+    },
+    chipText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    chipTextSelected: {
+      color: colors.primary,
+      fontWeight: 'bold',
+    },
+    // Note Box
+    noteCard: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      backgroundColor: colors.card,
+      padding: 14,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: colors.border,
+      gap: 10,
+      marginTop: 4,
     },
     noteText: {
       fontSize: 13,
       color: colors.text,
-      opacity: 0.6,
-      fontStyle: 'italic',
-      textAlign: 'center',
-      marginTop: 8,
-      marginBottom: 16,
+      opacity: 0.7,
+      flex: 1,
       lineHeight: 18,
     },
-    buttonContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      width: '100%',
-      marginTop: 8,
-      paddingTop: 16,
+    // Footer Action Button
+    footerContainer: {
+      paddingHorizontal: 20,
+      paddingVertical: 14,
       borderTopWidth: 1,
       borderTopColor: colors.border,
-      gap: 12,
-    },
-    actionButton: {
-      flex: 1,
-      padding: 14,
-      borderRadius: 16,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    cancelButton: {
       backgroundColor: colors.background,
-      borderWidth: 1,
-      borderColor: colors.border,
     },
     submitButton: {
+      height: 52,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
       backgroundColor: colors.primary,
     },
-    buttonText: {
+    submitButtonText: {
       fontSize: 16,
-      fontWeight: '600',
-    }
+      fontWeight: 'bold',
+      color: '#FFFFFF',
+    },
   });

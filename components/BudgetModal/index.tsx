@@ -1,12 +1,22 @@
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/hooks/useToast';
-import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity } from 'react-native';
-
+import React, { useMemo, useState } from 'react';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBudgets } from '../../context/BudgetsContext';
 import { useCategories } from '../../context/CategoriesContext';
-import { Budget, Category, Currency } from '../../types';
-import { HorizontalPicker } from '../ui/HorizontalPicker';
+import { Budget, Currency } from '../../types';
 import { IconSymbol } from '../ui/IconSymbol';
 import { StyledInput } from '../ui/StyledInput';
 import { getStyles } from './styles';
@@ -23,155 +33,205 @@ const periodOptions: { label: string; value: 'mensual' | 'anual' }[] = [
   { label: 'Anual', value: 'anual' },
 ];
 
-export function BudgetModal({ isVisible, onClose, budget }: BudgetModalProps) {
-  const [name, setName] = useState('');
-  const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState<Currency>('USD');
-  const [period, setPeriod] = useState<'mensual' | 'anual'>('mensual');
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$',
+  VES: 'Bs.',
+  USDT: 'USDT',
+  EUR: '€',
+};
 
-  const { addBudget, updateBudget } = useBudgets();
-  const { categories } = useCategories();
-  const expenseCategories = React.useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
-
+function BudgetFormContent({ onClose, budget }: Omit<BudgetModalProps, 'isVisible'>) {
   const { colors } = useTheme();
   const { showToast } = useToast();
   const styles = getStyles(colors);
+  const { addBudget, updateBudget } = useBudgets();
+  const { categories } = useCategories();
 
-  useEffect(() => {
-    if (isVisible) {
-      if (budget) {
-        setName(budget.name);
-        setAmount(budget.amount.toString());
-        setCurrency(budget.currency);
-        setPeriod(budget.period);
-        setCategoryId(budget.categoryId);
-      } else {
-        setName('');
-        setAmount('');
-        setCurrency('USD');
-        setPeriod('mensual');
-        if (expenseCategories.length > 0) {
-          setCategoryId(expenseCategories[0].id);
-        } else {
-          setCategoryId(null);
-        }
-      }
-    }
-  }, [isVisible, budget, expenseCategories]);
+  const expenseCategories = useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
 
-  const handleClose = () => {
-    onClose();
-  };
+  const [name, setName] = useState(budget ? budget.name : '');
+  const [amount, setAmount] = useState(budget ? budget.amount.toString() : '');
+  const [currency, setCurrency] = useState<Currency>(budget ? budget.currency : 'USD');
+  const [period, setPeriod] = useState<'mensual' | 'anual'>(budget ? budget.period : 'mensual');
+  const [categoryId, setCategoryId] = useState<string | null>(() => {
+    if (budget) return budget.categoryId;
+    return expenseCategories.length > 0 ? expenseCategories[0].id : null;
+  });
 
   const handleSave = () => {
     const budgetAmount = parseFloat(amount);
-    if (name.trim() && budgetAmount > 0 && categoryId) {
-      const budgetData = {
-        name: name.trim(),
-        amount: budgetAmount,
-        currency,
-        period: period as 'mensual' | 'anual',
-        categoryId,
-      };
-
-      if (budget) {
-        updateBudget({ ...budget, ...budgetData });
-        showToast({ message: 'Presupuesto actualizado con éxito', type: 'success' });
-      } else {
-        addBudget(budgetData as Omit<Budget, 'id' | 'creationDate'>);
-        showToast({ message: 'Presupuesto creado con éxito', type: 'success' });
-      }
-      handleClose();
-    } else {
-      showToast({
-        message: 'Por favor, completa todos los campos con valores válidos.',
-        type: 'error',
-        position: 'top',
-      });
+    if (!name.trim()) {
+      showToast({ message: 'Por favor, introduce un nombre para el presupuesto.', type: 'error' });
+      return;
     }
+    if (!budgetAmount || isNaN(budgetAmount) || budgetAmount <= 0) {
+      showToast({ message: 'Por favor, introduce un monto válido mayor a cero.', type: 'error' });
+      return;
+    }
+    if (!categoryId) {
+      showToast({ message: 'Por favor, selecciona una categoría.', type: 'error' });
+      return;
+    }
+
+    const budgetData = {
+      name: name.trim(),
+      amount: budgetAmount,
+      currency,
+      period,
+      categoryId,
+    };
+
+    if (budget) {
+      updateBudget({ ...budget, ...budgetData });
+      showToast({ message: 'Presupuesto actualizado con éxito', type: 'success' });
+    } else {
+      addBudget(budgetData as Omit<Budget, 'id' | 'creationDate'>);
+      showToast({ message: 'Presupuesto creado con éxito', type: 'success' });
+    }
+    onClose();
   };
+
+  const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView style={styles.keyboardAvoid} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        {/* Top Header Bar */}
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
+            <IconSymbol name="xmark" size={20} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.topBarTitle}>{budget ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}</Text>
+          <View style={styles.topBarRight} />
+        </View>
+
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* 1. Hero Amount Card (Límite de Presupuesto) */}
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.heroAmountCard}>
+              <Text style={styles.heroAmountLabel}>Límite de Presupuesto</Text>
+              <View style={styles.heroAmountRow}>
+                <Text style={styles.heroCurrencyBadge}>{currencySymbol}</Text>
+                <TextInput
+                  style={styles.heroAmountInput}
+                  value={amount}
+                  onChangeText={setAmount}
+                  placeholder="0.00"
+                  placeholderTextColor={colors.text + '40'}
+                  keyboardType="decimal-pad"
+                  autoFocus
+                />
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+
+          {/* 2. Nombre del Presupuesto */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Nombre</Text>
+            <StyledInput
+              placeholder="Ej. Salidas, Mercado mensual, Entretenimiento..."
+              value={name}
+              onChangeText={setName}
+            />
+          </View>
+
+          {/* 3. Moneda */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Moneda</Text>
+            <View style={styles.chipSelector}>
+              {currencyOptions.map((curr) => {
+                const isSelected = currency === curr;
+                return (
+                  <TouchableOpacity
+                    key={curr}
+                    style={[styles.chip, isSelected && styles.chipSelected]}
+                    onPress={() => setCurrency(curr)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>{curr}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* 4. Período */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Período</Text>
+            <View style={styles.chipSelector}>
+              {periodOptions.map((opt) => {
+                const isSelected = period === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    style={[styles.chip, isSelected && styles.chipSelected]}
+                    onPress={() => setPeriod(opt.value)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>{opt.label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* 5. Categoría */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Categoría Asociada</Text>
+            <View style={styles.categoryGrid}>
+              {expenseCategories.map((cat) => {
+                const isSelected = cat.id === categoryId;
+                return (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}
+                    onPress={() => setCategoryId(cat.id)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={[styles.categoryIconCircle, isSelected && styles.categoryIconCircleSelected]}>
+                      <IconSymbol name={cat.icon as any} size={18} color={isSelected ? '#FFFFFF' : colors.text} />
+                    </View>
+                    <Text style={[styles.categoryName, isSelected && styles.categoryNameSelected]} numberOfLines={1}>
+                      {cat.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* Footer Action Button */}
+        <View style={styles.footerContainer}>
+          <TouchableOpacity style={styles.submitButton} onPress={handleSave} activeOpacity={0.85}>
+            <Text style={styles.submitButtonText}>{budget ? 'Guardar Cambios' : 'Crear Presupuesto'}</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+export function BudgetModal(props: BudgetModalProps) {
+  if (!props.isVisible) return null;
+
+  const formKey = props.budget ? `edit-budget-${props.budget.id}` : 'new-budget';
 
   return (
     <Modal
-      visible={isVisible}
-      transparent
-      animationType="fade"
+      visible={props.isVisible}
+      animationType="slide"
+      presentationStyle="fullScreen"
       statusBarTranslucent
       navigationBarTranslucent
-      onRequestClose={handleClose}
+      onRequestClose={props.onClose}
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.title}>{budget ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}</Text>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={styles.section}>
-                <StyledInput placeholder="Nombre (ej. Mercado)" value={name} onChangeText={setName} />
-
-                <StyledInput placeholder="Monto" value={amount} onChangeText={setAmount} keyboardType="numeric" />
-
-                <View style={styles.currencySelector}>
-                  {currencyOptions.map((curr) => (
-                    <TouchableOpacity
-                      key={curr}
-                      style={[styles.currencyOption, currency === curr && styles.currencyOptionSelected]}
-                      onPress={() => setCurrency(curr)}
-                    >
-                      <Text style={[styles.currencyText, currency === curr && styles.currencyTextSelected]}>
-                        {curr}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              <HorizontalPicker<(typeof periodOptions)[0], 'mensual' | 'anual'>
-                label="Periodo"
-                data={periodOptions}
-                selectedValue={period}
-                onSelect={setPeriod}
-                keyExtractor={(item) => item.value}
-                renderItem={(item, isSelected) => (
-                  <View style={[styles.pickerItem, isSelected && styles.pickerItemSelected]}>
-                    <Text style={[styles.pickerItemText, isSelected && styles.pickerItemTextSelected]}>
-                      {item.label}
-                    </Text>
-                  </View>
-                )}
-              />
-
-              <HorizontalPicker<Category, string>
-                label="Categoría"
-                data={expenseCategories}
-                selectedValue={categoryId}
-                onSelect={setCategoryId}
-                keyExtractor={(item) => item.id}
-                renderItem={(item, isSelected) => (
-                  <View style={[styles.pickerItem, isSelected && styles.pickerItemSelected]}>
-                    <IconSymbol name={item.icon as any} size={14} color={isSelected ? '#FFFFFF' : colors.primary} />
-                    <Text
-                      style={[styles.pickerItemText, isSelected && styles.pickerItemTextSelected, { marginLeft: 5 }]}
-                    >
-                      {item.name}
-                    </Text>
-                  </View>
-                )}
-              />
-
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={[styles.actionButton, styles.cancelButton]} onPress={handleClose}>
-                  <Text style={[styles.buttonText, { color: colors.text }]}>Cancelar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionButton, styles.submitButton]} onPress={handleSave}>
-                  <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>Guardar</Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
-        </View>
-      </TouchableWithoutFeedback>
+      <BudgetFormContent key={formKey} {...props} />
     </Modal>
   );
 }

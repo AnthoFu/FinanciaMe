@@ -1,8 +1,21 @@
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/hooks/useToast';
-import React, { useCallback, useEffect, useState } from 'react';
-import { Keyboard, Modal, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import React, { useState } from 'react';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Wallet } from '../../types';
+import { IconSymbol } from '../ui/IconSymbol';
 import { StyledInput } from '../ui/StyledInput';
 import { getStyles } from './styles';
 
@@ -13,115 +26,161 @@ interface WalletModalProps {
   initialData?: Wallet | null;
 }
 
-export default function WalletModal({ isVisible, onClose, onSubmit, initialData }: WalletModalProps) {
+const currencyOptions: ('USD' | 'VES' | 'USDT' | 'EUR')[] = ['USD', 'VES', 'USDT', 'EUR'];
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$',
+  VES: 'Bs.',
+  USDT: 'USDT',
+  EUR: '€',
+};
+
+function WalletFormContent({ onClose, onSubmit, initialData }: Omit<WalletModalProps, 'isVisible'>) {
   const { colors } = useTheme();
   const { showToast } = useToast();
   const styles = getStyles(colors);
 
-  const [name, setName] = useState('');
-  const [balance, setBalance] = useState('');
-  const [currency, setCurrency] = useState<'USD' | 'VES' | 'USDT' | 'EUR'>('USD');
+  const isEditing = Boolean(initialData);
 
-  const isEditing = !!initialData;
+  const [name, setName] = useState(initialData ? initialData.name : '');
+  const [balance, setBalance] = useState(initialData ? initialData.balance.toString() : '');
+  const [currency, setCurrency] = useState<'USD' | 'VES' | 'USDT' | 'EUR'>(
+    initialData ? (initialData.currency as any) : 'USD',
+  );
 
-  useEffect(() => {
-    if (isVisible) {
-      if (initialData) {
-        setName(initialData.name);
-        setBalance(initialData.balance.toString());
-        setCurrency(initialData.currency as any);
-      } else {
-        setName('');
-        setBalance('');
-        setCurrency('USD');
-      }
-    }
-  }, [initialData, isVisible]);
-
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = () => {
     const numericBalance = parseFloat(balance);
-    if (!name || isNaN(numericBalance)) {
-      showToast({ message: 'Por favor, ingresa un nombre y un saldo válidos.', type: 'error', position: 'top' });
+    if (!name.trim()) {
+      showToast({ message: 'Por favor, ingresa un nombre para la billetera.', type: 'error' });
+      return;
+    }
+    if (isNaN(numericBalance)) {
+      showToast({ message: 'Por favor, ingresa un saldo inicial válido.', type: 'error' });
       return;
     }
 
     onSubmit({
-      name,
+      name: name.trim(),
       balance: numericBalance,
-      currency: currency as any,
+      currency,
     });
     onClose();
-  }, [name, balance, currency, onSubmit, onClose]);
+  };
 
-  const handleCurrencyChange = useCallback(
-    (newCurrency: 'USD' | 'VES' | 'USDT' | 'EUR') => {
-      if (!isEditing) {
-        setCurrency(newCurrency);
-      }
-    },
-    [isEditing],
-  );
+  const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
 
   return (
-    <Modal
-      visible={isVisible}
-      animationType="slide"
-      transparent={true}
-      statusBarTranslucent
-      navigationBarTranslucent
-      onRequestClose={onClose}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{isEditing ? 'Editar' : 'Añadir'} Billetera</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView style={styles.keyboardAvoid} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        {/* Top Header Bar */}
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
+            <IconSymbol name="xmark" size={20} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.topBarTitle}>{isEditing ? 'Editar Billetera' : 'Nueva Billetera'}</Text>
+          <View style={styles.topBarRight} />
+        </View>
 
-            <View style={styles.section}>
-              <StyledInput placeholder="Nombre (ej. Efectivo)" value={name} onChangeText={setName} />
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* 1. Hero Amount Card (Saldo Inicial o Saldo Actual) */}
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.heroAmountCard}>
+              <Text style={styles.heroAmountLabel}>{isEditing ? 'Saldo Actual' : 'Saldo Inicial'}</Text>
+              <View style={styles.heroAmountRow}>
+                <Text style={styles.heroCurrencyBadge}>{currencySymbol}</Text>
+                <TextInput
+                  style={styles.heroAmountInput}
+                  value={balance}
+                  onChangeText={setBalance}
+                  placeholder="0.00"
+                  placeholderTextColor={colors.text + '40'}
+                  keyboardType="decimal-pad"
+                  editable={!isEditing}
+                  autoFocus={!isEditing}
+                />
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
 
-              <StyledInput
-                placeholder="Saldo inicial"
-                keyboardType="numeric"
-                value={balance}
-                onChangeText={setBalance}
-                editable={!isEditing}
-              />
+          {/* 2. Nombre de la Billetera */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Nombre de la Billetera</Text>
+            <StyledInput
+              placeholder="Ej. Efectivo, Banesco, Binance, Tarjeta Débito..."
+              value={name}
+              onChangeText={setName}
+              autoFocus={isEditing}
+            />
+          </View>
 
-              <View style={styles.currencySelector}>
-                {(['VES', 'USD', 'USDT', 'EUR'] as const).map((curr) => (
+          {/* 3. Selector de Moneda */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Moneda Principal</Text>
+            <View style={styles.chipSelector}>
+              {currencyOptions.map((curr) => {
+                const isSelected = currency === curr;
+                return (
                   <TouchableOpacity
                     key={curr}
                     style={[
-                      styles.currencyOption,
-                      currency === curr && styles.currencyOptionSelected,
-                      isEditing && currency !== curr && { opacity: 0.5 },
+                      styles.chip,
+                      isSelected && styles.chipSelected,
+                      isEditing && !isSelected && { opacity: 0.4 },
                     ]}
-                    onPress={() => handleCurrencyChange(curr)}
+                    onPress={() => !isEditing && setCurrency(curr)}
+                    activeOpacity={0.8}
                     disabled={isEditing}
                   >
-                    <Text style={[styles.currencyText, currency === curr && styles.currencyTextSelected]}>{curr}</Text>
+                    <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>{curr}</Text>
                   </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            {isEditing && (
-              <Text style={styles.noteText}>
-                El saldo y la moneda no se pueden editar directamente. Realiza transacciones para ajustarlos.
-              </Text>
-            )}
-
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={[styles.actionButton, styles.cancelButton]} onPress={onClose}>
-                <Text style={[styles.buttonText, { color: colors.text }]}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionButton, styles.submitButton]} onPress={handleSubmit}>
-                <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>{isEditing ? 'Guardar' : 'Añadir'}</Text>
-              </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
+
+          {/* 4. Nota Informativa si está en Edición */}
+          {isEditing && (
+            <View style={styles.noteCard}>
+              <IconSymbol name="info.circle.fill" size={20} color={colors.primary} />
+              <Text style={styles.noteText}>
+                El saldo y la moneda no se modifican directamente aquí. Se ajustan de forma precisa al registrar
+                ingresos, gastos o transferencias.
+              </Text>
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Footer Action Button */}
+        <View style={styles.footerContainer}>
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} activeOpacity={0.85}>
+            <Text style={styles.submitButtonText}>{isEditing ? 'Guardar Cambios' : 'Crear Billetera'}</Text>
+          </TouchableOpacity>
         </View>
-      </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+export default function WalletModal(props: WalletModalProps) {
+  if (!props.isVisible) return null;
+
+  const formKey = props.initialData ? `edit-wallet-${props.initialData.id}` : 'new-wallet';
+
+  return (
+    <Modal
+      visible={props.isVisible}
+      animationType="slide"
+      presentationStyle="fullScreen"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={props.onClose}
+    >
+      <WalletFormContent key={formKey} {...props} />
     </Modal>
   );
 }

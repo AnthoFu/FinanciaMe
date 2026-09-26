@@ -171,7 +171,7 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
     <Modal
       visible={isVisible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle="fullScreen"
       statusBarTranslucent
       navigationBarTranslucent
       onRequestClose={onClose}
