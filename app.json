@@ -2,7 +2,7 @@
   "expo": {
     "name": "FinanciaMe",
     "slug": "FinanciaMe",
-    "version": "1.16.8",
+    "version": "1.16.9",
     "orientation": "portrait",
     "icon": "./assets/images/AnthoFu-Icon.png",
     "scheme": "financiame",
@@ -14,7 +14,8 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/AnthoFu-Icon.png",
-        "backgroundColor": "#121212"
+        "backgroundColor": "#121212",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "package": "com.anthofu.FinanciaMe"
     },
