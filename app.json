@@ -2,7 +2,7 @@
   "expo": {
     "name": "FinanciaMe",
     "slug": "FinanciaMe",
-    "version": "1.16.7",
+    "version": "1.16.8",
     "orientation": "portrait",
     "icon": "./assets/images/AnthoFu-Icon.png",
     "scheme": "financiame",
@@ -38,7 +38,16 @@
       "expo-web-browser",
       "expo-font",
       "expo-image",
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
