@@ -18,7 +18,7 @@ export const usePrivacyStore = create<PrivacyState>()(
     }),
     {
       name: PRIVACY_SETTINGS_KEY,
-      storage: createMigratingStorage<PrivacyState>('privacy'),
+      storage: createMigratingStorage<PrivacyState>('isBalancesHidden'),
     },
   ),
 );

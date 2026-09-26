@@ -52,6 +52,7 @@ export function useFixedExpensesHandler() {
           else if (wallet.currency === 'EUR') expenseCostInWalletCurrency = amountInVES / eurRate;
           else expenseCostInWalletCurrency = amountInVES; // VES
         }
+        expenseCostInWalletCurrency = Math.round((expenseCostInWalletCurrency + Number.EPSILON) * 100) / 100;
 
         // Use centralized balance update logic
         const result = updateBalancesForTransaction(expenseCostInWalletCurrency, 'expense', wallet.id);

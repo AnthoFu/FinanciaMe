@@ -67,9 +67,11 @@ function TransactionFormContent({
   const [currentType, setCurrentType] = useState<'income' | 'expense'>(
     transactionToEdit ? transactionToEdit.type : type,
   );
-  const [amount, setAmount] = useState(transactionToEdit ? transactionToEdit.amount.toString() : '');
+  const [amount, setAmount] = useState(
+    transactionToEdit ? Number(parseFloat(transactionToEdit.amount.toFixed(2))).toString() : '',
+  );
   const [commission, setCommission] = useState(
-    transactionToEdit?.commission ? transactionToEdit.commission.toString() : '',
+    transactionToEdit?.commission ? Number(parseFloat(transactionToEdit.commission.toFixed(2))).toString() : '',
   );
   const [description, setDescription] = useState(transactionToEdit ? transactionToEdit.description : '');
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(
@@ -143,8 +145,8 @@ function TransactionFormContent({
   );
 
   const handleSubmit = useCallback(() => {
-    const numericAmount = parseFloat(amount);
-    const numericCommission = parseFloat(commission) || 0;
+    const numericAmount = Math.round((parseFloat(amount) + Number.EPSILON) * 100) / 100;
+    const numericCommission = commission ? Math.round((parseFloat(commission) + Number.EPSILON) * 100) / 100 : 0;
     if (!numericAmount || numericAmount <= 0) {
       showToast({ message: 'Por favor, ingresa un monto válido mayor a 0.', type: 'error', position: 'top' });
       return;

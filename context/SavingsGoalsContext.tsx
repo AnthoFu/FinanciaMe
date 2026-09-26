@@ -40,18 +40,19 @@ export function SavingsGoalsProvider({ children }: { children: ReactNode }) {
   const getGoalProgress = useCallback(
     (goalId: string) => {
       const contributions = getContributionsForGoal(goalId);
-      return contributions.reduce((total, contribution) => {
+      const total = contributions.reduce((acc, contribution) => {
         // Si es un ahorro vía transferencia, solo contamos el ingreso (transfer-in)
         // en la billetera de meta para evitar duplicar (transfer-out + transfer-in)
         if (contribution.categoryId === 'transfer-in') {
-          return total + contribution.amount;
+          return acc + contribution.amount;
         }
         // Si es un ahorro vía gasto (método antiguo sin billetera), contamos el monto
         if (contribution.type === 'expense' && contribution.categoryId !== 'transfer-out') {
-          return total + contribution.amount;
+          return acc + contribution.amount;
         }
-        return total;
+        return acc;
       }, 0);
+      return Math.round((total + Number.EPSILON) * 100) / 100;
     },
     [getContributionsForGoal],
   );
