@@ -38,7 +38,9 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 function GoalFormContent({ onClose, goal }: Omit<GoalModalProps, 'isVisible'>) {
   const [name, setName] = useState(goal ? goal.name : '');
-  const [targetAmount, setTargetAmount] = useState(goal ? goal.targetAmount.toString() : '');
+  const [targetAmount, setTargetAmount] = useState(
+    goal ? Number(parseFloat(goal.targetAmount.toFixed(2))).toString() : '',
+  );
   const [currency, setCurrency] = useState<Currency>(goal ? goal.currency : 'USD');
   const [createWallet, setCreateWallet] = useState(true);
 
@@ -48,7 +50,7 @@ function GoalFormContent({ onClose, goal }: Omit<GoalModalProps, 'isVisible'>) {
   const styles = getStyles(colors);
 
   const handleSave = async () => {
-    const amount = parseFloat(targetAmount);
+    const amount = Math.round((parseFloat(targetAmount) + Number.EPSILON) * 100) / 100;
     if (!name.trim()) {
       showToast({ message: 'Por favor, introduce un nombre para la meta.', type: 'error' });
       return;

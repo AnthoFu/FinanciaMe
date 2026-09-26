@@ -56,5 +56,5 @@ export function useBudgetSpending(budget: Budget) {
     }, 0);
   }, [transactions, wallets, bcvRate, usdtRate, eurRate, averageRate, budget]);
 
-  return spending;
+  return Math.round((spending + Number.EPSILON) * 100) / 100;
 }

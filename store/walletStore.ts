@@ -30,6 +30,8 @@ interface WalletState {
   setIsLoading: (loading: boolean) => void;
 }
 
+const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+
 export const useWalletStore = create<WalletState>()(
   persist(
     (set, get) => ({
@@ -38,13 +40,20 @@ export const useWalletStore = create<WalletState>()(
 
       setIsLoading: (loading) => set({ isLoading: loading }),
 
-      setWallets: (wallets) => set({ wallets }),
+      setWallets: (wallets) =>
+        set({
+          wallets: wallets.map((w) => ({
+            ...w,
+            balance: round2(w.balance),
+          })),
+        }),
 
       addWallet: (walletData) => {
         const id = uuidv4();
         const newWallet: Wallet = {
           id,
           ...walletData,
+          balance: round2(walletData.balance),
         };
         set((state) => ({ wallets: [...state.wallets, newWallet] }));
         return id;
@@ -52,7 +61,9 @@ export const useWalletStore = create<WalletState>()(
 
       updateWallet: (walletData) => {
         set((state) => ({
-          wallets: state.wallets.map((w) => (w.id === walletData.id ? walletData : w)),
+          wallets: state.wallets.map((w) =>
+            w.id === walletData.id ? { ...walletData, balance: round2(walletData.balance) } : w,
+          ),
         }));
       },
 
@@ -86,7 +97,7 @@ export const useWalletStore = create<WalletState>()(
 
         potentialBalance = type === 'income' ? potentialBalance + amount : potentialBalance - (amount + commission);
 
-        if (potentialBalance < 0) {
+        if (round2(potentialBalance) < 0) {
           return { success: false, error: 'Saldo Insuficiente' };
         }
 
@@ -103,7 +114,7 @@ export const useWalletStore = create<WalletState>()(
             if (w.id === walletId) {
               newBalance = type === 'income' ? newBalance + amount : newBalance - (amount + commission);
             }
-            return { ...w, balance: newBalance };
+            return { ...w, balance: round2(newBalance) };
           }),
         }));
 
@@ -119,17 +130,17 @@ export const useWalletStore = create<WalletState>()(
           return { success: false, error: 'Una o ambas billeteras no fueron encontradas' };
         }
 
-        if (fromWallet.balance < fromAmount) {
+        if (round2(fromWallet.balance) < fromAmount) {
           return { success: false, error: `Saldo Insuficiente en "${fromWallet.name}"` };
         }
 
         set((state) => ({
           wallets: state.wallets.map((wallet) => {
             if (wallet.id === fromWalletId) {
-              return { ...wallet, balance: wallet.balance - fromAmount };
+              return { ...wallet, balance: round2(wallet.balance - fromAmount) };
             }
             if (wallet.id === toWalletId) {
-              return { ...wallet, balance: wallet.balance + toAmount };
+              return { ...wallet, balance: round2(wallet.balance + toAmount) };
             }
             return wallet;
           }),
@@ -152,14 +163,14 @@ export const useWalletStore = create<WalletState>()(
             ? wallet.balance - transaction.amount
             : wallet.balance + (transaction.amount + commission);
 
-        if (newBalance < 0) {
+        if (round2(newBalance) < 0) {
           return { success: false, error: 'La reversión resultaría en saldo negativo' };
         }
 
         set((state) => ({
           wallets: state.wallets.map((w) => {
             if (w.id === transaction.walletId) {
-              return { ...w, balance: newBalance };
+              return { ...w, balance: round2(newBalance) };
             }
             return w;
           }),

@@ -67,7 +67,7 @@ export interface FixedExpense {
 export interface WalletsContextType {
   wallets: Wallet[];
   isLoading: boolean;
-  addWallet: (walletData: Omit<Wallet, 'id'>) => void;
+  addWallet: (walletData: Omit<Wallet, 'id'>) => string;
   updateWallet: (walletData: Wallet) => void;
   deleteWallet: (walletId: string) => void;
   getWalletById: (id: string) => Wallet | undefined;
@@ -85,7 +85,7 @@ export interface WalletsContextType {
     toAmount: number,
   ) => { success: boolean; error?: string };
   revertTransactionBalance: (transaction: Transaction) => { success: boolean; error?: string };
-  setWallets: React.Dispatch<React.SetStateAction<Wallet[]>>;
+  setWallets: (wallets: Wallet[]) => void;
 }
 
 export interface CategoriesContextType {
@@ -99,7 +99,7 @@ export interface CategoriesContextType {
 export interface TransactionsContextType {
   transactions: Transaction[];
   isLoading: boolean;
-  setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
+  setTransactions: (transactions: Transaction[]) => void;
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   updateTransaction: (transaction: Transaction) => void;
   deleteTransaction: (id: string) => void;

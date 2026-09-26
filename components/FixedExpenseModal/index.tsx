@@ -60,7 +60,7 @@ function FixedExpenseFormContent({
   const expenseCategories = useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
 
   const [name, setName] = useState(initialData ? initialData.name : '');
-  const [amount, setAmount] = useState(initialData ? initialData.amount.toString() : '');
+  const [amount, setAmount] = useState(initialData ? Number(parseFloat(initialData.amount.toFixed(2))).toString() : '');
   const [dayOfMonth, setDayOfMonth] = useState(initialData?.dayOfMonth?.toString() || '');
   const [currency, setCurrency] = useState<'USD' | 'VES' | 'USDT' | 'EUR'>(initialData ? initialData.currency : 'USD');
   const [frequency, setFrequency] = useState<ExpenseFrequency>(initialData ? initialData.frequency : 'monthly');
@@ -83,7 +83,7 @@ function FixedExpenseFormContent({
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
   const handleSubmit = () => {
-    const numericAmount = parseFloat(amount);
+    const numericAmount = Math.round((parseFloat(amount) + Number.EPSILON) * 100) / 100;
     const numericDay = parseInt(dayOfMonth, 10);
 
     if (!name.trim()) {

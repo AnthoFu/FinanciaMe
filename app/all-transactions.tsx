@@ -6,6 +6,7 @@ import { useTransactions } from '@/context/TransactionsContext';
 import { useWallets } from '@/context/WalletsContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/hooks/useToast';
+import { useTransactionHandler } from '@/hooks/useTransactionHandler';
 import { getThemedStyles } from '@/styles/themedStyles';
 import { ColorTheme, Transaction } from '@/types';
 import { Stack } from 'expo-router';
@@ -19,10 +20,11 @@ export default function AllTransactionsScreen() {
   const globalStyles = getThemedStyles(colors);
   const transactionItemStyles = getTransactionItemStyles(colors);
 
-  const { transactions, updateTransaction, deleteTransaction } = useTransactions();
+  const { transactions, deleteTransaction } = useTransactions();
   const { wallets } = useWallets();
   const { categories, getCategoryById } = useCategories();
   const { showToast } = useToast();
+  const { handleSaveTransaction } = useTransactionHandler();
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
@@ -52,14 +54,33 @@ export default function AllTransactionsScreen() {
   }, [deleteTransaction, showToast, transactionToDelete]);
 
   const handleSubmit = useCallback(
-    (transactionData: Omit<Transaction, 'id'>, date?: string) => {
-      if (editingTransaction) {
-        updateTransaction({ ...editingTransaction, ...transactionData, date: date || editingTransaction.date });
+    (
+      amount: number,
+      description: string,
+      walletId: string,
+      categoryId: string,
+      type: 'income' | 'expense',
+      transactionToUpdate?: Transaction,
+      commission: number = 0,
+      date?: string,
+    ) => {
+      const success = handleSaveTransaction(
+        amount,
+        description,
+        walletId,
+        categoryId,
+        type,
+        transactionToUpdate,
+        commission,
+        date,
+      );
+      if (success) {
         showToast({ message: 'Movimiento actualizado con éxito', type: 'success' });
         setModalVisible(false);
+        setEditingTransaction(null);
       }
     },
-    [editingTransaction, updateTransaction, showToast],
+    [handleSaveTransaction, showToast],
   );
 
   const filteredTransactions = useMemo(() => {

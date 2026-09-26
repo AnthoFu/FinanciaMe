@@ -50,7 +50,7 @@ function BudgetFormContent({ onClose, budget }: Omit<BudgetModalProps, 'isVisibl
   const expenseCategories = useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
 
   const [name, setName] = useState(budget ? budget.name : '');
-  const [amount, setAmount] = useState(budget ? budget.amount.toString() : '');
+  const [amount, setAmount] = useState(budget ? Number(parseFloat(budget.amount.toFixed(2))).toString() : '');
   const [currency, setCurrency] = useState<Currency>(budget ? budget.currency : 'USD');
   const [period, setPeriod] = useState<'mensual' | 'anual'>(budget ? budget.period : 'mensual');
   const [categoryId, setCategoryId] = useState<string | null>(() => {
@@ -59,7 +59,7 @@ function BudgetFormContent({ onClose, budget }: Omit<BudgetModalProps, 'isVisibl
   });
 
   const handleSave = () => {
-    const budgetAmount = parseFloat(amount);
+    const budgetAmount = Math.round((parseFloat(amount) + Number.EPSILON) * 100) / 100;
     if (!name.trim()) {
       showToast({ message: 'Por favor, introduce un nombre para el presupuesto.', type: 'error' });
       return;

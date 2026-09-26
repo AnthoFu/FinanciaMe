@@ -156,9 +156,9 @@ function TransferFormContent({ onClose, onSubmit }: Omit<TransferModalProps, 'is
   };
 
   const handleSubmit = () => {
-    const fromAmountNum = parseFloat(fromAmount);
-    const commissionNum = parseFloat(commission) || 0;
-    const toAmountNum = parseFloat(toAmount);
+    const fromAmountNum = Math.round((parseFloat(fromAmount) + Number.EPSILON) * 100) / 100;
+    const commissionNum = commission ? Math.round((parseFloat(commission) + Number.EPSILON) * 100) / 100 : 0;
+    const toAmountNum = toAmount ? Math.round((parseFloat(toAmount) + Number.EPSILON) * 100) / 100 : fromAmountNum;
     const rateNum = parseFloat(exchangeRate) || 1;
 
     if (!fromWalletId || !toWalletId || !fromAmountNum || isNaN(fromAmountNum) || fromAmountNum <= 0) {
@@ -178,7 +178,7 @@ function TransferFormContent({ onClose, onSubmit }: Omit<TransferModalProps, 'is
       return;
     }
 
-    onSubmit(fromWalletId, toWalletId, fromAmountNum, toAmountNum || fromAmountNum, rateNum, commissionNum);
+    onSubmit(fromWalletId, toWalletId, fromAmountNum, toAmountNum, rateNum, commissionNum);
     onClose();
   };
 

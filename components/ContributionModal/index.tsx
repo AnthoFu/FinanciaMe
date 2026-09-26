@@ -62,7 +62,7 @@ function ContributionFormContent({ onClose, goal }: Omit<ContributionModalProps,
       return;
     }
 
-    const contributionAmount = parseFloat(amount);
+    const contributionAmount = Math.round((parseFloat(amount) + Number.EPSILON) * 100) / 100;
     if (!contributionAmount || isNaN(contributionAmount) || contributionAmount <= 0) {
       showToast({
         message: 'Por favor, introduce un monto válido mayor a cero.',

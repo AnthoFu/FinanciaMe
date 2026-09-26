@@ -43,7 +43,9 @@ function WalletFormContent({ onClose, onSubmit, initialData }: Omit<WalletModalP
   const isEditing = Boolean(initialData);
 
   const [name, setName] = useState(initialData ? initialData.name : '');
-  const [balance, setBalance] = useState(initialData ? initialData.balance.toString() : '');
+  const [balance, setBalance] = useState(
+    initialData ? Number(parseFloat(initialData.balance.toFixed(2))).toString() : '',
+  );
   const [currency, setCurrency] = useState<'USD' | 'VES' | 'USDT' | 'EUR'>(
     initialData ? (initialData.currency as any) : 'USD',
   );
@@ -61,7 +63,7 @@ function WalletFormContent({ onClose, onSubmit, initialData }: Omit<WalletModalP
 
     onSubmit({
       name: name.trim(),
-      balance: numericBalance,
+      balance: parseFloat(numericBalance.toFixed(2)),
       currency,
     });
     onClose();

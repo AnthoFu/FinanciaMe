@@ -2,6 +2,8 @@ import React, { createContext, ReactNode, useContext, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { useThemeStore, AppTheme, ColorScheme } from '../store/themeStore';
 
+export { AppTheme, ColorScheme };
+
 interface ThemeContextType {
   theme: AppTheme;
   setTheme: (theme: AppTheme) => void;
@@ -11,10 +13,11 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function AppThemeProvider({ children }: { children: ReactNode }) {
-  const systemColorScheme = useColorScheme() || 'light';
+  const systemScheme = useColorScheme();
+  const systemColorScheme: ColorScheme = systemScheme === 'dark' ? 'dark' : 'light';
   const store = useThemeStore();
 
-  const colorScheme = store.theme === 'system' ? systemColorScheme : store.theme;
+  const colorScheme: ColorScheme = store.theme === 'system' ? systemColorScheme : store.theme;
 
   const value = useMemo(
     () => ({
