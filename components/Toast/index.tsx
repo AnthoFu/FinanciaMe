@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Text, TouchableOpacity, View, StyleSheet, Modal } from 'react-native';
+import React, { useEffect } from 'react';
+import { Animated, Modal, Text, TouchableOpacity, TouchableWithoutFeedback, View, StyleSheet } from 'react-native';
 import { styles } from './styles';
 
 export type ToastType = 'info' | 'success' | 'error';
@@ -22,7 +22,17 @@ export default function Toast({
   duration = 2000,
   onHide,
 }: ToastProps) {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [fadeAnim] = React.useState(() => new Animated.Value(0));
+
+  const hide = React.useCallback(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      onHide();
+    });
+  }, [fadeAnim, onHide]);
 
   useEffect(() => {
     if (isVisible) {
@@ -43,17 +53,7 @@ export default function Toast({
     } else {
       fadeAnim.setValue(0);
     }
-  }, [isVisible, duration, fadeAnim]);
-
-  const hide = () => {
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      onHide();
-    });
-  };
+  }, [isVisible, duration, fadeAnim, hide]);
 
   if (!isVisible) {
     return null;
@@ -63,24 +63,35 @@ export default function Toast({
   const positionStyle = styles[position] || styles.bottom;
 
   return (
-    <Modal transparent visible={isVisible} animationType="none" onRequestClose={hide}>
-      <View style={localStyles.overlay} pointerEvents="box-none">
-        <Animated.View style={[styles.container, typeStyle, positionStyle, { opacity: fadeAnim }]} pointerEvents="auto">
-          <Text style={styles.message}>{message}</Text>
-          {duration === null && (
-            <TouchableOpacity onPress={hide} style={styles.closeButton}>
-              <Text style={styles.closeText}>✕</Text>
-            </TouchableOpacity>
-          )}
-        </Animated.View>
-      </View>
+    <Modal
+      transparent
+      visible={isVisible}
+      animationType="none"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={hide}
+    >
+      <TouchableWithoutFeedback onPress={hide}>
+        <View style={localStyles.overlay}>
+          <TouchableWithoutFeedback>
+            <Animated.View style={[styles.container, typeStyle, positionStyle, { opacity: fadeAnim }]}>
+              <Text style={styles.message}>{message}</Text>
+              {duration === null && (
+                <TouchableOpacity onPress={hide} style={styles.closeButton}>
+                  <Text style={styles.closeText}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </Animated.View>
+          </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 }
 
 const localStyles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'transparent',
     zIndex: 999999,
   },

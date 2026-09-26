@@ -1,24 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/useToast';
+import { useNotifications } from '@/hooks/useNotifications';
 import { ColorTheme } from '@/types';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useOnboarding } from '@/context/OnboardingContext';
+import { NotificationSettingsModal } from '@/components/NotificationSettingsModal';
 
 type MenuItem = {
   id: string;
   title: string;
   icon: string;
-  route?: string;
+  route?: any;
   action?: () => void;
 };
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
+  const { showToast } = useToast();
+  const { notificationSettings, saveNotificationSettings } = useNotifications();
   const styles = getStyles(colors);
   const router = useRouter();
   const { resetOnboarding } = useOnboarding();
+  const [isNotificationSettingsVisible, setNotificationSettingsVisible] = useState(false);
+
+  const handleNotificationSettingsSave = async (settings: typeof notificationSettings) => {
+    try {
+      await saveNotificationSettings(settings);
+      showToast({ message: 'Configuración de recordatorios guardada', type: 'success' });
+    } catch {
+      showToast({ message: 'Error al guardar la configuración', type: 'error' });
+    }
+  };
 
   const menuItems: MenuItem[] = [
     {
@@ -26,6 +41,12 @@ export default function SettingsScreen() {
       title: 'Gestión de categorías',
       icon: 'tag.fill',
       route: '/categories',
+    },
+    {
+      id: 'notifications',
+      title: 'Recordatorios de gastos fijos',
+      icon: 'bell.fill',
+      action: () => setNotificationSettingsVisible(true),
     },
     {
       id: 'theme',
@@ -65,6 +86,12 @@ export default function SettingsScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
+      />
+      <NotificationSettingsModal
+        isVisible={isNotificationSettingsVisible}
+        onClose={() => setNotificationSettingsVisible(false)}
+        settings={notificationSettings}
+        onSave={handleNotificationSettingsSave}
       />
     </View>
   );

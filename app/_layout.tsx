@@ -1,10 +1,9 @@
 import { MenuProvider } from 'react-native-popup-menu';
 import 'react-native-get-random-values';
 import { RootSiblingParent } from 'react-native-root-siblings';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider, Stack } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';

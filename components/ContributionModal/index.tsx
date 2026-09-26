@@ -1,14 +1,31 @@
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/hooks/useToast';
-import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, Button, TouchableWithoutFeedback, Keyboard } from 'react-native';
-
+import React, { useMemo, useState } from 'react';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSavingsGoals } from '../../context/SavingsGoalsContext';
 import { useWallets } from '../../context/WalletsContext';
-import { SavingsGoal, Wallet } from '../../types';
-import { HorizontalPicker } from '../ui/HorizontalPicker';
-import { StyledInput } from '../ui/StyledInput';
+import { SavingsGoal } from '../../types';
+import { IconSymbol } from '../ui/IconSymbol';
 import { getStyles } from './styles';
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$',
+  VES: 'Bs.',
+  USDT: 'USDT',
+  EUR: '€',
+};
 
 interface ContributionModalProps {
   isVisible: boolean;
@@ -16,58 +33,50 @@ interface ContributionModalProps {
   goal: SavingsGoal | null;
 }
 
-const WalletPickerItem = ({ item, isSelected }: { item: Wallet; isSelected: boolean }) => {
-  const { colors } = useTheme();
-  return (
-    <View
-      style={[
-        { padding: 10, marginHorizontal: 5, borderRadius: 8 },
-        isSelected ? { backgroundColor: colors.primary } : { backgroundColor: colors.border },
-      ]}
-    >
-      <Text style={{ color: isSelected ? 'white' : colors.text, fontWeight: 'bold' }}>{item.name}</Text>
-      <Text style={{ color: isSelected ? 'white' : colors.text }}>
-        {item.balance.toFixed(2)} {item.currency}
-      </Text>
-    </View>
-  );
-};
-
-export function ContributionModal({ isVisible, onClose, goal }: ContributionModalProps) {
-  const [amount, setAmount] = useState('');
-  const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
-  const { wallets } = useWallets();
-  const { addContribution } = useSavingsGoals();
+function ContributionFormContent({ onClose, goal }: Omit<ContributionModalProps, 'isVisible'>) {
   const { colors } = useTheme();
   const { showToast } = useToast();
   const styles = getStyles(colors);
+  const { wallets } = useWallets();
+  const { addContribution } = useSavingsGoals();
 
-  const [walletsForCurrency, setWalletsForCurrency] = useState<Wallet[]>([]);
+  const [amount, setAmount] = useState('');
 
-  useEffect(() => {
-    if (goal) {
-      // Filtrar billeteras por moneda Y excluir la billetera vinculada de la meta (si existe)
-      const filteredWallets = wallets.filter((w) => w.currency === goal.currency && w.id !== goal.linkedWalletId);
-      setWalletsForCurrency(filteredWallets);
-      if (filteredWallets.length > 0) {
-        setSelectedWalletId(filteredWallets[0].id);
-      } else {
-        setSelectedWalletId(null);
-      }
-    }
+  const eligibleWallets = useMemo(() => {
+    if (!goal) return [];
+    return wallets.filter((w) => w.currency === goal.currency && w.id !== goal.linkedWalletId);
   }, [goal, wallets]);
 
-  const handleClose = () => {
-    setAmount('');
-    onClose(); // Keep selected wallet for next time, but close the modal
-  };
+  const [selectedWalletId, setSelectedWalletId] = useState<string | null>(
+    eligibleWallets.length > 0 ? eligibleWallets[0].id : null,
+  );
 
   const handleSave = async () => {
-    if (!goal || !selectedWalletId) return;
+    if (!goal) return;
+
+    if (!selectedWalletId) {
+      showToast({
+        message: 'Por favor, selecciona una billetera de origen.',
+        type: 'error',
+      });
+      return;
+    }
 
     const contributionAmount = parseFloat(amount);
-    if (isNaN(contributionAmount) || contributionAmount <= 0) {
-      showToast({ message: 'Por favor, introduce un monto válido.', type: 'error', position: 'top' });
+    if (!contributionAmount || isNaN(contributionAmount) || contributionAmount <= 0) {
+      showToast({
+        message: 'Por favor, introduce un monto válido mayor a cero.',
+        type: 'error',
+      });
+      return;
+    }
+
+    const selectedWallet = eligibleWallets.find((w) => w.id === selectedWalletId);
+    if (selectedWallet && selectedWallet.balance < contributionAmount) {
+      showToast({
+        message: 'La billetera de origen no tiene fondos suficientes.',
+        type: 'error',
+      });
       return;
     }
 
@@ -75,51 +84,137 @@ export function ContributionModal({ isVisible, onClose, goal }: ContributionModa
 
     if (result.success) {
       showToast({ message: result.message, type: 'success' });
-      handleClose();
+      onClose();
     } else {
       showToast({ message: result.message, type: 'error' });
     }
   };
 
+  const currencySymbol = goal ? CURRENCY_SYMBOLS[goal.currency] || goal.currency : '$';
+
   return (
-    <Modal visible={isVisible} transparent animationType="fade" onRequestClose={handleClose}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-            <Text style={[styles.title, { color: colors.text }]}>Añadir Ahorro a &quot;{goal?.name}&quot;</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView style={styles.keyboardAvoid} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        {/* Top Header Bar */}
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
+            <IconSymbol name="xmark" size={20} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.topBarTitle}>Añadir Ahorro</Text>
+          <View style={styles.topBarRight} />
+        </View>
 
-            <StyledInput
-              placeholder={`Monto en ${goal?.currency}`}
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="numeric"
-              style={styles.input}
-            />
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Target Goal Banner */}
+          {goal && (
+            <View style={styles.goalInfoCard}>
+              <View style={styles.goalIconCircle}>
+                <IconSymbol name="star.fill" size={20} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.goalLabel}>Meta Destino</Text>
+                <Text style={styles.goalName}>{goal.name}</Text>
+              </View>
+            </View>
+          )}
 
-            {walletsForCurrency.length > 0 ? (
-              <View style={styles.walletContainer}>
-                <HorizontalPicker<Wallet, string>
-                  label="Billetera de Origen"
-                  data={walletsForCurrency}
-                  selectedValue={selectedWalletId}
-                  keyExtractor={(item) => item.id}
-                  onSelect={setSelectedWalletId}
-                  renderItem={(item, isSelected) => <WalletPickerItem item={item} isSelected={isSelected} />}
+          {/* 1. Hero Amount Card */}
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.heroAmountCard}>
+              <Text style={styles.heroAmountLabel}>Monto a Aportar</Text>
+              <View style={styles.heroAmountRow}>
+                <Text style={styles.heroCurrencyBadge}>{currencySymbol}</Text>
+                <TextInput
+                  style={styles.heroAmountInput}
+                  value={amount}
+                  onChangeText={setAmount}
+                  placeholder="0.00"
+                  placeholderTextColor={colors.icon}
+                  keyboardType="decimal-pad"
+                  autoFocus
                 />
               </View>
-            ) : (
-              <Text style={{ color: colors.text, textAlign: 'center', marginBottom: 15 }}>
-                No tienes billeteras en {goal?.currency} para añadir ahorros.
-              </Text>
-            )}
-
-            <View style={styles.buttonContainer}>
-              <Button title="Cancelar" onPress={handleClose} color={colors.notification} />
-              <Button title="Guardar" onPress={handleSave} disabled={!selectedWalletId} />
             </View>
+          </TouchableWithoutFeedback>
+
+          {/* 2. Billetera de Origen */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Billetera de Origen</Text>
+            {eligibleWallets.length > 0 ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.walletScrollList}
+              >
+                {eligibleWallets.map((wallet) => {
+                  const isSelected = wallet.id === selectedWalletId;
+                  const currSymbol = CURRENCY_SYMBOLS[wallet.currency] || wallet.currency;
+                  return (
+                    <TouchableOpacity
+                      key={wallet.id}
+                      style={[styles.walletCard, isSelected && styles.walletCardSelected]}
+                      onPress={() => setSelectedWalletId(wallet.id)}
+                      activeOpacity={0.8}
+                    >
+                      <View style={[styles.walletIconCircle, isSelected && styles.walletIconCircleSelected]}>
+                        <IconSymbol name="wallet.pass.fill" size={16} color={isSelected ? '#FFFFFF' : colors.text} />
+                      </View>
+                      <View>
+                        <Text style={[styles.walletName, isSelected && styles.walletNameSelected]}>{wallet.name}</Text>
+                        <Text style={[styles.walletBalance, isSelected && styles.walletBalanceSelected]}>
+                          {currSymbol} {wallet.balance.toFixed(2)}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            ) : (
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyCardText}>
+                  No tienes otras billeteras en {goal?.currency || 'esta moneda'} para transferir a esta meta.
+                </Text>
+              </View>
+            )}
           </View>
+        </ScrollView>
+
+        {/* Footer Action Button */}
+        <View style={styles.footerContainer}>
+          <TouchableOpacity
+            style={[styles.submitButton, eligibleWallets.length === 0 && styles.submitButtonDisabled]}
+            onPress={handleSave}
+            disabled={eligibleWallets.length === 0}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.submitButtonText}>Añadir Ahorro</Text>
+          </TouchableOpacity>
         </View>
-      </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+export function ContributionModal(props: ContributionModalProps) {
+  if (!props.isVisible) return null;
+
+  const formKey = props.goal ? `contribute-${props.goal.id}` : 'contribute';
+
+  return (
+    <Modal
+      visible={props.isVisible}
+      animationType="slide"
+      presentationStyle="fullScreen"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={props.onClose}
+    >
+      <ContributionFormContent key={formKey} {...props} />
     </Modal>
   );
 }

@@ -3,13 +3,11 @@ import { useToast } from '@/hooks/useToast';
 import React, { useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FixedExpenseModal from '../../components/FixedExpenseModal';
-import { NotificationSettingsModal } from '../../components/NotificationSettingsModal';
 import { ConfirmationModal } from '../../components/ui/ConfirmationModal';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useCategories } from '../../context/CategoriesContext';
 import { useFixedExpenses } from '../../context/FixedExpensesContext';
 import { useWallets } from '../../context/WalletsContext';
-import { useNotifications } from '../../hooks/useNotifications';
 import { getThemedStyles } from '../../styles/themedStyles';
 import { FixedExpense, ColorTheme } from '../../types';
 
@@ -43,9 +41,7 @@ export default function FixedExpensesScreen() {
   const { expenses, addFixedExpense, updateFixedExpense, deleteFixedExpense } = useFixedExpenses();
   const { wallets } = useWallets();
   const { categories } = useCategories();
-  const { notificationSettings, saveNotificationSettings } = useNotifications();
   const [isModalVisible, setModalVisible] = useState(false);
-  const [isNotificationSettingsVisible, setNotificationSettingsVisible] = useState(false);
   const [editingExpense, setEditingExpense] = useState<FixedExpense | null>(null);
   const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
   const [expenseToDeleteId, setExpenseToDeleteId] = useState<string | null>(null);
@@ -95,27 +91,13 @@ export default function FixedExpensesScreen() {
     }
   };
 
-  const handleNotificationSettingsSave = async (settings: typeof notificationSettings) => {
-    try {
-      await saveNotificationSettings(settings);
-      showToast({ message: 'Configuración de notificaciones guardada', type: 'success' });
-    } catch {
-      showToast({ message: 'Error al guardar la configuración', type: 'error' });
-    }
-  };
-
   return (
     <View style={globalStyles.container}>
       <View style={globalStyles.header}>
         <Text style={globalStyles.title}>Gastos Fijos</Text>
-        <View style={styles.headerActions}>
-          <TouchableOpacity onPress={() => setNotificationSettingsVisible(true)} style={styles.notificationButton}>
-            <IconSymbol name="bell.fill" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleAddNew}>
-            <IconSymbol name="plus.circle.fill" size={32} color={colors.text} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={handleAddNew}>
+          <IconSymbol name="plus.circle.fill" size={32} color={colors.text} />
+        </TouchableOpacity>
       </View>
       <FlatList
         data={expenses}
@@ -147,7 +129,7 @@ export default function FixedExpensesScreen() {
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.itemAmount}>
-                  {{ USD: '$', VES: 'Bs.', USDT: 'USDT' }[item.currency]} {item.amount.toFixed(2)}
+                  {{ USD: '$', VES: 'Bs.', USDT: 'USDT', EUR: '€' }[item.currency]} {item.amount.toFixed(2)}
                 </Text>
               </View>
             </View>
@@ -161,12 +143,6 @@ export default function FixedExpensesScreen() {
         onSubmit={handleSubmit}
         initialData={editingExpense}
         wallets={wallets}
-      />
-      <NotificationSettingsModal
-        isVisible={isNotificationSettingsVisible}
-        onClose={() => setNotificationSettingsVisible(false)}
-        settings={notificationSettings}
-        onSave={handleNotificationSettingsSave}
       />
       <ConfirmationModal
         isVisible={isDeleteModalVisible}
@@ -187,14 +163,6 @@ export default function FixedExpensesScreen() {
 const getStyles = (colors: ColorTheme) =>
   StyleSheet.create({
     list: { flex: 1, width: '100%' },
-    headerActions: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-    },
-    notificationButton: {
-      padding: 4,
-    },
     itemContainer: {
       flexDirection: 'row',
       alignItems: 'center',

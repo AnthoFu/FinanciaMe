@@ -87,6 +87,8 @@ export default function CategoriesScreen() {
         visible={isModalVisible}
         animationType="slide"
         transparent={true}
+        statusBarTranslucent
+        navigationBarTranslucent
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalContainer}>

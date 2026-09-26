@@ -65,6 +65,10 @@ const MAPPING = {
   'eye.slash.fill': 'visibility-off',
   'clock.fill': 'access-time',
   'exclamationmark.triangle.fill': 'warning',
+  'bell.fill': 'notifications',
+  bell: 'notifications',
+  checkmark: 'check',
+  'archivebox.fill': 'archive',
 };
 
 type IconMapping = Record<keyof typeof MAPPING, ComponentProps<typeof MaterialIcons>['name']>;

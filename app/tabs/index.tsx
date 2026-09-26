@@ -27,7 +27,7 @@ import { useFixedExpensesHandler } from '../../hooks/useFixedExpensesHandler';
 import { useToast } from '@/hooks/useToast';
 import { useTransactionHandler } from '../../hooks/useTransactionHandler';
 import { getThemedStyles } from '../../styles/themedStyles';
-import { Transaction } from '../../types';
+import { Transaction, FixedExpense } from '../../types';
 import { usePrivacyStore } from '@/store/privacyStore';
 
 export default function FinanciaMeScreen() {
@@ -57,8 +57,7 @@ export default function FinanciaMeScreen() {
   // --- Fixed Expenses Logic ---
   const { checkDueFixedExpenses, handlePayDueExpenses } = useFixedExpensesHandler();
 
-  // --- Local State ---
-  const [loading, setLoading] = useState(true);
+  const loading = walletsLoading || transactionsLoading || fixedExpensesLoading || (ratesLoading && bcvRate === 0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
   const [isTransferModalVisible, setTransferModalVisible] = useState(false);
@@ -73,10 +72,6 @@ export default function FinanciaMeScreen() {
   const router = useRouter();
 
   // --- Effects ---
-  useEffect(() => {
-    // Only show global loading if we don't have essential data yet
-    setLoading(walletsLoading || transactionsLoading || fixedExpensesLoading || (ratesLoading && bcvRate === 0));
-  }, [walletsLoading, transactionsLoading, fixedExpensesLoading, ratesLoading, bcvRate]);
 
   useEffect(() => {
     if (!loading) {

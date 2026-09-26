@@ -1,6 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
 import React, { useState } from 'react';
-import { Modal, SafeAreaView, StyleSheet, Switch, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { Modal, StyleSheet, Switch, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '../ui/IconSymbol';
 
 interface NotificationSettingsModalProps {
@@ -167,7 +168,14 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
   });
 
   return (
-    <Modal visible={isVisible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal
+      visible={isVisible}
+      animationType="slide"
+      presentationStyle="fullScreen"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
