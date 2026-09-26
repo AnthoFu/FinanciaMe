@@ -110,7 +110,7 @@ export const getStyles = (colors: ColorTheme) =>
       borderColor: colors.border,
     },
     chipSelected: {
-      backgroundColor: colors.primary + '15',
+      backgroundColor: colors.primary,
       borderColor: colors.primary,
     },
     chipText: {
@@ -119,7 +119,7 @@ export const getStyles = (colors: ColorTheme) =>
       color: colors.text,
     },
     chipTextSelected: {
-      color: colors.primary,
+      color: '#FFFFFF',
       fontWeight: 'bold',
     },
     // Note Box

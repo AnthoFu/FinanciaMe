@@ -148,18 +148,28 @@ export const getStyles = (colors: ColorTheme) =>
     // Multi-currency exchange card
     exchangeCard: {
       backgroundColor: colors.card,
-      borderRadius: 14,
-      padding: 16,
-      borderWidth: 1,
+      borderRadius: 16,
+      padding: 18,
+      borderWidth: 1.5,
       borderColor: colors.border,
-      marginBottom: 20,
-      gap: 12,
+      marginBottom: 24,
+      gap: 14,
     },
     exchangeCardTitle: {
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '700',
       color: colors.text,
+      marginBottom: 2,
+    },
+    fieldGroup: {
       marginBottom: 4,
+    },
+    fieldLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 6,
+      opacity: 0.85,
     },
     // Footer Action Button
     footerContainer: {

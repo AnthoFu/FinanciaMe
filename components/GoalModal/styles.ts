@@ -110,7 +110,7 @@ export const getStyles = (colors: ColorTheme) =>
       borderColor: colors.border,
     },
     currencyChipSelected: {
-      backgroundColor: colors.primary + '15',
+      backgroundColor: colors.primary,
       borderColor: colors.primary,
     },
     currencyChipText: {
@@ -119,7 +119,7 @@ export const getStyles = (colors: ColorTheme) =>
       color: colors.text,
     },
     currencyChipTextSelected: {
-      color: colors.primary,
+      color: '#FFFFFF',
       fontWeight: 'bold',
     },
     // Switch Card

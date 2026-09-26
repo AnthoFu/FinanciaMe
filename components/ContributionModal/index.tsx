@@ -134,7 +134,7 @@ function ContributionFormContent({ onClose, goal }: Omit<ContributionModalProps,
                   value={amount}
                   onChangeText={setAmount}
                   placeholder="0.00"
-                  placeholderTextColor={colors.text + '40'}
+                  placeholderTextColor={colors.icon}
                   keyboardType="decimal-pad"
                   autoFocus
                 />

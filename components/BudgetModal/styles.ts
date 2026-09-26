@@ -110,7 +110,7 @@ export const getStyles = (colors: ColorTheme) =>
       borderColor: colors.border,
     },
     chipSelected: {
-      backgroundColor: colors.primary + '15',
+      backgroundColor: colors.primary,
       borderColor: colors.primary,
     },
     chipText: {
@@ -119,7 +119,7 @@ export const getStyles = (colors: ColorTheme) =>
       color: colors.text,
     },
     chipTextSelected: {
-      color: colors.primary,
+      color: '#FFFFFF',
       fontWeight: 'bold',
     },
     // Category 3-Column Grid
@@ -142,7 +142,7 @@ export const getStyles = (colors: ColorTheme) =>
     },
     categoryItemSelected: {
       borderColor: colors.primary,
-      backgroundColor: colors.primary + '12',
+      backgroundColor: colors.primary,
     },
     categoryIconCircle: {
       width: 36,
@@ -154,7 +154,7 @@ export const getStyles = (colors: ColorTheme) =>
       backgroundColor: colors.background,
     },
     categoryIconCircleSelected: {
-      backgroundColor: colors.primary,
+      backgroundColor: 'rgba(255, 255, 255, 0.25)',
     },
     categoryName: {
       fontSize: 12,
@@ -163,7 +163,7 @@ export const getStyles = (colors: ColorTheme) =>
       textAlign: 'center',
     },
     categoryNameSelected: {
-      color: colors.primary,
+      color: '#FFFFFF',
       fontWeight: 'bold',
     },
     // Footer Action Button

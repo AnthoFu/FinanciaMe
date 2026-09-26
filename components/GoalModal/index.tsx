@@ -116,7 +116,7 @@ function GoalFormContent({ onClose, goal }: Omit<GoalModalProps, 'isVisible'>) {
                   value={targetAmount}
                   onChangeText={setTargetAmount}
                   placeholder="0.00"
-                  placeholderTextColor={colors.text + '40'}
+                  placeholderTextColor={colors.icon}
                   keyboardType="decimal-pad"
                   autoFocus
                 />

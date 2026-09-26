@@ -98,7 +98,7 @@ function WalletFormContent({ onClose, onSubmit, initialData }: Omit<WalletModalP
                   value={balance}
                   onChangeText={setBalance}
                   placeholder="0.00"
-                  placeholderTextColor={colors.text + '40'}
+                  placeholderTextColor={colors.icon}
                   keyboardType="decimal-pad"
                   editable={!isEditing}
                   autoFocus={!isEditing}

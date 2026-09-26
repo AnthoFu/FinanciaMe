@@ -174,7 +174,7 @@ function FixedExpenseFormContent({
                   value={amount}
                   onChangeText={setAmount}
                   placeholder="0.00"
-                  placeholderTextColor={colors.text + '40'}
+                  placeholderTextColor={colors.icon}
                   keyboardType="decimal-pad"
                   autoFocus
                 />
@@ -233,8 +233,10 @@ function FixedExpenseFormContent({
 
             {frequency === 'monthly' && (
               <View style={{ marginTop: 12 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text, marginBottom: 6 }}>
+                  Día del Mes para Pago (1 - 31)
+                </Text>
                 <StyledInput
-                  label="Día del Mes para Pago (1 - 31)"
                   placeholder="Ej. 15"
                   keyboardType="number-pad"
                   value={dayOfMonth}
