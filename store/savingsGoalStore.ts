@@ -11,6 +11,7 @@ interface SavingsGoalState {
   addSavingsGoal: (goalData: Omit<SavingsGoal, 'id' | 'creationDate'>) => void;
   updateSavingsGoal: (updatedGoal: SavingsGoal) => void;
   deleteSavingsGoal: (goalId: string) => void;
+  setSavingsGoals: (savingsGoals: SavingsGoal[]) => void;
   setIsLoading: (loading: boolean) => void;
 }
 
@@ -21,6 +22,8 @@ export const useSavingsGoalStore = create<SavingsGoalState>()(
       isLoading: true,
 
       setIsLoading: (loading) => set({ isLoading: loading }),
+
+      setSavingsGoals: (savingsGoals) => set({ savingsGoals }),
 
       addSavingsGoal: (goalData) => {
         const newGoal: SavingsGoal = {

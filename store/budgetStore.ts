@@ -12,6 +12,7 @@ interface BudgetState {
   updateBudget: (updatedBudget: Budget) => void;
   deleteBudget: (budgetId: string) => void;
   getBudgetById: (budgetId: string) => Budget | undefined;
+  setBudgets: (budgets: Budget[]) => void;
   setIsLoading: (loading: boolean) => void;
 }
 
@@ -22,6 +23,8 @@ export const useBudgetStore = create<BudgetState>()(
       isLoading: true,
 
       setIsLoading: (loading) => set({ isLoading: loading }),
+
+      setBudgets: (budgets) => set({ budgets }),
 
       addBudget: (budgetData) => {
         const newBudget: Budget = {

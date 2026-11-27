@@ -73,6 +73,8 @@ const MAPPING: Record<string, ComponentProps<typeof MaterialIcons>['name']> = {
   'archivebox.fill': 'archive',
   magnifyingglass: 'search',
   'star.fill': 'star',
+  'square.and.arrow.up': 'file-upload',
+  'square.and.arrow.down': 'file-download',
 };
 
 type IconSymbolName = keyof typeof MAPPING;

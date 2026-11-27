@@ -8,6 +8,14 @@ import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useOnboarding } from '@/context/OnboardingContext';
 import { NotificationSettingsModal } from '@/components/NotificationSettingsModal';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
+import {
+  applyBackup,
+  exportBackupToFile,
+  FinanciaMeBackup,
+  getLocalRecordCount,
+  pickAndParseBackupFile,
+} from '@/services/backupService';
 
 type MenuItem = {
   id: string;
@@ -25,6 +33,11 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { resetOnboarding } = useOnboarding();
   const [isNotificationSettingsVisible, setNotificationSettingsVisible] = useState(false);
+  const [pendingBackup, setPendingBackup] = useState<{
+    backup: FinanciaMeBackup;
+    backupRecordCount: number;
+    localRecordCount: number;
+  } | null>(null);
 
   const handleNotificationSettingsSave = async (settings: typeof notificationSettings) => {
     try {
@@ -32,6 +45,51 @@ export default function SettingsScreen() {
       showToast({ message: 'Configuración de recordatorios guardada', type: 'success' });
     } catch {
       showToast({ message: 'Error al guardar la configuración', type: 'error' });
+    }
+  };
+
+  const handleExportBackup = async () => {
+    try {
+      const { recordCount } = await exportBackupToFile();
+      showToast({
+        message: `Respaldo generado (${recordCount} registros)`,
+        type: 'success',
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al exportar el respaldo';
+      showToast({ message, type: 'error' });
+    }
+  };
+
+  const handleImportBackup = async () => {
+    try {
+      const result = await pickAndParseBackupFile();
+      if (result.canceled) return;
+
+      setPendingBackup({
+        backup: result.backup,
+        backupRecordCount: result.backupRecordCount,
+        localRecordCount: getLocalRecordCount(),
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al leer el archivo de respaldo';
+      showToast({ message, type: 'error' });
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!pendingBackup) return;
+
+    try {
+      await applyBackup(pendingBackup.backup);
+      showToast({
+        message: `Respaldo importado (${pendingBackup.backupRecordCount} registros)`,
+        type: 'success',
+      });
+    } catch {
+      showToast({ message: 'Error al restaurar el respaldo', type: 'error' });
+    } finally {
+      setPendingBackup(null);
     }
   };
 
@@ -53,6 +111,18 @@ export default function SettingsScreen() {
       title: 'Apariencia',
       icon: 'paintbrush.fill',
       route: '/theme',
+    },
+    {
+      id: 'export-backup',
+      title: 'Exportar respaldo (JSON)',
+      icon: 'square.and.arrow.up',
+      action: handleExportBackup,
+    },
+    {
+      id: 'import-backup',
+      title: 'Importar respaldo (JSON)',
+      icon: 'square.and.arrow.down',
+      action: handleImportBackup,
     },
     {
       id: 'tutorial',
@@ -92,6 +162,23 @@ export default function SettingsScreen() {
         onClose={() => setNotificationSettingsVisible(false)}
         settings={notificationSettings}
         onSave={handleNotificationSettingsSave}
+      />
+      <ConfirmationModal
+        isVisible={pendingBackup !== null}
+        onClose={() => setPendingBackup(null)}
+        onConfirm={handleConfirmImport}
+        title="¿Importar respaldo?"
+        message={
+          pendingBackup
+            ? pendingBackup.localRecordCount > 0
+              ? `Importar esto eliminará los ${pendingBackup.localRecordCount} registros que tienes registrados localmente y los reemplazará con ${pendingBackup.backupRecordCount} registros del respaldo. ¿Estás seguro?`
+              : `Se importarán ${pendingBackup.backupRecordCount} registros desde el archivo de respaldo. ¿Estás seguro?`
+            : ''
+        }
+        confirmText="Importar"
+        cancelText="Cancelar"
+        type="destructive"
+        icon="exclamationmark.triangle.fill"
       />
     </View>
   );
